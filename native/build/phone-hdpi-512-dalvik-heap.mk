@@ -12,15 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-
-# Provides overrides to configure the Dalvik heap for a standard high density
-# phone with around 512MB total RAM.
 
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.heapstartsize=5m \
     dalvik.vm.heapgrowthlimit=48m \
     dalvik.vm.heapsize=128m \
-    dalvik.vm.heaptargetutilization=0.75 \
+    dalvik.vm.heaptargetutilization=0.25 \
     dalvik.vm.heapminfree=512k \
     dalvik.vm.heapmaxfree=2m
