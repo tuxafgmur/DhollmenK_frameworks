@@ -51,6 +51,11 @@ import com.android.cards.internal.CardArrayAdapter;
 import com.android.cards.view.CardListView;
 import com.android.systemui.R;
 
+import android.view.IWindowManager;
+import android.view.WindowManagerGlobal;
+import android.os.RemoteException;
+import android.app.ActivityManagerNative;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +91,7 @@ public class RecentPanelView {
     private static final int MENU_APP_DETAILS_ID   = 0;
     private static final int MENU_APP_PLAYSTORE_ID = 1;
     private static final int MENU_APP_AMAZON_ID    = 2;
+    private static final int MENU_APP_SPLITWINDOW_ID  = 3;
 
     private static final String PLAYSTORE_REFERENCE = "com.android.vending";
     private static final String AMAZON_REFERENCE    = "com.amazon.venezia";
@@ -189,8 +195,7 @@ public class RecentPanelView {
             @Override
             public boolean onLongClick(Card card, View view) {
                 constructMenu(
-                        (ImageButton) view.findViewById(R.id.card_header_button_expand),
-                        td.packageName);
+                        (ImageButton) view.findViewById(R.id.card_header_button_expand), td);
                 return true;
             }
         });
@@ -279,7 +284,7 @@ public class RecentPanelView {
     /**
      * Construct popup menu for longpress.
      */
-    private void constructMenu(final View selectedView, final String packageName) {
+    private void constructMenu(final View selectedView, final TaskDescription td) {
         if (selectedView == null) {
             return;
         }
@@ -296,12 +301,13 @@ public class RecentPanelView {
         // Add app detail menu entry.
         popup.getMenu().add(0, MENU_APP_DETAILS_ID, 0,
                 mContext.getResources().getString(R.string.status_bar_recent_inspect_item_title));
-
+        popup.getMenu().add(0, MENU_APP_SPLITWINDOW_ID, 0,
+                mContext.getResources().getString(R.string.status_bar_recent_add_to_split_view));
         // Add playstore or amazon entry if it is provided by the application.
-        if (checkAppInstaller(packageName, PLAYSTORE_REFERENCE)) {
+        if (checkAppInstaller(td.packageName, PLAYSTORE_REFERENCE)) {
             popup.getMenu().add(0, MENU_APP_PLAYSTORE_ID, 0,
                     getApplicationLabel(PLAYSTORE_REFERENCE));
-        } else if (checkAppInstaller(packageName, AMAZON_REFERENCE)) {
+        } else if (checkAppInstaller(td.packageName, AMAZON_REFERENCE)) {
             popup.getMenu().add(0, MENU_APP_AMAZON_ID, 0,
                     getApplicationLabel(AMAZON_REFERENCE));
         }
@@ -310,17 +316,20 @@ public class RecentPanelView {
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == MENU_APP_DETAILS_ID) {
-                    startApplicationDetailsActivity(packageName, null, null);
+                    startApplicationDetailsActivity(td.packageName, null, null);
+                } else if (item.getItemId() == MENU_APP_SPLITWINDOW_ID) {
+                    startApplicationInSplit(td);
                 } else if (item.getItemId() == MENU_APP_PLAYSTORE_ID) {
                     startApplicationDetailsActivity(null,
-                            PLAYSTORE_APP_URI_QUERY + packageName, PLAYSTORE_REFERENCE);
+                            PLAYSTORE_APP_URI_QUERY + td.packageName, PLAYSTORE_REFERENCE);
                 } else if (item.getItemId() == MENU_APP_AMAZON_ID) {
                     startApplicationDetailsActivity(null,
-                            AMAZON_APP_URI_QUERY + packageName, AMAZON_REFERENCE);
+                            AMAZON_APP_URI_QUERY + td.packageName, AMAZON_REFERENCE);
                 }
                 return true;
             }
         });
+
         popup.setOnDismissListener(new PopupMenu.OnDismissListener() {
             public void onDismiss(PopupMenu menu) {
                 mPopup = null;
@@ -491,6 +500,73 @@ public class RecentPanelView {
             }
         }
         exit();
+    }
+
+    /**
+     * Start application in split mode or move to forground if still active.
+     */
+    private void startApplicationInSplit(TaskDescription td) {
+            final ActivityManager am = (ActivityManager)
+                mContext.getSystemService(Context.ACTIVITY_SERVICE);
+            final IWindowManager wm = (IWindowManager) WindowManagerGlobal.getWindowManagerService();
+
+            // If we weren't on the homescreen, resize the previous activity (if not already split)
+            final List<ActivityManager.RecentTaskInfo> recentTasks =
+                am.getRecentTasks(20, ActivityManager.RECENT_IGNORE_UNAVAILABLE);
+
+            if (recentTasks != null && recentTasks.size() > 0) {
+                final PackageManager pm = mContext.getPackageManager();
+                ActivityInfo homeInfo = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                        .resolveActivityInfo(pm, 0);
+                int taskInt = 0;
+                ActivityManager.RecentTaskInfo taskInfo = recentTasks.get(1);
+                Intent intent = new Intent(taskInfo.baseIntent);
+                if (taskInfo.origActivity != null) {
+                    intent.setComponent(taskInfo.origActivity);
+                }
+
+                ComponentName component = intent.getComponent();
+
+                if (homeInfo == null
+                    || !homeInfo.packageName.equals(component.getPackageName())
+                    || !homeInfo.name.equals(component.getClassName())) {
+                    // This is not the home activity, so split it
+                    try {
+                        wm.setTaskSplitView(taskInfo.persistentId, true);
+                    } catch (RemoteException e) {
+                    }
+                    // We move this to front first, then our activity, so it updates
+                    am.moveTaskToFront(taskInfo.persistentId, 0, null);
+                }
+            }
+
+            if (td.taskId >= 0) {
+                // The task is already launched. The Activity will pull its split information
+                // from WindowManagerService once it resumes, so we set its state here.
+                try {
+                    wm.setTaskSplitView(td.taskId, true);
+                } catch (RemoteException e) {
+                }
+                am.moveTaskToFront(td.taskId, 0, null);
+            } else {
+                // The app has been killed (we have no taskId for it),
+                // so we start a new one with the SPLIT_VIEW flag
+                Intent intent = td.intent;
+                intent.addFlags(Intent.FLAG_ACTIVITY_SPLIT_VIEW | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                if (DEBUG) Log.v(TAG, "Starting split view activity " + intent);
+
+                try {
+                    mContext.startActivityAsUser(intent, null,
+                            new UserHandle(UserHandle.USER_CURRENT));
+                } catch (SecurityException e) {
+                    Log.e(TAG, "Recents does not have the permission to launch " + intent, e);
+                }
+            }
+            try {
+                ActivityManagerNative.getDefault().notifySplitViewLayoutChanged();
+            } catch (RemoteException e) {
+            }
     }
 
     /**
@@ -1027,4 +1103,5 @@ public class RecentPanelView {
             mExpandedState = expandedState;
         }
     }
+
 }
