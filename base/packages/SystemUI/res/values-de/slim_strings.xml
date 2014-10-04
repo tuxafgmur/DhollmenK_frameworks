@@ -53,6 +53,7 @@
     <string name="shortcut_recovery">Recovery</string>
     <string name="shortcut_last_app">Letzte App</string>
     <string name="shortcut_screenshot">Bildschirmfoto</string>
+    <string name="shortcut_screenrecord">Bildschirm-Aufnahme</string>
     <string name="shortcut_volume">Lautstärke</string>
     <string name="shortcut_toggle_title">Aktion ausführen</string>
     <string name="shortcut_chamber">Kammer des Schreckens</string>
@@ -120,6 +121,13 @@
     <string name="quick_settings_quick_record_play">Wird abgespielt...</string>
     <string name="quick_settings_custom_toggle">Benutzerdefiniert</string>
     <string name="quick_settings_contact_toggle">Kontakt</string>
+
+    <!-- Screenrecord Notification -->
+    <string name="screenrecord_notif_ticker">Bildschirm wird aufgezeichnet</string>
+    <string name="screenrecord_notif_title">Bildschirm aufzeichnen</string>
+    <string name="screenrecord_notif_stop">Stop</string>
+    <string name="screenrecord_notif_pointer">Berührungen anzeigen</string>
+    <string name="screenrecord_notif_error">Bildschirmaufzeichnung nicht möglich</string>
 
     <!-- Battery status in pie controls -->
     <string name="pie_battery_status_charging">Laden (<xliff:g id="percent">%d</xliff:g>%%)</string>

@@ -490,6 +490,15 @@ public class StatusBarManagerService extends IStatusBarService.Stub
     }
 
     @Override
+    public void toggleScreenrecord() {
+        if (mBar != null) {
+            try {
+                mBar.toggleScreenrecord();
+            } catch (RemoteException ex) {}
+        }
+    }
+
+    @Override
     public void toggleLastApp() {
         if (mBar != null) {
             try {

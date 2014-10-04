@@ -112,6 +112,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected static final int MSG_TOGGLE_LAST_APP = 1030;
     protected static final int MSG_TOGGLE_KILL_APP = 1031;
     protected static final int MSG_SET_PIE_TRIGGER_MASK = 1032;
+    protected static final int MSG_TOGGLE_SCREENRECORD = 1033;
 
     // Scores above this threshold should be displayed in heads up mode.
     // We allow everything between PRIORITY_HIGH and PRIORITY_MAX (10 - 20) as long
@@ -600,6 +601,13 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     @Override
+    public void toggleScreenrecord() {
+        int msg = MSG_TOGGLE_SCREENRECORD;
+        mHandler.removeMessages(msg);
+        mHandler.sendEmptyMessage(msg);
+    }
+
+    @Override
     public void toggleLastApp() {
         int msg = MSG_TOGGLE_LAST_APP;
         mHandler.removeMessages(msg);
@@ -761,6 +769,10 @@ public abstract class BaseStatusBar extends SystemUI implements
              case MSG_TOGGLE_SCREENSHOT:
                  if (DEBUG) Slog.d(TAG, "toggle screenshot");
                  takeScreenshot();
+                 break;
+             case MSG_TOGGLE_SCREENRECORD:
+                 if (DEBUG) Slog.d(TAG, "toggle screenrecord");
+                 takeScreenrecord();
                  break;
              case MSG_TOGGLE_LAST_APP:
                  if (DEBUG) Slog.d(TAG, "toggle last app");
@@ -1534,6 +1546,70 @@ public abstract class BaseStatusBar extends SystemUI implements
             if (mContext.bindService(intent, conn, mContext.BIND_AUTO_CREATE)) {
                 mScreenshotConnection = conn;
                 mHDL.postDelayed(mScreenshotTimeout, 10000);
+            }
+        }
+    }
+
+    final Runnable mScreenrecordTimeout = new Runnable() {
+	@Override public void run() {
+	    synchronized (mScreenrecordLock) {
+		if (mScreenrecordConnection != null) {
+		    mContext.unbindService(mScreenrecordConnection);
+		    mScreenrecordConnection = null;
+		}
+	    }
+	}
+    };
+
+    private final Object mScreenrecordLock = new Object();
+    private ServiceConnection mScreenrecordConnection = null;
+    private Handler mHDLR = new Handler();
+
+    private void takeScreenrecord() {
+        synchronized (mScreenrecordLock) {
+            if (mScreenrecordConnection != null) {
+                return;
+            }
+            ComponentName cn = new ComponentName("com.android.systemui",
+                    "com.android.systemui.omni.screenrecord.TakeScreenrecordService");
+            Intent intent = new Intent();
+            intent.setComponent(cn);
+            ServiceConnection conn = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    synchronized (mScreenrecordLock) {
+                        Messenger messenger = new Messenger(service);
+                        Message msg = Message.obtain(null, 1);
+                        final ServiceConnection myConn = this;
+                        Handler h = new Handler(mHDLR.getLooper()) {
+                            @Override
+                            public void handleMessage(Message msg) {
+                                synchronized (mScreenrecordLock) {
+                                    if (mScreenrecordConnection == myConn) {
+                                        mContext.unbindService(mScreenrecordConnection);
+                                        mScreenrecordConnection = null;
+                                        mHDLR.removeCallbacks(mScreenrecordTimeout);
+                                    }
+                                }
+                            }
+                        };
+                        msg.replyTo = new Messenger(h);
+                        msg.arg1 = msg.arg2 = 0;
+                        try {
+                            messenger.send(msg);
+                        } catch (RemoteException e) {
+                        }
+                    }
+                }
+                @Override
+                public void onServiceDisconnected(ComponentName name) {}
+            };
+            if (mContext.bindServiceAsUser(
+                    intent, conn, Context.BIND_AUTO_CREATE, UserHandle.CURRENT)) {
+                mScreenrecordConnection = conn;
+                // Screenrecord max duration is 30 minutes. Allow 31 minutes before killing
+                // the service.
+                mHDLR.postDelayed(mScreenrecordTimeout, 31 * 60 * 1000);
             }
         }
     }

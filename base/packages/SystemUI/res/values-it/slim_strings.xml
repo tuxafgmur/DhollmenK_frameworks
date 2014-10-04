@@ -54,6 +54,7 @@
     <string name="shortcut_recovery">Recovery</string>
     <string name="shortcut_last_app">Ultima App</string>
     <string name="shortcut_screenshot">Screenshot</string>
+    <string name="shortcut_screenrecord">Registrazione schermo</string>
     <string name="shortcut_volume">Volume</string>
     <string name="shortcut_toggle_title">Azione da eseguire</string>
     <string name="shortcut_chamber">Camera dei segreti</string>
@@ -142,6 +143,13 @@
     <string name="quick_settings_reminder_help_message">Tocca lo spazio vuoto per impostare o cambiare il promemoria. Premi a lungo per cancellare il promemoria corrente.</string>
     <string name="quick_settings_network_adb_disabled_label">Disattivato</string>
     <string name="quick_settings_network_adb_enabled_label">Attivato</string>
+
+    <!-- Screenrecord Notification Ticker -->
+    <string name="screenrecord_notif_ticker">Lo schermo è in fase di registrazione</string>
+    <string name="screenrecord_notif_title">Registra schermo</string>
+    <string name="screenrecord_notif_stop">Ferma</string>
+    <string name="screenrecord_notif_pointer">Puntatore toggle</string>
+    <string name="screenrecord_notif_error">Impossibile registrare lo schermo</string>
 
     <!-- Battery status in pie controls -->
     <string name="pie_battery_status_charging">In carica (<xliff:g id="percent">%d</xliff:g>%%)</string>

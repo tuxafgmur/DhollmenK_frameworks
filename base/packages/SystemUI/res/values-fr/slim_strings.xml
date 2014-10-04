@@ -54,6 +54,7 @@
     <string name="shortcut_recovery">Recovery</string>
     <string name="shortcut_last_app">Dernière application</string>
     <string name="shortcut_screenshot">Capture d\'écran</string>
+    <string name="shortcut_screenrecord">Enregistrement d\'écran</string>
     <string name="shortcut_volume">Volume</string>
     <string name="shortcut_toggle_title">Action à réaliser</string>
     <string name="shortcut_chamber">Chambre des Secrets</string>
@@ -142,6 +143,14 @@
     <string name="quick_settings_reminder_help_message">Pour ajouter ou modifier un rappel, appuyer dans la zone vide à droite de l\'heure dans le panneau des notifications. Un appui long effaçera le rappel en cours.</string>
     <string name="quick_settings_network_adb_disabled_label">Désactivé</string>
     <string name="quick_settings_network_adb_enabled_label">Activé</string>
+
+    <!-- Screenrecord Notification -->
+    <string name="screenrecord_notif_ticker">L\'écran est en cours d\'enregistrement</string>
+    <string name="screenrecord_notif_title">Enregistrement de l\écran</string>
+    <string name="screenrecord_notif_stop">Arrêter</string>
+    <string name="screenrecord_notif_pointer_on">Afficher le pointeur</string>
+    <string name="screenrecord_notif_pointer_off">Masquer le pointeur</string>
+    <string name="screenrecord_notif_error">Impossible d\'enregistrer l\'écran</string>
 
     <!-- Battery status in pie controls -->
     <string name="pie_battery_status_charging">En charge (<xliff:g id="percent">%d</xliff:g>%%)</string>

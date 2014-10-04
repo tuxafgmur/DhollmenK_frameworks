@@ -54,6 +54,7 @@
     <string name="shortcut_recovery">Recovery</string>
     <string name="shortcut_last_app">Last App</string>
     <string name="shortcut_screenshot">Screenshot</string>
+    <string name="shortcut_screenrecord">Screenrecord</string>
     <string name="shortcut_volume">Volume</string>
     <string name="shortcut_toggle_title">Action to perform</string>
     <string name="shortcut_chamber">Chamber of Secrets</string>
@@ -143,6 +144,20 @@
     <string name="quick_settings_reminder_help_message">Touch the empty space above to set or change the reminder. Long-press to clear the current reminder.</string>
     <string name="quick_settings_network_adb_disabled_label">Disabled</string>
     <string name="quick_settings_network_adb_enabled_label">Enabled</string>
+
+    <!-- Screenrecord Notification Ticker -->
+    <string name="screenrecord_notif_ticker">Screen is being recorded</string>
+    <!-- Screenrecord notification title -->
+    <string name="screenrecord_notif_title">Recording screen</string>
+    <!-- Screenrecord notification action: Stop -->
+    <string name="screenrecord_notif_stop">Stop</string>
+    <!-- Screenrecord notification action: Toggle pointer -->
+    <string name="screenrecord_notif_pointer">Toggle pointer</string>
+    <!-- Screenrecord notification action: show/hide pointer -->
+    <string name="screenrecord_notif_pointer_on">Show pointer</string>
+    <string name="screenrecord_notif_pointer_off">Hide pointer</string>
+    <!-- Screen record notification error title -->
+    <string name="screenrecord_notif_error">Unable to record screen</string>
 
     <!-- Battery status in pie controls -->
     <string name="pie_battery_status_charging">Charging (<xliff:g id="percent">%d</xliff:g>%%)</string>

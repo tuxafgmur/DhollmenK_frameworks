@@ -53,6 +53,7 @@
     <string name="shortcut_recovery">Recovery</string>
     <string name="shortcut_last_app">Ultima ap.</string>
     <string name="shortcut_screenshot">Captura Pantalla</string>
+    <string name="shortcut_screenrecord">Grabación Pantalla</string>
     <string name="shortcut_volume">Volumen</string>
     <string name="shortcut_toggle_title">Acción a realizar</string>
     <string name="shortcut_chamber">Chamber of Secrets</string>
@@ -137,6 +138,14 @@
     <string name="quick_settings_reminder_help_message">Tocar aquí para crear un recordatorio. Pulsación larga para eliminarlo.</string>
     <string name="quick_settings_network_adb_disabled_label">Deshabilitado</string>
     <string name="quick_settings_network_adb_enabled_label">Habilitado</string>
+
+    <!-- Screenrecord Notification -->
+    <string name="screenrecord_notif_ticker">La pantalla se está grabando</string>
+    <string name="screenrecord_notif_title">Grabando pantalla</string>
+    <string name="screenrecord_notif_stop">Parar</string>
+    <string name="screenrecord_notif_pointer_on">Mostrar puntero</string>
+    <string name="screenrecord_notif_pointer_off">Ocultar puntero</string>
+    <string name="screenrecord_notif_error">No se puede grabar la pantalla</string>
 
     <!-- Battery status in pie controls -->
     <string name="pie_battery_status_charging">Cargando (<xliff:g id="percent">%d</xliff:g>%%)</string>

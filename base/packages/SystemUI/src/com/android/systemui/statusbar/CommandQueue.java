@@ -67,6 +67,7 @@ public class CommandQueue extends IStatusBar.Stub {
     private static final int MSG_HIDE_HEADS_UP              = 25 << MSG_SHIFT;
     private static final int MSG_HIDE_HEADS_UP_CANDIDATE    = 26 << MSG_SHIFT;
     private static final int MSG_UPDATE_HEADS_UP_POSITION   = 27 << MSG_SHIFT;
+    private static final int MSG_TOGGLE_SCREENRECORD        = 28 << MSG_SHIFT;
 
     public static final int FLAG_EXCLUDE_NONE = 0;
     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
@@ -118,6 +119,7 @@ public class CommandQueue extends IStatusBar.Stub {
         public void toggleQSShade();
         public void toggleSmartPulldown();
         public void toggleScreenshot();
+        public void toggleScreenrecord();
         public void toggleLastApp();
         public void toggleKillApp();
     }
@@ -321,6 +323,13 @@ public class CommandQueue extends IStatusBar.Stub {
         }
     }
 
+    public void toggleScreenrecord() {
+        synchronized (mList) {
+            mHandler.removeMessages(MSG_TOGGLE_SCREENRECORD);
+            mHandler.sendEmptyMessage(MSG_TOGGLE_SCREENRECORD);
+        }
+    }
+
     public void toggleLastApp() {
         synchronized (mList) {
             mHandler.removeMessages(MSG_TOGGLE_LAST_APP);
@@ -441,6 +450,9 @@ public class CommandQueue extends IStatusBar.Stub {
                     break;
                 case MSG_TOGGLE_SCREENSHOT:
                     mCallbacks.toggleScreenshot();
+                    break;
+                case MSG_TOGGLE_SCREENRECORD:
+                    mCallbacks.toggleScreenrecord();
                     break;
                 case MSG_TOGGLE_LAST_APP:
                     mCallbacks.toggleLastApp();

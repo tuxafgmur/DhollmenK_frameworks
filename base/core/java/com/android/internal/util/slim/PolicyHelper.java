@@ -188,6 +188,9 @@ public class PolicyHelper {
         } else if (clickAction.equals(PolicyConstants.ACTION_SCREENSHOT)) {
             return context.getResources().getDrawable(
                 com.android.internal.R.drawable.ic_lock_screenshot);
+        } else if (clickAction.equals(PolicyConstants.ACTION_SCREENRECORD)) {
+            return context.getResources().getDrawable(
+                com.android.internal.R.drawable.ic_lock_screenrecord);
         } else if (clickAction.equals(PolicyConstants.ACTION_AIRPLANE)) {
             return context.getResources().getDrawable(
                 com.android.internal.R.drawable.ic_lock_airplane_mode_off);

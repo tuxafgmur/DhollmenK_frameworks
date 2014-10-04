@@ -31,6 +31,7 @@ public class ButtonsConstants {
     public static final String ACTION_QS                   = "**quicksettings**";
     public static final String ACTION_RECENTS              = "**recents**";
     public static final String ACTION_SCREENSHOT           = "**screenshot**";
+    public static final String ACTION_SCREENRECORD         = "**screenrecord**";
     public static final String ACTION_IME                  = "**ime**";
     public static final String ACTION_LAST_APP             = "**lastapp**";
     public static final String ACTION_KILL                 = "**kill**";
@@ -96,6 +97,7 @@ public class ButtonsConstants {
         + ACTION_NULL          + ACTION_DELIMITER
         + ICON_EMPTY           + ACTION_DELIMITER
         + ACTION_SCREENSHOT    + ACTION_DELIMITER
+        + ACTION_SCREENRECORD  + ACTION_DELIMITER
         + ACTION_NULL          + ACTION_DELIMITER
         + ICON_EMPTY           + ACTION_DELIMITER
         + ACTION_IME           + ACTION_DELIMITER

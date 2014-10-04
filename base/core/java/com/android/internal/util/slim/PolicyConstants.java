@@ -18,14 +18,15 @@ package com.android.internal.util.slim;
 
 public class PolicyConstants {
 
-    public static final String ACTION_POWER_OFF  = "**poweroff**";
-    public static final String ACTION_REBOOT     = "**reboot**";
-    public static final String ACTION_SCREENSHOT = "**screenshot**";
-    public static final String ACTION_AIRPLANE   = "**airplane**";
-    public static final String ACTION_SOUND      = "**sound**";
-    public static final String ACTION_EXPANDED_DESKTOP     = "**expanded_desktop**";
-    public static final String ACTION_PIE                  = "**pie**";
-    public static final String ACTION_NAVBAR               = "**nav_bar**";
+    public static final String ACTION_POWER_OFF  	= "**poweroff**";
+    public static final String ACTION_REBOOT     	= "**reboot**";
+    public static final String ACTION_SCREENSHOT 	= "**screenshot**";
+    public static final String ACTION_SCREENRECORD 	= "**screenrecord**";
+    public static final String ACTION_AIRPLANE   	= "**airplane**";
+    public static final String ACTION_SOUND      	= "**sound**";
+    public static final String ACTION_EXPANDED_DESKTOP	= "**expanded_desktop**";
+    public static final String ACTION_PIE		= "**pie**";
+    public static final String ACTION_NAVBAR		= "**nav_bar**";
 
     public static final String ACTION_DELIMITER  = "|";
     public static final String ICON_EMPTY = "empty";

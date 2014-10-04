@@ -61,6 +61,7 @@ interface IStatusBarService
     void toggleSmartPulldown();
     void toggleQSShade();
     void toggleScreenshot();
+    void toggleScreenrecord();
     void toggleLastApp();
     void toggleKillApp();
 }

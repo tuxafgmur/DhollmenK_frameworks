@@ -48,6 +48,7 @@ oneway interface IStatusBar
     void toggleQSShade();
     void toggleSmartPulldown();
     void toggleScreenshot();
+    void toggleScreenrecord();
     void toggleLastApp();
     void toggleKillApp();
 }

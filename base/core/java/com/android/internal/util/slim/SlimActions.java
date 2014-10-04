@@ -245,6 +245,12 @@ public class SlimActions {
                 } catch (RemoteException e) {
                 }
                 return;
+            } else if (action.equals(ButtonsConstants.ACTION_SCREENRECORD)) {
+                try {
+                    barService.toggleScreenrecord();
+                } catch (RemoteException e) {
+                }
+                return;
             } else if (action.equals(ButtonsConstants.ACTION_NOTIFICATIONS)) {
                 if (isKeyguardShowing && isKeyguardSecure) {
                     return;
