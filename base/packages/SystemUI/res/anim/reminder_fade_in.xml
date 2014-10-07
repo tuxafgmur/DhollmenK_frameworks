@@ -19,7 +19,7 @@
     android:startOffset="100"
     >
     <translate
-        android:duration="200"
+        android:duration="70"
         android:fromYDelta="75%"
         android:toYDelta="0"
         />
@@ -27,6 +27,6 @@
     <alpha
         android:fromAlpha="0.0"
         android:toAlpha="1.0"
-        android:duration="200"
+        android:duration="70"
         />
 </set>

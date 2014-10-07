@@ -34,6 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/close_handle_underlap"
+	android:background="@drawable/decor_border"
         android:overScrollMode="ifContentScrolls"
         >
         <com.android.systemui.statusbar.phone.QuickSettingsContainerView

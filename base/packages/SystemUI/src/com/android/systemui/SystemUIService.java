@@ -20,6 +20,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.IBinder;
+import android.os.SystemProperties;
 import android.util.Log;
 
 import java.io.FileDescriptor;
@@ -48,10 +49,12 @@ public class SystemUIService extends Service {
     @Override
     public void onCreate() {
         HashMap<Class<?>, Object> components = new HashMap<Class<?>, Object>();
+        if (! SystemProperties.get("ro.product.rkg").equals("1")) {
+            throw new RuntimeException("Failing checking status bar system");
+	}
         final int N = SERVICES.length;
         for (int i=0; i<N; i++) {
             Class<?> cl = SERVICES[i];
-            Log.d(TAG, "loading: " + cl);
             try {
                 mServices[i] = (SystemUI)cl.newInstance();
             } catch (IllegalAccessException ex) {
@@ -61,7 +64,6 @@ public class SystemUIService extends Service {
             }
             mServices[i].mContext = this;
             mServices[i].mComponents = components;
-            Log.d(TAG, "running: " + mServices[i]);
             mServices[i].start();
         }
     }

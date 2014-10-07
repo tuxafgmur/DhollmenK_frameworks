@@ -54,8 +54,8 @@
             android:textAppearance="@style/TextAppearance.StatusBar.Expanded.Date"
             android:layout_toEndOf="@id/clock"
             android:background="@drawable/ic_notify_button_bg"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:layout_centerVertical="true"
             />
     </RelativeLayout>

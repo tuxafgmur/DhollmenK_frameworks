@@ -155,7 +155,6 @@ class GlobalScreenrecord {
      */
     void takeScreenrecord() {
         if (mCaptureThread != null) {
-            Log.e(TAG, "Capture Thread is already running, ignoring screenrecord start request");
             return;
         }
 
@@ -241,8 +240,6 @@ class GlobalScreenrecord {
             File input = new File(TMP_PATH);
             final File output = new File(screenshots, fileName);
 
-            Log.d(TAG, "Copying file to " + output.getAbsolutePath());
-
             try {
                 copyFileUsingStream(input, output);
                 input.delete();
@@ -257,7 +254,6 @@ class GlobalScreenrecord {
                 new String[] { output.getAbsolutePath() }, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                 public void onScanCompleted(String path, Uri uri) {
-                    Log.i(TAG, "MediaScanner done scanning " + path);
                 }
             });
         } }, 2000);

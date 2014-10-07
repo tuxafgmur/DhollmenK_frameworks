@@ -141,9 +141,9 @@ import java.util.ArrayList;
 public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         NetworkController.UpdateUIListener {
     static final String TAG = "PhoneStatusBar";
-    public static final boolean DEBUG = BaseStatusBar.DEBUG;
+    public static final boolean DEBUG = false;
     public static final boolean SPEW = false;
-    public static final boolean DUMPTRUCK = true; // extra dumpsys info
+    public static final boolean DUMPTRUCK = false; // extra dumpsys info
     public static final boolean DEBUG_GESTURES = false;
 
     public static final boolean DEBUG_WINDOW_STATE = false;
@@ -151,7 +151,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     public static final boolean SETTINGS_DRAG_SHORTCUT = true;
 
     // additional instrumentation for testing purposes; intended to be left on during development
-    public static final boolean CHATTY = DEBUG;
+    public static final boolean CHATTY = false;
 
     private static final String KEY_REMINDER_ACTION =
             "key_reminder_action";
@@ -2339,7 +2339,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         flagdbg.append(((state & StatusBarManager.DISABLE_SEARCH) != 0) ? "SEARCH" : "search");
         flagdbg.append(((diff  & StatusBarManager.DISABLE_SEARCH) != 0) ? "* " : " ");
         flagdbg.append(">");
-        Log.d(TAG, flagdbg.toString());
 
         if ((diff & StatusBarManager.DISABLE_SYSTEM_INFO) != 0) {
             mSystemIconArea.animate().cancel();
@@ -3438,7 +3437,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     public void setLightsOn(boolean on) {
-        Log.v(TAG, "setLightsOn(" + on + ")");
         if (on) {
             setSystemUiVisibility(0, View.SYSTEM_UI_FLAG_LOW_PROFILE);
         } else {
@@ -4272,10 +4270,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             R.dimen.status_bar_icon_padding);
 
         if (newIconHPadding != mIconHPadding || newIconSize != mIconSize) {
-//            Log.d(TAG, "size=" + newIconSize + " padding=" + newIconHPadding);
             mIconHPadding = newIconHPadding;
             mIconSize = newIconSize;
-            //reloadAllNotificationIcons(); // reload the tray
         }
 
         mEdgeBorder = res.getDimensionPixelSize(R.dimen.status_bar_edge_ignore);
@@ -4304,7 +4300,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mNotificationPanelGravity = Gravity.START | Gravity.TOP;
         }
         mSettingsPanelGravity = res.getInteger(R.integer.settings_panel_layout_gravity);
-        Log.d(TAG, "mSettingsPanelGravity = " + mSettingsPanelGravity);
         if (mSettingsPanelGravity <= 0) {
             mSettingsPanelGravity = Gravity.END | Gravity.TOP;
         }
@@ -4321,7 +4316,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         mRowHeight =  res.getDimensionPixelSize(R.dimen.notification_row_min_height);
 
-        if (false) Log.v(TAG, "updateResources");
     }
 
     //
@@ -4353,7 +4347,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         public void run() {
             vibrate();
             SystemClock.sleep(250);
-            Log.d(TAG, "startTracing");
             android.os.Debug.startMethodTracing("/data/statusbar-traces/trace");
             mHandler.postDelayed(mStopTracing, 10000);
         }
@@ -4362,7 +4355,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     Runnable mStopTracing = new Runnable() {
         public void run() {
             android.os.Debug.stopMethodTracing();
-            Log.d(TAG, "stopTracing");
             vibrate();
         }
     };

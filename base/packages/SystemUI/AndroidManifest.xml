@@ -111,8 +111,7 @@
              TODO: Should have an android:permission attribute
              -->
         <service android:name="SystemUIService"
-            android:exported="true"
-            />
+            android:exported="true" />
 
 	<!-- started from PhoneWindowManager
 	TODO: Should have an android:permission attribute -->
@@ -466,12 +465,6 @@
             android:exported="true"
             android:excludeFromRecents="true"
             >
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.CREATE_SHORTCUT" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
