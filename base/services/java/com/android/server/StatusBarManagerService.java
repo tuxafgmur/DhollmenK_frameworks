@@ -84,7 +84,6 @@ public class StatusBarManagerService extends IStatusBarService.Stub
         IBinder token;
 
         public void binderDied() {
-            Slog.i(TAG, "binder died for pkg=" + pkg);
             disableInternal(userId, 0, token, pkg);
             token.unlinkToDeath(this, 0);
         }
@@ -202,7 +201,6 @@ public class StatusBarManagerService extends IStatusBarService.Stub
             StatusBarIcon icon = new StatusBarIcon(iconPackage, UserHandle.OWNER, iconId,
                     iconLevel, 0,
                     contentDescription);
-            //Slog.d(TAG, "setIcon slot=" + slot + " index=" + index + " icon=" + icon);
             mIcons.setIcon(index, icon);
 
             if (mBar != null) {
@@ -539,7 +537,6 @@ public class StatusBarManagerService extends IStatusBarService.Stub
             int switches[], List<IBinder> binders) {
         enforceStatusBarService();
 
-        Slog.i(TAG, "registerStatusBar bar=" + bar);
         mBar = bar;
         synchronized (mIcons) {
             iconList.copyFrom(mIcons);

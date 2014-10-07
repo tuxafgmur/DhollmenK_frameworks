@@ -78,7 +78,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
 
     private Context mContext;
     private final static String TAG = "Tethering";
-    private final static boolean DBG = true;
+    private final static boolean DBG = false;
     private final static boolean VDBG = false;
 
     // TODO - remove both of these - should be part of interface inspection/selection stuff
@@ -107,7 +107,7 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
 
     private BroadcastReceiver mStateReceiver;
 
-    private static final String USB_NEAR_IFACE_ADDR      = "192.168.42.129";
+    private static final String USB_NEAR_IFACE_ADDR   = "192.168.42.129";
     private static final int USB_PREFIX_LENGTH        = 24;
 
     // USB is  192.168.42.1 and 255.255.255.0
@@ -356,11 +356,9 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
             sm = mIfaces.get(iface);
         }
         if (sm == null) {
-            Log.e(TAG, "Tried to Tether an unknown iface :" + iface + ", ignoring");
             return ConnectivityManager.TETHER_ERROR_UNKNOWN_IFACE;
         }
         if (!sm.isAvailable() && !sm.isErrored()) {
-            Log.e(TAG, "Tried to Tether an unavailable iface :" + iface + ", ignoring");
             return ConnectivityManager.TETHER_ERROR_UNAVAIL_IFACE;
         }
         sm.sendMessage(TetherInterfaceSM.CMD_TETHER_REQUESTED);
@@ -374,11 +372,9 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
             sm = mIfaces.get(iface);
         }
         if (sm == null) {
-            Log.e(TAG, "Tried to Untether an unknown iface :" + iface + ", ignoring");
             return ConnectivityManager.TETHER_ERROR_UNKNOWN_IFACE;
         }
         if (sm.isErrored()) {
-            Log.e(TAG, "Tried to Untethered an errored iface :" + iface + ", ignoring");
             return ConnectivityManager.TETHER_ERROR_UNAVAIL_IFACE;
         }
         sm.sendMessage(TetherInterfaceSM.CMD_TETHER_UNREQUESTED);
@@ -390,8 +386,6 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
         synchronized (mPublicSync) {
             sm = mIfaces.get(iface);
             if (sm == null) {
-                Log.e(TAG, "Tried to getLastTetherError on an unknown iface :" + iface +
-                        ", ignoring");
                 return ConnectivityManager.TETHER_ERROR_UNKNOWN_IFACE;
             }
             return sm.getLastError();

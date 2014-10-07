@@ -92,7 +92,7 @@ import java.util.Set;
  */
 public class LocationManagerService extends ILocationManager.Stub {
     private static final String TAG = "LocationManagerService";
-    public static final boolean D = Log.isLoggable(TAG, Log.DEBUG);
+    public static final boolean D = false;
 
     private static final String WAKELOCK_KEY = TAG;
 
@@ -388,8 +388,6 @@ public class LocationManagerService extends ILocationManager.Stub {
             mRealProviders.put(LocationManager.NETWORK_PROVIDER, networkProvider);
             mProxyProviders.add(networkProvider);
             addProviderLocked(networkProvider);
-        } else {
-            Slog.w(TAG,  "no network location provider found");
         }
 
         // bind to fused provider
@@ -417,9 +415,6 @@ public class LocationManagerService extends ILocationManager.Stub {
                 com.android.internal.R.string.config_geocoderProviderPackageName,
                 com.android.internal.R.array.config_locationProviderPackageNames,
                 mLocationHandler);
-        if (mGeocodeProvider == null) {
-            Slog.e(TAG,  "no geocoder provider found");
-        }
 
         // bind to fused provider
         FlpHardwareProvider flpHardwareProvider = FlpHardwareProvider.getInstance(mContext);
@@ -430,9 +425,6 @@ public class LocationManagerService extends ILocationManager.Stub {
                 com.android.internal.R.bool.config_enableFusedLocationOverlay,
                 com.android.internal.R.string.config_fusedLocationProviderPackageName,
                 com.android.internal.R.array.config_locationProviderPackageNames);
-        if(fusedProxy == null) {
-            Slog.e(TAG, "No FusedProvider found.");
-        }
 
         // bind to geofence provider
         GeofenceProxy provider = GeofenceProxy.createAndBind(mContext,
@@ -1343,7 +1335,6 @@ public class LocationManagerService extends ILocationManager.Stub {
             try {
                 receiver.getListener().asBinder().linkToDeath(receiver, 0);
             } catch (RemoteException e) {
-                Slog.e(TAG, "linkToDeath failed:", e);
                 return null;
             }
         }
@@ -1651,7 +1642,6 @@ public class LocationManagerService extends ILocationManager.Stub {
         int uid = Binder.getCallingUid();
         if (UserHandle.getUserId(uid) != UserHandle.USER_OWNER) {
             // temporary measure until geofences work for secondary users
-            Log.w(TAG, "proximity alerts are currently available only to the primary user");
             return;
         }
         long identity = Binder.clearCallingIdentity();
@@ -1864,7 +1854,6 @@ public class LocationManagerService extends ILocationManager.Stub {
         checkCallerIsProvider();
 
         if (!location.isComplete()) {
-            Log.w(TAG, "Dropping incomplete location: " + location);
             return;
         }
 
@@ -2329,12 +2318,6 @@ public class LocationManagerService extends ILocationManager.Stub {
                 throw new IllegalArgumentException("Provider \"" + provider + "\" unknown");
             }
             mockProvider.clearStatus();
-        }
-    }
-
-    private void log(String log) {
-        if (Log.isLoggable(TAG, Log.VERBOSE)) {
-            Slog.d(TAG, log);
         }
     }
 

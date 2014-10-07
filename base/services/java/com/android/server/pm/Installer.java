@@ -58,7 +58,6 @@ public final class Installer {
         if (mSocket != null) {
             return true;
         }
-        Slog.i(TAG, "connecting...");
         try {
             mSocket = new LocalSocket();
 
@@ -77,7 +76,6 @@ public final class Installer {
     }
 
     private void disconnect() {
-        Slog.i(TAG, "disconnecting...");
         try {
             if (mSocket != null)
                 mSocket.close();

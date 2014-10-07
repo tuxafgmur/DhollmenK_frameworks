@@ -222,7 +222,6 @@ public final class ProcessStatsService extends IProcessStats.Stub {
                 updateFile();
             }
             mLastWriteTime = SystemClock.uptimeMillis();
-            Slog.i(TAG, "Prepared write state in " + (SystemClock.uptimeMillis()-now) + "ms");
             if (!sync) {
                 BackgroundThread.getHandler().post(new Runnable() {
                     @Override public void run() {
@@ -361,7 +360,6 @@ public final class ProcessStatsService extends IProcessStats.Stub {
         }
         while (filesArray.size() > MAX_HISTORIC_STATES) {
             String file = filesArray.remove(0);
-            Slog.i(TAG, "Pruning old procstats: " + file);
             (new File(file)).delete();
         }
     }
@@ -488,7 +486,6 @@ public final class ProcessStatsService extends IProcessStats.Stub {
                             sb.append(", over ");
                             TimeUtils.formatDuration(moreStats.mTimePeriodEndRealtime
                                     - moreStats.mTimePeriodStartRealtime, sb);
-                            Slog.i(TAG, sb.toString());
                         } else {
                             Slog.w(TAG, "Failure reading " + files.get(i+1) + "; "
                                     + moreStats.mReadError);
@@ -509,14 +506,12 @@ public final class ProcessStatsService extends IProcessStats.Stub {
                         fout.write(outData);
                         fout.close();
                     } catch (IOException e) {
-                        Slog.w(TAG, "Failure writing pipe", e);
                     }
                 }
             };
             thr.start();
             return fds[0];
         } catch (IOException e) {
-            Slog.w(TAG, "Failed building output pipe", e);
         } finally {
             mWriteLock.unlock();
         }

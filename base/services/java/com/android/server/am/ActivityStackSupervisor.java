@@ -413,8 +413,7 @@ public final class ActivityStackSupervisor {
                         && processName.equals(hr.processName)) {
                     try {
                         if (headless) {
-                            Slog.e(TAG, "Starting activities not supported on headless device: "
-                                    + hr);
+                            Slog.e(TAG, "Starting activities not supported on headless device: " + hr);
                         } else if (realStartActivityLocked(hr, app, true, true)) {
                             didSomething = true;
                         }
@@ -908,7 +907,6 @@ public final class ActivityStackSupervisor {
             throws RemoteException {
 
         r.startFreezingScreenLocked(app, 0);
-        if (false) Slog.d(TAG, "realStartActivity: setting app visibility true");
         mWindowManager.setAppVisibility(r.appToken, true);
 
         // schedule launch ticks to collect information about slow apps.
@@ -1010,12 +1008,6 @@ public final class ActivityStackSupervisor {
                 // process of the .apk, which is the only thing that will be
                 // considered heavy-weight.
                 if (app.processName.equals(app.info.packageName)) {
-                    if (mService.mHeavyWeightProcess != null
-                            && mService.mHeavyWeightProcess != app) {
-                        Slog.w(TAG, "Starting new heavy weight process " + app
-                                + " when already running "
-                                + mService.mHeavyWeightProcess);
-                    }
                     mService.mHeavyWeightProcess = app;
                     Message msg = mService.mHandler.obtainMessage(
                             ActivityManagerService.POST_HEAVY_NOTIFICATION_MSG);
@@ -1026,28 +1018,19 @@ public final class ActivityStackSupervisor {
 
         } catch (RemoteException e) {
             if (r.launchFailed) {
-                // This is the second time we failed -- finish activity
-                // and give up.
-                Slog.e(TAG, "Second failure launching "
-                      + r.intent.getComponent().flattenToShortString()
-                      + ", giving up", e);
+                // This is the second time we failed -- finish activity and give up.
                 mService.appDiedLocked(app, app.pid, app.thread);
                 stack.requestFinishActivityLocked(r.appToken, Activity.RESULT_CANCELED, null,
                         "2nd-crash", false);
                 return false;
             }
 
-            // This is the first time we failed -- restart process and
-            // retry.
+            // This is the first time we failed -- restart process and retry.
             app.activities.remove(r);
             throw e;
         }
 
         r.launchFailed = false;
-        if (stack.updateLRUListLocked(r)) {
-            Slog.w(TAG, "Activity " + r
-                  + " being launched, but already in LRU list");
-        }
 
         if (andResume) {
             // As part of the process of launching, ActivityThread also performs
@@ -1131,8 +1114,6 @@ public final class ActivityStackSupervisor {
 
         if (err == ActivityManager.START_SUCCESS) {
             final int userId = aInfo != null ? UserHandle.getUserId(aInfo.applicationInfo.uid) : 0;
-            Slog.i(TAG, "START u" + userId + " {" + intent.toShortString(true, true, true, false)
-                    + "} from pid " + (callerApp != null ? callerApp.pid : callingPid));
         }
 
         ActivityRecord sourceRecord = null;
@@ -1416,8 +1397,6 @@ public final class ActivityStackSupervisor {
             // This activity is not being started from another...  in this
             // case we -always- start a new task.
             if ((launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) == 0) {
-                Slog.w(TAG, "startActivity called from non-Activity context; forcing " +
-                        "Intent.FLAG_ACTIVITY_NEW_TASK for: " + intent);
                 launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
             }
         } else if (sourceRecord.launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE) {
@@ -1443,8 +1422,6 @@ public final class ActivityStackSupervisor {
                 // the NEW_TASK flow and try to find a task for it. But save the task information
                 // so it can be used when creating the new task.
                 if ((launchFlags&Intent.FLAG_ACTIVITY_NEW_TASK) == 0) {
-                    Slog.w(TAG, "startActivity called from finishing " + sourceRecord
-                            + "; forcing " + "Intent.FLAG_ACTIVITY_NEW_TASK for: " + intent);
                     launchFlags |= Intent.FLAG_ACTIVITY_NEW_TASK;
                     newTaskInfo = sourceRecord.info;
                     newTaskIntent = sourceRecord.task.intent;
@@ -1464,7 +1441,6 @@ public final class ActivityStackSupervisor {
             // is pretty messed up, so instead immediately send back a cancel
             // and let the new task continue launched as normal without a
             // dependency on its originator.
-            Slog.w(TAG, "Activity is launching as a new task, so cancelling activity result.");
             r.resultTo.task.stack.sendActivityResultLocked(-1,
                     r.resultTo, r.resultWho, r.requestCode,
                 Activity.RESULT_CANCELED, null);
@@ -1548,9 +1524,6 @@ public final class ActivityStackSupervisor {
                         } else {
                             ActivityOptions.abort(options);
                         }
-                        if (r.task == null)  Slog.v(TAG,
-                                "startActivityUncheckedLocked: task left null",
-                                new RuntimeException("here").fillInStackTrace());
                         return ActivityManager.START_RETURN_INTENT_TO_CALLER;
                     }
                     if ((launchFlags &
@@ -1643,9 +1616,6 @@ public final class ActivityStackSupervisor {
                         } else {
                             ActivityOptions.abort(options);
                         }
-                        if (r.task == null)  Slog.v(TAG,
-                            "startActivityUncheckedLocked: task left null",
-                            new RuntimeException("here").fillInStackTrace());
                         return ActivityManager.START_TASK_TO_FRONT;
                     }
                 }
@@ -1683,15 +1653,9 @@ public final class ActivityStackSupervisor {
                                 // We don't need to start a new activity, and
                                 // the client said not to do anything if that
                                 // is the case, so this is it!
-                                if (r.task == null)  Slog.v(TAG,
-                                    "startActivityUncheckedLocked: task left null",
-                                    new RuntimeException("here").fillInStackTrace());
                                 return ActivityManager.START_RETURN_INTENT_TO_CALLER;
                             }
                             top.deliverNewIntentLocked(callingUid, r.intent);
-                            if (r.task == null)  Slog.v(TAG,
-                                "startActivityUncheckedLocked: task left null",
-                                new RuntimeException("here").fillInStackTrace());
                             return ActivityManager.START_DELIVERED_TO_TOP;
                         }
                     }
@@ -1704,9 +1668,6 @@ public final class ActivityStackSupervisor {
                         r.requestCode, Activity.RESULT_CANCELED, null);
             }
             ActivityOptions.abort(options);
-            if (r.task == null)  Slog.v(TAG,
-                "startActivityUncheckedLocked: task left null",
-                new RuntimeException("here").fillInStackTrace());
             return ActivityManager.START_CLASS_NOT_FOUND;
         }
 
@@ -1760,9 +1721,6 @@ public final class ActivityStackSupervisor {
                         targetStack.resumeTopActivityLocked(null);
                     }
                     ActivityOptions.abort(options);
-                    if (r.task == null)  Slog.w(TAG,
-                        "startActivityUncheckedLocked: task left null",
-                        new RuntimeException("here").fillInStackTrace());
                     return ActivityManager.START_DELIVERED_TO_TOP;
                 }
             } else if (!addingToTask &&

@@ -122,7 +122,6 @@ public final class ShutdownThread extends Thread {
         // any additional calls are just returned
         synchronized (sIsStartedGuard) {
             if (sIsStarted) {
-                Log.d(TAG, "Request to shutdown already running, returning.");
                 return;
             }
         }
@@ -140,8 +139,6 @@ public final class ShutdownThread extends Thread {
                  : (mReboot
                          ? com.android.internal.R.string.reboot_system
                          : com.android.internal.R.string.power_off);
-
-        Log.d(TAG, "Notifying thread to start shutdown longPressBehavior=" + longPressBehavior);
 
         if (confirm) {
             final CloseDialogReceiver closer = new CloseDialogReceiver(context);
@@ -296,7 +293,6 @@ public final class ShutdownThread extends Thread {
     private static void beginShutdownSequence(Context context) {
         synchronized (sIsStartedGuard) {
             if (sIsStarted) {
-                Log.d(TAG, "Shutdown sequence already running, returning.");
                 return;
             }
             sIsStarted = true;
@@ -506,9 +502,6 @@ public final class ShutdownThread extends Thread {
                             Log.e(TAG, "RemoteException during bluetooth shutdown", ex);
                             bluetoothOff = true;
                         }
-                        if (bluetoothOff) {
-                            Log.i(TAG, "Bluetooth turned off.");
-                        }
                     }
                     if (!radioOff) {
                         try {
@@ -516,9 +509,6 @@ public final class ShutdownThread extends Thread {
                         } catch (RemoteException ex) {
                             Log.e(TAG, "RemoteException during radio shutdown", ex);
                             radioOff = true;
-                        }
-                        if (radioOff) {
-                            Log.i(TAG, "Radio turned off.");
                         }
                     }
                     if (!nfcOff) {
@@ -528,25 +518,19 @@ public final class ShutdownThread extends Thread {
                             Log.e(TAG, "RemoteException during NFC shutdown", ex);
                             nfcOff = true;
                         }
-                        if (nfcOff) {
-                            Log.i(TAG, "NFC turned off.");
-                        }
                     }
 
                     if (radioOff && bluetoothOff && nfcOff) {
-                        Log.i(TAG, "NFC, Radio and Bluetooth shutdown complete.");
                         done[0] = true;
                         break;
                     }
                     SystemClock.sleep(PHONE_STATE_POLL_SLEEP_MSEC);
                 }
-                if (!done[0]) {
-                    Log.w(TAG, "Timed out waiting for NFC, Radio and Bluetooth shutdown.");
-                }
                 mModemDone.set(true);
                 actionDone();
             }
         };
+
         t.start();
     }
 
@@ -568,8 +552,7 @@ public final class ShutdownThread extends Thread {
             try {
                 vibrator.vibrate(SHUTDOWN_VIBRATE_MS);
             } catch (Exception e) {
-                // Failure to vibrate shouldn't interrupt shutdown.  Just log it.
-                Log.w(TAG, "Failed to vibrate during shutdown.", e);
+                // Failure to vibrate shouldn't interrupt shutdown.
             }
 
             // vibrator is asynchronous so we need to wait to avoid shutting down too soon.

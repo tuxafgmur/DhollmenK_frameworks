@@ -465,7 +465,7 @@ final class DisplayPowerController {
         if (lux != null && values != null) {
             mScreenAutoBrightnessSpline = createAutoBrightnessSpline(lux, values);
             if (mScreenAutoBrightnessSpline == null) {
-                Slog.w(TAG, "Found invalid auto-brightness configuration, falling back to default");
+                Slog.w(TAG, "Found invalid auto-brightness configuration");
             }
         }
 
@@ -880,9 +880,6 @@ final class DisplayPowerController {
         if (mScreenOnWasBlocked) {
             mScreenOnWasBlocked = false;
             long delay = SystemClock.elapsedRealtime() - mScreenOnBlockStartRealTime;
-            if (delay > 1000 || DEBUG) {
-                Slog.d(TAG, "Unblocked screen on after " + delay + " ms");
-            }
         }
     }
 

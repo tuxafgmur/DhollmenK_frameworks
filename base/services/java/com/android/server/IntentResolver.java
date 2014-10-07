@@ -46,7 +46,7 @@ import com.android.internal.util.FastPrintWriter;
 public abstract class IntentResolver<F extends IntentFilter, R extends Object> {
     final private static String TAG = "IntentResolver";
     final private static boolean DEBUG = false;
-    final private static boolean localLOGV = DEBUG || false;
+    final private static boolean localLOGV = false;
 
     public void addFilter(F f) {
         if (localLOGV) {

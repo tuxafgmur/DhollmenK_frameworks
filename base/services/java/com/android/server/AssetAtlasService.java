@@ -70,7 +70,7 @@ public class AssetAtlasService extends IAssetAtlas.Stub {
 
     // Turns debug logs on/off. Debug logs are kept to a minimum and should
     // remain on to diagnose issues
-    private static final boolean DEBUG_ATLAS = true;
+    private static final boolean DEBUG_ATLAS = false;
 
     // When set to true the content of the atlas will be saved to disk
     // in /data/system/atlas.png. The shared GraphicBuffer may be empty

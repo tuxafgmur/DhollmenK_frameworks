@@ -77,7 +77,7 @@ public final class PowerManagerService extends IPowerManager.Stub
     private static final String TAG = "PowerManagerService";
 
     private static final boolean DEBUG = false;
-    private static final boolean DEBUG_SPEW = DEBUG && true;
+    private static final boolean DEBUG_SPEW = false;
 
     // Message: Sent when a user activity timeout occurs to update the power state.
     private static final int MSG_USER_ACTIVITY_TIMEOUT = 1;
@@ -1063,16 +1063,13 @@ public final class PowerManagerService extends IPowerManager.Stub
 
         switch (mWakefulness) {
             case WAKEFULNESS_ASLEEP:
-                Slog.i(TAG, "Waking up from sleep...");
                 sendPendingNotificationsLocked();
                 mNotifier.onWakeUpStarted();
                 mSendWakeUpFinishedNotificationWhenReady = true;
                 break;
             case WAKEFULNESS_DREAMING:
-                Slog.i(TAG, "Waking up from dream...");
                 break;
             case WAKEFULNESS_NAPPING:
-                Slog.i(TAG, "Waking up from nap...");
                 break;
         }
 
@@ -1127,13 +1124,10 @@ public final class PowerManagerService extends IPowerManager.Stub
 
         switch (reason) {
             case PowerManager.GO_TO_SLEEP_REASON_DEVICE_ADMIN:
-                Slog.i(TAG, "Going to sleep due to device administration policy...");
                 break;
             case PowerManager.GO_TO_SLEEP_REASON_TIMEOUT:
-                Slog.i(TAG, "Going to sleep due to screen timeout...");
                 break;
             default:
-                Slog.i(TAG, "Going to sleep by user request...");
                 reason = PowerManager.GO_TO_SLEEP_REASON_USER;
                 break;
         }

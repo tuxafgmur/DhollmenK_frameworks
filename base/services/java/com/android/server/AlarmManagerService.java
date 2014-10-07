@@ -82,15 +82,15 @@ class AlarmManagerService extends IAlarmManager.Stub {
     private static final String TAG = "AlarmManager";
     private static final String ClockReceiver_TAG = "ClockReceiver";
     private static final boolean localLOGV = false;
-    private static final boolean DEBUG_BATCH = localLOGV || false;
-    private static final boolean DEBUG_VALIDATE = localLOGV || false;
+    private static final boolean DEBUG_BATCH = false;
+    private static final boolean DEBUG_VALIDATE = false;
     private static final int ALARM_EVENT = 1;
     private static final String TIMEZONE_PROPERTY = "persist.sys.timezone";
-    
+
     private static final Intent mBackgroundIntent
             = new Intent().addFlags(Intent.FLAG_FROM_BACKGROUND);
     private static final IncreasingTimeOrder sIncreasingTimeOrder = new IncreasingTimeOrder();
-    
+
     private static final boolean WAKEUP_STATS = false;
 
     private final Context mContext;
@@ -530,8 +530,6 @@ class AlarmManagerService extends IAlarmManager.Stub {
         // Sanity check the window length.  This will catch people mistakenly
         // trying to pass an end-of-window timestamp rather than a duration.
         if (windowLength > AlarmManager.INTERVAL_HALF_DAY) {
-            Slog.w(TAG, "Window length " + windowLength
-                    + "ms suspiciously long; limiting to 1 hour");
             windowLength = AlarmManager.INTERVAL_HOUR;
         }
 

@@ -40,7 +40,7 @@ import java.util.Objects;
  */
 final class RemoteDisplayProviderProxy implements ServiceConnection {
     private static final String TAG = "RemoteDisplayProvider";  // max. 23 chars
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = false;
 
     private final Context mContext;
     private final ComponentName mComponentName;

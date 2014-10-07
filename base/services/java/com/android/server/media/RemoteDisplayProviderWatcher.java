@@ -43,7 +43,7 @@ import java.util.Collections;
  */
 public final class RemoteDisplayProviderWatcher {
     private static final String TAG = "RemoteDisplayProvider";  // max. 23 chars
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = false;
 
     private final Context mContext;
     private final Callback mCallback;

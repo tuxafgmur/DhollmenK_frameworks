@@ -272,7 +272,6 @@ public class VibratorService extends IVibratorService.Stub
                 for (int i=0; i<N; i++) {
                     s += " " + pattern[i];
                 }
-                Slog.i(TAG, "vibrating with pattern: " + s);
             }
 
             // we're running in the server so we can't fail

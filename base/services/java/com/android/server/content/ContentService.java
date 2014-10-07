@@ -859,14 +859,11 @@ public final class ContentService extends IContentService.Stub {
                 while(iter.hasNext()) {
                     ObserverEntry next = iter.next();
                     if(next.observer.asBinder() == observer.asBinder()) {
-                         Log.w(TAG, "Observer " + observer + " is already registered.");
                          return;
                     }
                 }
                 mObservers.add(new ObserverEntry(observer, notifyForDescendants, observersLock,
                         uid, pid, userHandle));
-                if (false) Log.v(TAG, "Registered observer " + observer + " at " + uri +
-                        " with notifyForDescendants " + notifyForDescendants);
                 return;
             }
 

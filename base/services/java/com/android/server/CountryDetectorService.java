@@ -134,7 +134,6 @@ public class CountryDetectorService extends ICountryDetector.Stub implements Run
                 listener.asBinder().linkToDeath(r, 0);
                 mReceivers.put(listener.asBinder(), r);
                 if (mReceivers.size() == 1) {
-                    Slog.d(TAG, "The first listener is added");
                     setCountryListener(mLocationBasedDetectorListener);
                 }
             } catch (RemoteException e) {
@@ -148,7 +147,6 @@ public class CountryDetectorService extends ICountryDetector.Stub implements Run
             mReceivers.remove(key);
             if (mReceivers.isEmpty()) {
                 setCountryListener(null);
-                Slog.d(TAG, "No listener is left");
             }
         }
     }

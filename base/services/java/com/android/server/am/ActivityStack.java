@@ -258,9 +258,6 @@ final class ActivityStack {
     final Handler mHandler;
 
     final class ActivityStackHandler extends Handler {
-        //public Handler() {
-        //    if (localLOGV) Slog.v(TAG, "Handler started!");
-        //}
         ActivityStackHandler(Looper looper) {
             super(looper);
         }
@@ -272,7 +269,6 @@ final class ActivityStack {
                     ActivityRecord r = (ActivityRecord)msg.obj;
                     // We don't at this point know if the activity is fullscreen,
                     // so we need to be conservative and assume it isn't.
-                    Slog.w(TAG, "Activity pause timeout for " + r);
                     synchronized (mService) {
                         if (r.app != null) {
                             mService.logAppTooSlow(r.app, r.pauseTime, "pausing " + r);
@@ -292,7 +288,6 @@ final class ActivityStack {
                     ActivityRecord r = (ActivityRecord)msg.obj;
                     // We don't at this point know if the activity is fullscreen,
                     // so we need to be conservative and assume it isn't.
-                    Slog.w(TAG, "Activity destroy timeout for " + r);
                     synchronized (mService) {
                         activityDestroyedLocked(r != null ? r.appToken : null);
                     }
@@ -301,7 +296,6 @@ final class ActivityStack {
                     ActivityRecord r = (ActivityRecord)msg.obj;
                     // We don't at this point know if the activity is fullscreen,
                     // so we need to be conservative and assume it isn't.
-                    Slog.w(TAG, "Activity stop timeout for " + r);
                     synchronized (mService) {
                         if (r.isInHistory()) {
                             activityStoppedLocked(r, null, null, null);
@@ -432,8 +426,6 @@ final class ActivityStack {
         if (r != null) {
             final TaskRecord task = r.task;
             if (task.mActivities.contains(r) && mTaskHistory.contains(task)) {
-                if (task.stack != this) Slog.w(TAG,
-                    "Illegal state! task does not point to stack it is in.");
                 return r;
             }
         }
@@ -508,16 +500,12 @@ final class ActivityStack {
                 }
             } else if (task.intent != null && task.intent.getComponent().equals(cls)) {
                 if (DEBUG_TASKS) Slog.d(TAG, "Found matching class!");
-                //dump();
-                if (DEBUG_TASKS) Slog.d(TAG, "For Intent " + intent + " bringing to top: "
-                        + r.intent);
+                if (DEBUG_TASKS) Slog.d(TAG, "For Intent " + intent + " bringing to top: " + r.intent);
                 return r;
             } else if (task.affinityIntent != null
                     && task.affinityIntent.getComponent().equals(cls)) {
                 if (DEBUG_TASKS) Slog.d(TAG, "Found matching class!");
-                //dump();
-                if (DEBUG_TASKS) Slog.d(TAG, "For Intent " + intent + " bringing to top: "
-                        + r.intent);
+                if (DEBUG_TASKS) Slog.d(TAG, "For Intent " + intent + " bringing to top: " + r.intent);
                 return r;
             } else if (DEBUG_TASKS) {
                 Slog.d(TAG, "Not a match: " + task);
@@ -548,9 +536,6 @@ final class ActivityStack {
             for (int activityNdx = activities.size() - 1; activityNdx >= 0; --activityNdx) {
                 ActivityRecord r = activities.get(activityNdx);
                 if (!r.finishing && r.intent.getComponent().equals(cls) && r.userId == userId) {
-                    //Slog.i(TAG, "Found matching class!");
-                    //dump();
-                    //Slog.i(TAG, "For Intent " + intent + " bringing to top: " + r.intent);
                     return r;
                 }
             }
@@ -726,14 +711,8 @@ final class ActivityStack {
     }
 
     final void startPausingLocked(boolean userLeaving, boolean uiSleeping) {
-        if (mPausingActivity != null) {
-            Slog.e(TAG, "Trying to pause when pause is already pending for "
-                  + mPausingActivity, new RuntimeException("here").fillInStackTrace());
-        }
         ActivityRecord prev = mResumedActivity;
         if (prev == null) {
-            Slog.e(TAG, "Trying to pause when nothing is resumed",
-                    new RuntimeException("here").fillInStackTrace());
             mStackSupervisor.resumeTopActivitiesLocked();
             return;
         }
@@ -767,7 +746,6 @@ final class ActivityStack {
                         userLeaving, prev.configChangeFlags);
             } catch (Exception e) {
                 // Ignore exception, if process died other code will cleanup.
-                Slog.w(TAG, "Exception thrown during pause", e);
                 mPausingActivity = null;
                 mLastPausedActivity = null;
                 mLastNoHistoryActivity = null;
@@ -835,7 +813,6 @@ final class ActivityStack {
     final void activityStoppedLocked(ActivityRecord r, Bundle icicle, Bitmap thumbnail,
             CharSequence description) {
         if (r.state != ActivityState.STOPPING) {
-            Slog.i(TAG, "Activity reported stop, but no longer stopping: " + r);
             mHandler.removeMessages(STOP_TIMEOUT_MSG, r);
             return;
         }
@@ -1139,8 +1116,6 @@ final class ActivityStack {
                             } catch (Exception e) {
                                 // Just skip on any failure; we'll make it
                                 // visible when it next restarts.
-                                Slog.w(TAG, "Exception thrown making visibile: "
-                                        + r.intent.getComponent(), e);
                             }
                         }
                     }
@@ -1207,8 +1182,6 @@ final class ActivityStack {
                         } catch (Exception e) {
                             // Just skip on any failure; we'll make it
                             // visible when it next restarts.
-                            Slog.w(TAG, "Exception thrown making hidden: "
-                                    + r.intent.getComponent(), e);
                         }
                     } else {
                         if (DEBUG_VISBILITY) Slog.v(TAG, "Already invisible: " + r);
@@ -1339,8 +1312,6 @@ final class ActivityStack {
         // we will just leave it as is because someone should be bringing
         // another user's activities to the top of the stack.
         if (mService.mStartedUsers.get(next.userId) == null) {
-            Slog.w(TAG, "Skipping resume of top activity " + next
-                    + ": user " + next.userId + " is stopped");
             if (DEBUG_STACK) mStackSupervisor.validateTopActivitiesLocked();
             return false;
         }
@@ -1467,8 +1438,6 @@ final class ActivityStack {
                     next.packageName, false, next.userId); /* TODO: Verify if correct userid */
         } catch (RemoteException e1) {
         } catch (IllegalArgumentException e) {
-            Slog.w(TAG, "Failed trying to unstop package "
-                    + next.packageName + ": " + e);
         }
 
         // We are starting up the next activity, so tell the window manager
@@ -1619,7 +1588,6 @@ final class ActivityStack {
                 if (lastStack != null) {
                     lastStack.mResumedActivity = lastResumedActivity;
                 }
-                Slog.i(TAG, "Restarting because process died: " + next);
                 if (!next.hasBeenLaunched) {
                     next.hasBeenLaunched = true;
                 } else  if (SHOW_APP_STARTING_PREVIEW && lastStack != null &&
@@ -1643,7 +1611,6 @@ final class ActivityStack {
             } catch (Exception e) {
                 // If any exception gets thrown, toss away this
                 // activity and try the next one.
-                Slog.w(TAG, "Exception thrown during resume of " + next, e);
                 requestFinishActivityLocked(next.appToken, Activity.RESULT_CANCELED, null,
                         "resume-exception", true);
                 if (DEBUG_STACK) mStackSupervisor.validateTopActivitiesLocked();
@@ -2273,7 +2240,6 @@ final class ActivityStack {
                 r.app.thread.scheduleSendResult(r.appToken, list);
                 return;
             } catch (Exception e) {
-                Slog.w(TAG, "Exception thrown sending result to " + r, e);
             }
         }
 
@@ -2331,11 +2297,8 @@ final class ActivityStack {
                 Message msg = mHandler.obtainMessage(STOP_TIMEOUT_MSG, r);
                 mHandler.sendMessageDelayed(msg, STOP_TIMEOUT);
             } catch (Exception e) {
-                // Maybe just ignore exceptions here...  if the process
-                // has crashed, our death notification will clean things
-                // up.
-                Slog.w(TAG, "Exception thrown during pause", e);
-                // Just in case, assume it to be stopped.
+                // Maybe just ignore exceptions here...  if the process has crashed, our death
+                // notification will clean things up. Just in case, assume it to be stopped.
                 r.stopped = true;
                 if (DEBUG_STATES) Slog.v(TAG, "Stop failed; moving to STOPPED: " + r);
                 r.state = ActivityState.STOPPED;
@@ -2387,8 +2350,6 @@ final class ActivityStack {
         if (r != null && r.app == app) {
             // If the top running activity is from this crashing
             // process, then terminate it to avoid getting in a loop.
-            Slog.w(TAG, "  Force finishing activity "
-                    + r.intent.getComponent().flattenToShortString());
             int taskNdx = mTaskHistory.indexOf(r.task);
             int activityNdx = r.task.mActivities.indexOf(r);
             finishActivityLocked(r, Activity.RESULT_CANCELED, null, "crashed", false);
@@ -2411,8 +2372,6 @@ final class ActivityStack {
                         || r.state == ActivityState.PAUSING
                         || r.state == ActivityState.PAUSED) {
                     if (!r.isHomeActivity() || mService.mHomeProcess != r.app) {
-                        Slog.w(TAG, "  Force finishing activity "
-                                + r.intent.getComponent().flattenToShortString());
                         finishActivityLocked(r, Activity.RESULT_CANCELED, null, "crashed", false);
                     }
                 }
@@ -2466,7 +2425,6 @@ final class ActivityStack {
     final boolean finishActivityLocked(ActivityRecord r, int resultCode, Intent resultData,
             String reason, boolean oomAdj) {
         if (r.finishing) {
-            Slog.w(TAG, "Duplicate finish request for " + r);
             return false;
         }
 
@@ -2877,10 +2835,8 @@ final class ActivityStack {
                 r.app.thread.scheduleDestroyActivity(r.appToken, r.finishing,
                         r.configChangeFlags);
             } catch (Exception e) {
-                // We can just ignore exceptions here...  if the process
-                // has crashed, our death notification will clean things
-                // up.
-                //Slog.w(TAG, "Exception thrown during finish", e);
+                // We can just ignore exceptions here...  if the process has
+                // crashed, our death notification will clean things up.
                 if (r.finishing) {
                     removeActivityFromHistoryLocked(r);
                     removedFromHistory = true;
@@ -2923,10 +2879,6 @@ final class ActivityStack {
         }
 
         r.configChangeFlags = 0;
-
-        if (!mLRUActivities.remove(r) && hadApp) {
-            Slog.w(TAG, "Activity " + r + " being finished, but not in LRU list");
-        }
 
         return removedFromHistory;
     }
@@ -3019,7 +2971,6 @@ final class ActivityStack {
                                     + " state=" + r.state, here);
                         }
                         if (!r.finishing) {
-                            Slog.w(TAG, "Force removing " + r + ": app died, no saved state");
                             EventLog.writeEvent(EventLogTags.AM_FINISH_ACTIVITY,
                                     r.userId, System.identityHashCode(r),
                                     r.task.taskId, r.shortComponentName,
@@ -3157,8 +3108,6 @@ final class ActivityStack {
      * @return Returns true if the move completed, false if not.
      */
     final boolean moveTaskToBackLocked(int taskId, ActivityRecord reason) {
-        Slog.i(TAG, "moveTaskToBack: " + taskId);
-
         // If we have a watcher, preflight the move before committing to it.  First check
         // for *other* available tasks, but if none are available, then try again allowing the
         // current task to be selected.
@@ -3462,7 +3411,6 @@ final class ActivityStack {
                         return true;
                     }
                     didSomething = true;
-                    Slog.i(TAG, "  Force finishing activity " + r);
                     if (samePackage) {
                         if (r.app != null) {
                             r.app.removed = true;
@@ -3586,8 +3534,6 @@ final class ActivityStack {
             for (int activityNdx = activities.size() - 1; activityNdx >= 0; --activityNdx) {
                 final ActivityRecord r = activities.get(activityNdx);
                 if (r.app == app) {
-                    Slog.w(TAG, "  Force finishing activity "
-                            + r.intent.getComponent().flattenToShortString());
                     finishActivityLocked(r, Activity.RESULT_CANCELED, null, "crashed", false);
                 }
             }

@@ -65,9 +65,8 @@ import static com.android.internal.R.styleable.WindowAnimation_wallpaperIntraClo
 // made visible or hidden at the next transition.
 public class AppTransition implements Dump {
     private static final String TAG = "AppTransition";
-    private static final boolean DEBUG_APP_TRANSITIONS =
-            WindowManagerService.DEBUG_APP_TRANSITIONS;
-    private static final boolean DEBUG_ANIM = WindowManagerService.DEBUG_ANIM;
+    private static final boolean DEBUG_APP_TRANSITIONS = false;
+    private static final boolean DEBUG_ANIM = false;
 
     /** Bit mask that is set for all enter transition. */
     public static final int TRANSIT_ENTER_MASK = 0x1000;

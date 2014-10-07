@@ -170,10 +170,8 @@ static void nativeReleaseSuspendBlocker(JNIEnv *env, jclass clazz, jstring nameS
 static void nativeSetInteractive(JNIEnv *env, jclass clazz, jboolean enable) {
     if (gPowerModule) {
         if (enable) {
-            ALOGD_IF_SLOW(20, "Excessive delay in setInteractive(true) while turning screen on");
             gPowerModule->setInteractive(gPowerModule, true);
         } else {
-            ALOGD_IF_SLOW(20, "Excessive delay in setInteractive(false) while turning screen off");
             gPowerModule->setInteractive(gPowerModule, false);
         }
     }
@@ -181,10 +179,8 @@ static void nativeSetInteractive(JNIEnv *env, jclass clazz, jboolean enable) {
 
 static void nativeSetAutoSuspend(JNIEnv *env, jclass clazz, jboolean enable) {
     if (enable) {
-        ALOGD_IF_SLOW(100, "Excessive delay in autosuspend_enable() while turning screen off");
         autosuspend_enable();
     } else {
-        ALOGD_IF_SLOW(100, "Excessive delay in autosuspend_disable() while turning screen on");
         autosuspend_disable();
     }
 }

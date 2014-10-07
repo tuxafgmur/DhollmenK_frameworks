@@ -913,11 +913,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                             try {
                                 args.observer.packageInstalled(res.name, res.returnCode);
                             } catch (RemoteException e) {
-                                Slog.i(TAG, "Observer no longer exists.");
                             }
                         }
-                    } else {
-                        Slog.e(TAG, "Bogus post-install token " + msg.arg1);
                     }
                 } break;
                 case UPDATED_MEDIA_STATUS: {
@@ -972,14 +969,11 @@ public class PackageManagerService extends IPackageManager.Stub {
 
                     if ((state != null) && !state.timeoutExtended()) {
                         final InstallArgs args = state.getInstallArgs();
-                        Slog.i(TAG, "Verification timed out for " + args.packageURI.toString());
                         mPendingVerification.remove(verificationId);
 
                         int ret = PackageManager.INSTALL_FAILED_VERIFICATION_FAILURE;
 
                         if (getDefaultVerificationResponse() == PackageManager.VERIFICATION_ALLOW) {
-                            Slog.i(TAG, "Continuing with installation of "
-                                    + args.packageURI.toString());
                             state.setVerifierResponse(Binder.getCallingUid(),
                                     PackageManager.VERIFICATION_ALLOW_WITHOUT_SUFFICIENT);
                             broadcastPackageVerified(verificationId, args.packageURI,
@@ -1006,7 +1000,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
                     final PackageVerificationState state = mPendingVerification.get(verificationId);
                     if (state == null) {
-                        Slog.w(TAG, "Invalid verification token " + verificationId + " received");
                         break;
                     }
 
@@ -1122,12 +1115,9 @@ public class PackageManagerService extends IPackageManager.Stub {
             if ("*".equals(separateProcesses)) {
                 mDefParseFlags = PackageParser.PARSE_IGNORE_PROCESSES;
                 mSeparateProcesses = null;
-                Slog.w(TAG, "Running with debug.separate_processes: * (ALL)");
             } else {
                 mDefParseFlags = 0;
                 mSeparateProcesses = separateProcesses.split(",");
-                Slog.w(TAG, "Running with debug.separate_processes: "
-                        + separateProcesses);
             }
         } else {
             mDefParseFlags = 0;
@@ -1187,7 +1177,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 // scanning install directories.
                 scanMode = SCAN_MONITOR | SCAN_NO_PATHS | SCAN_DEFER_DEX | SCAN_BOOTING;
                 if (mNoDexOpt) {
-                    Slog.w(TAG, "Running ENG build: no pre-dexopt!");
                     scanMode |= SCAN_NO_DEX;
                 }
 
@@ -1204,8 +1193,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     for (int i = 0; i < paths.length; i++) {
                         alreadyDexOpted.add(paths[i]);
                     }
-                } else {
-                    Slog.w(TAG, "No BOOTCLASSPATH found!");
                 }
 
                 boolean didDexOpt = false;
@@ -1234,10 +1221,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                                 });
                             }
                         } catch (FileNotFoundException e) {
-                            Slog.w(TAG, "Library not found: " + lib);
                         } catch (IOException e) {
-                            Slog.w(TAG, "Cannot dexopt " + lib + "; is it an APK or JAR? "
-                                    + e.getMessage());
                         }
                     }
                     executorService.shutdown();
@@ -1317,7 +1301,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                             String fn = files[i];
                             if (fn.startsWith("data@app@")
                                     || fn.startsWith("data@app-private@")) {
-                                Slog.i(TAG, "Pruning dalvik file: " + fn);
                                 (new File(dalvikCacheDir, fn)).delete();
                             }
                         }
@@ -1393,8 +1376,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                          * application can be scanned.
                          */
                         if (mSettings.isDisabledSystemPackageLPr(ps.name)) {
-                            Slog.i(TAG, "Expecting better updatd system app for " + ps.name
-                                    + "; removing system app");
                             removePackageLI(ps, true);
                         }
 
@@ -1488,9 +1469,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END,
                     SystemClock.uptimeMillis());
-            Slog.i(TAG, "Time to scan packages: "
-                    + ((SystemClock.uptimeMillis() - startTime) / 1000f)
-                    + " seconds");
 
             // If the platform SDK has changed since the last time we booted,
             // we need to re-grant app permission to catch any new ones that
@@ -1500,9 +1478,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             // this situation.
             final boolean regrantPermissions = mSettings.mInternalSdkPlatform
                     != mSdkVersion;
-            if (regrantPermissions) Slog.i(TAG, "Platform changed from "
-                    + mSettings.mInternalSdkPlatform + " to " + mSdkVersion
-                    + "; regranting permissions for internal storage");
             mSettings.mInternalSdkPlatform = mSdkVersion;
 
             updatePermissionsLPw(null, null, UPDATE_PERMISSIONS_ALL
@@ -1520,12 +1495,10 @@ public class PackageManagerService extends IPackageManager.Stub {
             for (String name : mContext.getResources().getStringArray(
                     com.android.internal.R.array.config_disabledComponents)) {
                 ComponentName cn = ComponentName.unflattenFromString(name);
-                Slog.v(TAG, "Disabling " + name);
                 String className = cn.getClassName();
                 PackageSetting pkgSetting = mSettings.mPackages.get(cn.getPackageName());
                 if (pkgSetting == null || pkgSetting.pkg == null
                         || !pkgSetting.pkg.hasComponentClassName(className)) {
-                    Slog.w(TAG, "Unable to disable " + name);
                     continue;
                 }
                 pkgSetting.disableComponentLPw(className, UserHandle.USER_OWNER);
@@ -1607,16 +1580,11 @@ public class PackageManagerService extends IPackageManager.Stub {
     }
 
     void cleanupInstallFailedPackage(PackageSetting ps) {
-        Slog.i(TAG, "Cleaning up incompletely installed app: " + ps.name);
         removeDataDirsLI(ps.name);
         if (ps.codePath != null) {
-            if (!ps.codePath.delete()) {
-                Slog.w(TAG, "Unable to remove old code file: " + ps.codePath);
-            }
         }
         if (ps.resourcePath != null) {
             if (!ps.resourcePath.delete() && !ps.resourcePath.equals(ps.codePath)) {
-                Slog.w(TAG, "Unable to remove old code file: " + ps.resourcePath);
             }
         }
         mSettings.removePackageLPw(ps.name);
@@ -1626,7 +1594,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         // Read permissions from .../etc/permission directory.
         File libraryDir = new File(Environment.getRootDirectory(), "etc/permissions");
         if (!libraryDir.exists() || !libraryDir.isDirectory()) {
-            Slog.w(TAG, "No directory " + libraryDir + ", skipping");
             return;
         }
         if (!libraryDir.canRead()) {
@@ -1642,7 +1609,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             }
 
             if (!f.getPath().endsWith(".xml")) {
-                Slog.i(TAG, "Non-xml file " + f + " in " + libraryDir + " directory, ignoring");
                 continue;
             }
             if (!f.canRead()) {
@@ -1686,9 +1652,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     if (gidStr != null) {
                         int gid = Process.getGidForName(gidStr);
                         mGlobalGids = appendInt(mGlobalGids, gid);
-                    } else {
-                        Slog.w(TAG, "<group> without gid at "
-                                + parser.getPositionDescription());
                     }
 
                     XmlUtils.skipCurrentTag(parser);
@@ -1696,8 +1659,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 } else if ("permission".equals(name)) {
                     String perm = parser.getAttributeValue(null, "name");
                     if (perm == null) {
-                        Slog.w(TAG, "<permission> without name at "
-                                + parser.getPositionDescription());
                         XmlUtils.skipCurrentTag(parser);
                         continue;
                     }
@@ -1707,23 +1668,16 @@ public class PackageManagerService extends IPackageManager.Stub {
                 } else if ("assign-permission".equals(name)) {
                     String perm = parser.getAttributeValue(null, "name");
                     if (perm == null) {
-                        Slog.w(TAG, "<assign-permission> without name at "
-                                + parser.getPositionDescription());
                         XmlUtils.skipCurrentTag(parser);
                         continue;
                     }
                     String uidStr = parser.getAttributeValue(null, "uid");
                     if (uidStr == null) {
-                        Slog.w(TAG, "<assign-permission> without uid at "
-                                + parser.getPositionDescription());
                         XmlUtils.skipCurrentTag(parser);
                         continue;
                     }
                     int uid = Process.getUidForName(uidStr);
                     if (uid < 0) {
-                        Slog.w(TAG, "<assign-permission> with unknown uid \""
-                                + uidStr + "\" at "
-                                + parser.getPositionDescription());
                         XmlUtils.skipCurrentTag(parser);
                         continue;
                     }
@@ -1740,13 +1694,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                     String lname = parser.getAttributeValue(null, "name");
                     String lfile = parser.getAttributeValue(null, "file");
                     if (lname == null) {
-                        Slog.w(TAG, "<library> without name at "
-                                + parser.getPositionDescription());
                     } else if (lfile == null) {
-                        Slog.w(TAG, "<library> without file at "
-                                + parser.getPositionDescription());
                     } else {
-                        //Log.i(TAG, "Got library " + lname + " in " + lfile);
                         mSharedLibraries.put(lname, new SharedLibraryEntry(lfile, null));
                     }
                     XmlUtils.skipCurrentTag(parser);
@@ -1755,10 +1704,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                 } else if ("feature".equals(name)) {
                     String fname = parser.getAttributeValue(null, "name");
                     if (fname == null) {
-                        Slog.w(TAG, "<feature> without name at "
-                                + parser.getPositionDescription());
                     } else {
-                        //Log.i(TAG, "Got feature " + fname);
                         FeatureInfo fi = new FeatureInfo();
                         fi.name = fname;
                         mAvailableFeatures.put(fname, fi);
@@ -1806,9 +1752,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 if (gidStr != null) {
                     int gid = Process.getGidForName(gidStr);
                     bp.gids = appendInt(bp.gids, gid);
-                } else {
-                    Slog.w(TAG, "<group> without gid at "
-                            + parser.getPositionDescription());
                 }
             }
             XmlUtils.skipCurrentTag(parser);
@@ -2094,9 +2037,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 int retCode = -1;
                 synchronized (mInstallLock) {
                     retCode = mInstaller.freeCache(freeStorageSize);
-                    if (retCode < 0) {
-                        Slog.w(TAG, "Couldn't clear application caches");
-                    }
                 }
                 if (observer != null) {
                     try {
@@ -2119,9 +2059,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 int retCode = -1;
                 synchronized (mInstallLock) {
                     retCode = mInstaller.freeCache(freeStorageSize);
-                    if (retCode < 0) {
-                        Slog.w(TAG, "Couldn't clear application caches");
-                    }
                 }
                 if(pi != null) {
                     try {
@@ -2130,7 +2067,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                         pi.sendIntent(null, code, null,
                                 null, null);
                     } catch (SendIntentException e1) {
-                        Slog.i(TAG, "Failed to send pending intent");
                     }
                 }
             }
@@ -2867,8 +2803,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                         // to the app was installed and in the new version this
                         // component no longer exists.  Clean it up by removing
                         // it from the preferred activities list, and skip it.
-                        Slog.w(TAG, "Removing dangling preferred activity: "
-                                + pa.mPref.mComponent);
                         pir.removeFilter(pa);
                         continue;
                     }
@@ -2895,8 +2829,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                         // was created, we need to clear it and re-ask the
                         // user their preference, if we're looking for an "always" type entry.
                         if (always && !pa.mPref.sameSet(query, priority)) {
-                            Slog.i(TAG, "Result set changed, dropping preferred activity for "
-                                    + intent + " type " + resolvedType);
                             if (DEBUG_PREFERRED) {
                                 Slog.v(TAG, "Removing preferred activity since set changed "
                                         + pa.mPref.mComponent);
@@ -3550,7 +3482,6 @@ public class PackageManagerService extends IPackageManager.Stub {
     private void scanDir(File dir, final int flags, final int scanMode, final long currentTime) {
         String[] files = dir.list();
         if (files == null) {
-            Log.d(TAG, "No files in app dir " + dir);
             return;
         }
 
@@ -3700,9 +3631,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                             + " ignored: updated version " + ps.versionCode
                             + " better than this " + pkg.mVersionCode);
                     if (!updatedPkg.codePath.equals(scanFile)) {
-                        Slog.w(PackageManagerService.TAG, "Code path for hidden system pkg : "
-                                + ps.name + " changing from " + updatedPkg.codePathString
-                                + " to " + scanFile);
                         updatedPkg.codePath = scanFile;
                         updatedPkg.codePathString = scanFile.toString();
                         // This is the point at which we know that the system-disk APK
@@ -4020,7 +3948,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                         mDeferredDexOpt.add(pkg);
                         return DEX_OPT_DEFERRED;
                     } else {
-                        Log.i(TAG, "Running dexopt on: " + pkg.applicationInfo.packageName);
                         final int sharedGid = UserHandle.getSharedAppGid(pkg.applicationInfo.uid);
                         ret = mInstaller.dexopt(path, sharedGid, !isForwardLocked(pkg));
                         pkg.mDidDexOpt = true;
@@ -4126,7 +4053,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         final File nativeLibraryFile = new File(mAppLibInstallDir, packageName);
         NativeLibraryHelper.removeNativeBinariesFromDirLI(nativeLibraryFile);
         if (!nativeLibraryFile.delete()) {
-            Slog.w(TAG, "Couldn't delete native library directory " + nativeLibraryFile.getPath());
         }
 
         return res;
@@ -4266,10 +4192,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         if (pkg.packageName.equals("android")) {
             synchronized (mPackages) {
                 if (mAndroidApplication != null) {
-                    Slog.w(TAG, "*************************************************");
-                    Slog.w(TAG, "Core android package being redefined.  Skipping.");
-                    Slog.w(TAG, " file=" + scanFile);
-                    Slog.w(TAG, "*************************************************");
+                    Slog.w(TAG, "Core android package file being redefined. Skipping : " + scanFile);
                     mLastScanError = PackageManager.INSTALL_FAILED_DUPLICATE_PACKAGE;
                     return null;
                 }
@@ -4306,8 +4229,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
         if (mPackages.containsKey(pkg.packageName)
                 || mSharedLibraries.containsKey(pkg.packageName)) {
-            Slog.w(TAG, "Application package " + pkg.packageName
-                    + " already installed.  Skipping duplicate.");
             mLastScanError = PackageManager.INSTALL_FAILED_DUPLICATE_PACKAGE;
             return null;
         }
@@ -4356,8 +4277,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             if (pkg.mSharedUserId != null) {
                 suid = mSettings.getSharedUserLPw(pkg.mSharedUserId, 0, true);
                 if (suid == null) {
-                    Slog.w(TAG, "Creating application package " + pkg.packageName
-                            + " for shared user failed");
                     mLastScanError = PackageManager.INSTALL_FAILED_INSUFFICIENT_STORAGE;
                     return null;
                 }
@@ -4401,10 +4320,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                             } else if (origPackage.sharedUser != null) {
                                 // Make sure uid is compatible between packages.
                                 if (!origPackage.sharedUser.name.equals(pkg.mSharedUserId)) {
-                                    Slog.w(TAG, "Unable to migrate data from " + origPackage.name
-                                            + " to " + pkg.packageName + ": old uid "
-                                            + origPackage.sharedUser.name
-                                            + " differs from " + pkg.mSharedUserId);
                                     origPackage = null;
                                     continue;
                                 }
@@ -4530,8 +4445,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     final PackageSetting orig = mSettings.peekPackageLPr(origName);
                     if (orig != null) {
                         if (verifyPackageUpdateLPr(orig, pkg)) {
-                            Slog.i(TAG, "Adopting permissions from " + origName + " to "
-                                    + pkg.packageName);
                             mSettings.transferPermissionsLPw(origName, pkg.packageName);
                         }
                     }
@@ -4717,10 +4630,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                      * Recent changes in the JNI library search path
                      * necessitates we remove those to match previous behavior.
                      */
-                    if (NativeLibraryHelper.removeNativeBinariesFromDirLI(nativeLibraryDir)) {
-                        Log.i(TAG, "removed obsolete native libraries for system package "
-                                + path);
-                    }
                 } else {
                     if (!isForwardLocked(pkg) && !isExternal(pkg)) {
                         /*
@@ -4821,9 +4730,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                             if (!mSharedLibraries.containsKey(name)) {
                                 mSharedLibraries.put(name, new SharedLibraryEntry(null,
                                         pkg.packageName));
-                            } else if (!name.equals(pkg.packageName)) {
-                                Slog.w(TAG, "Package " + pkg.packageName + " library "
-                                        + name + " already exists; skipping");
                             }
                         } else {
                             Slog.w(TAG, "Package " + pkg.packageName + " declares lib "
@@ -4985,11 +4891,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                             }
                         } else {
                             PackageParser.Provider other = mProvidersByAuthority.get(names[j]);
-                            Slog.w(TAG, "Skipping provider name " + names[j] +
-                                    " (in package " + pkg.applicationInfo.packageName +
-                                    "): name already used by "
-                                    + ((other != null && other.getComponentName() != null)
-                                            ? other.getComponentName().getPackageName() : "?"));
                         }
                     }
                 }
@@ -5082,9 +4983,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                         r.append(pg.info.name);
                     }
                 } else {
-                    Slog.w(TAG, "Permission group " + pg.info.name + " from package "
-                            + pg.info.packageName + " ignored: original from "
-                            + cur.info.packageName);
                     if ((parseFlags&PackageParser.PARSE_CHATTY) != 0) {
                         if (r == null) {
                             r = new StringBuilder(256);
@@ -5123,8 +5021,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                             // discard the previous declaration and consider the system's to be
                             // canonical.
                             if (isSystemApp(p.owner)) {
-                                Slog.i(TAG, "New decl " + p.owner + " of permission  "
-                                        + p.info.name + " is system");
                                 bp.sourcePackage = null;
                             }
                         }
@@ -5144,16 +5040,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                                     }
                                     r.append(p.info.name);
                                 }
-                            } else {
-                                Slog.w(TAG, "Permission " + p.info.name + " from package "
-                                        + p.info.packageName + " ignored: base tree "
-                                        + tree.name + " is from package "
-                                        + tree.sourcePackage);
                             }
-                        } else {
-                            Slog.w(TAG, "Permission " + p.info.name + " from package "
-                                    + p.info.packageName + " ignored: original from "
-                                    + bp.sourcePackage);
                         }
                     } else if ((parseFlags&PackageParser.PARSE_CHATTY) != 0) {
                         if (r == null) {
@@ -5167,10 +5054,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     if (bp.perm == p) {
                         bp.protectionLevel = p.info.protectionLevel;
                     }
-                } else {
-                    Slog.w(TAG, "Permission " + p.info.name + " from package "
-                            + p.info.packageName + " ignored: no group "
-                            + p.group);
                 }
             }
             if (r != null) {
@@ -5232,8 +5115,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             mResolveInfo.preferredOrder = 0;
             mResolveInfo.match = 0;
             mResolveComponentName = mCustomResolverComponentName;
-            Slog.i(TAG, "Replacing default ResolverActivity with custom activity: " +
-                    mResolveComponentName);
         }
     }
 
@@ -5512,13 +5393,9 @@ public class PackageManagerService extends IPackageManager.Stub {
                 bp.packageSetting = mSettings.mPackages.get(bp.sourcePackage);
             }
             if (bp.packageSetting == null) {
-                Slog.w(TAG, "Removing dangling permission tree: " + bp.name
-                        + " from package " + bp.sourcePackage);
                 it.remove();
             } else if (changingPkg != null && changingPkg.equals(bp.sourcePackage)) {
                 if (pkgInfo == null || !hasPermission(pkgInfo, bp.name)) {
-                    Slog.i(TAG, "Removing old permission tree: " + bp.name
-                            + " from package " + bp.sourcePackage);
                     flags |= UPDATE_PERMISSIONS_ALL;
                     it.remove();
                 }
@@ -5552,13 +5429,9 @@ public class PackageManagerService extends IPackageManager.Stub {
                 bp.packageSetting = mSettings.mPackages.get(bp.sourcePackage);
             }
             if (bp.packageSetting == null) {
-                Slog.w(TAG, "Removing dangling permission: " + bp.name
-                        + " from package " + bp.sourcePackage);
                 it.remove();
             } else if (changingPkg != null && changingPkg.equals(bp.sourcePackage)) {
                 if (pkgInfo == null || !hasPermission(pkgInfo, bp.name)) {
-                    Slog.i(TAG, "Removing old permission: " + bp.name
-                            + " from package " + bp.sourcePackage);
                     flags |= UPDATE_PERMISSIONS_ALL;
                     it.remove();
                 }
@@ -5614,8 +5487,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             }
 
             if (bp == null || bp.packageSetting == null) {
-                Slog.w(TAG, "Unknown permission " + name
-                        + " in package " + pkg.packageName);
                 continue;
             }
 
@@ -5670,26 +5541,11 @@ public class PackageManagerService extends IPackageManager.Stub {
                     } else if (!ps.haveGids) {
                         gp.gids = appendInts(gp.gids, bp.gids);
                     }
-                } else {
-                    Slog.w(TAG, "Not granting permission " + perm
-                            + " to package " + pkg.packageName
-                            + " because it was previously installed without");
                 }
             } else {
                 if (gp.grantedPermissions.remove(perm)) {
                     changedPermission = true;
                     gp.gids = removeInts(gp.gids, bp.gids);
-                    Slog.i(TAG, "Un-granting permission " + perm
-                            + " from package " + pkg.packageName
-                            + " (protectionLevel=" + bp.protectionLevel
-                            + " flags=0x" + Integer.toHexString(pkg.applicationInfo.flags)
-                            + ")");
-                } else {
-                    Slog.w(TAG, "Not granting permission " + perm
-                            + " to package " + pkg.packageName
-                            + " (protectionLevel=" + bp.protectionLevel
-                            + " flags=0x" + Integer.toHexString(pkg.applicationInfo.flags)
-                            + ")");
                 }
             }
         }
@@ -5713,8 +5569,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             if (npi.name.equals(perm)
                     && pkg.applicationInfo.targetSdkVersion < npi.sdkVersion) {
                 allowed = true;
-                Log.i(TAG, "Auto-granting " + perm + " to old pkg "
-                        + pkg.packageName);
                 break;
             }
         }
@@ -5833,15 +5687,10 @@ public class PackageManagerService extends IPackageManager.Stub {
                 PackageParser.ActivityIntentInfo intent = a.intents.get(j);
                 if (!systemApp && intent.getPriority() > 0 && "activity".equals(type)) {
                     intent.setPriority(0);
-                    Log.w(TAG, "Package " + a.info.applicationInfo.packageName + " has activity "
-                            + a.className + " with priority > 0, forcing to 0");
                 }
                 if (DEBUG_SHOW_INFO) {
                     Log.v(TAG, "    IntentFilter:");
                     intent.dump(new LogPrinter(Log.VERBOSE, TAG), "      ");
-                }
-                if (!intent.debugCheck()) {
-                    Log.w(TAG, "==> For Activity " + a.info.name);
                 }
                 addFilter(intent);
             }
@@ -6037,9 +5886,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 if (DEBUG_SHOW_INFO) {
                     Log.v(TAG, "    IntentFilter:");
                     intent.dump(new LogPrinter(Log.VERBOSE, TAG), "      ");
-                }
-                if (!intent.debugCheck()) {
-                    Log.w(TAG, "==> For Service " + s.info.name);
                 }
                 addFilter(intent);
             }
@@ -6238,9 +6084,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 if (DEBUG_SHOW_INFO) {
                     Log.v(TAG, "    IntentFilter:");
                     intent.dump(new LogPrinter(Log.VERBOSE, TAG), "      ");
-                }
-                if (!intent.debugCheck()) {
-                    Log.w(TAG, "==> For Provider " + p.info.name);
                 }
                 addFilter(intent);
             }
@@ -6483,13 +6326,11 @@ public class PackageManagerService extends IPackageManager.Stub {
         if (false) {
             RuntimeException here = new RuntimeException("here");
             here.fillInStackTrace();
-            Slog.d(TAG, "Schedule cleaning " + packageName + " user=" + userId
-                    + " andCode=" + andCode, here);
         }
         mHandler.sendMessage(mHandler.obtainMessage(START_CLEANING_PACKAGE,
                 userId, andCode ? 1 : 0, packageName));
     }
-    
+
     void startCleaningPackages() {
         // reader
         synchronized (mPackages) {
@@ -7349,7 +7190,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 try {
                     mObserver.onGetStatsCompleted(mStats, mSuccess);
                 } catch (RemoteException e) {
-                    Slog.i(TAG, "Observer no longer exists.");
                 }
             }
         }
@@ -7499,7 +7339,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 final DeviceStorageMonitorService dsm = (DeviceStorageMonitorService) ServiceManager
                         .getService(DeviceStorageMonitorService.SERVICE);
                 if (dsm == null) {
-                    Log.w(TAG, "Couldn't get low memory threshold; no free limit imposed");
                     lowThreshold = 0L;
                 } else {
                     lowThreshold = dsm.getMemoryLowThreshold();
@@ -7766,8 +7605,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
                 if (mTempPackage != null) {
                     if (!mTempPackage.delete()) {
-                        Slog.w(TAG, "Couldn't delete temporary file: " +
-                                mTempPackage.getAbsolutePath());
                     }
                 }
             }
@@ -7870,7 +7707,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     builder.append(" target : ");
                     builder.append(targetArgs.getCodePath());
                 }
-                Log.i(TAG, builder.toString());
             }
         }
 
@@ -8148,7 +7984,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             }
 
             final File nativeLibraryFile = new File(getNativeLibraryPath());
-            Slog.i(TAG, "Copying native libraries to " + nativeLibraryFile.getPath());
             if (nativeLibraryFile.exists()) {
                 NativeLibraryHelper.removeNativeBinariesFromDirLI(nativeLibraryFile);
                 nativeLibraryFile.delete();
@@ -8298,7 +8133,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 File nativeLibraryFile = new File(libraryPath);
                 NativeLibraryHelper.removeNativeBinariesFromDirLI(nativeLibraryFile);
                 if (!nativeLibraryFile.delete()) {
-                    Slog.w(TAG, "Couldn't delete native library directory " + libraryPath);
                 }
             }
 
@@ -8309,12 +8143,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             String sourceDir = getCodePath();
             if (cleanUp()) {
                 int retCode = mInstaller.rmdex(sourceDir);
-                if (retCode < 0) {
-                    Slog.w(TAG, "Couldn't remove dex file for package: "
-                            +  " at location "
-                            + sourceDir + ", retcode=" + retCode);
-                    // we don't consider this to be a failure of the core package deletion
-                }
             }
         }
 
@@ -8511,19 +8339,14 @@ public class PackageManagerService extends IPackageManager.Stub {
                 }
             }
             if (!PackageHelper.isContainerMounted(newCacheId)) {
-                Slog.w(TAG, "Mounting container " + newCacheId);
                 newCachePath = PackageHelper.mountSdDir(newCacheId,
                         getEncryptKey(), Process.SYSTEM_UID);
             } else {
                 newCachePath = PackageHelper.getSdDir(newCacheId);
             }
             if (newCachePath == null) {
-                Slog.w(TAG, "Failed to get cache path for  " + newCacheId);
                 return false;
             }
-            Log.i(TAG, "Succesfully renamed " + cid +
-                    " to " + newCacheId +
-                    " at new path: " + newCachePath);
             cid = newCacheId;
             setCachePath(newCachePath);
             return true;
@@ -8581,12 +8404,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             String sourceFile = getCodePath();
             // Remove dex file
             int retCode = mInstaller.rmdex(sourceFile);
-            if (retCode < 0) {
-                Slog.w(TAG, "Couldn't remove dex file for package: "
-                        + " at location "
-                        + sourceFile.toString() + ", retcode=" + retCode);
-                // we don't consider this to be a failure of the core package deletion
-            }
             cleanUp();
         }
 
@@ -8909,7 +8726,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     // can downgrade to reader
                     mSettings.writeLPr();
                 }
-                Slog.i(TAG, "Successfully restored package : " + pkgName + " after failed upgrade");
             }
         }
     }
@@ -8930,7 +8746,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         String packageName = deletedPackage.packageName;
         res.returnCode = PackageManager.INSTALL_FAILED_REPLACE_COULDNT_DELETE;
         if (packageName == null) {
-            Slog.w(TAG, "Attempt to delete null packageName.");
             return;
         }
         PackageParser.Package oldPkg;
@@ -9018,7 +8833,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                      * through dexopt. If the .dex file doesn't exist yet, it
                      * will be created when the program is run next.
                      */
-                    Slog.i(TAG, "dex file doesn't exist, skipping move: " + newPackage.mPath);
                 } else {
                     Slog.e(TAG, "Couldn't rename dex file: " + newPackage.mPath);
                     return PackageManager.INSTALL_FAILED_INSUFFICIENT_STORAGE;
@@ -9344,7 +9158,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     try {
                         observer.packageDeleted(packageName, returnCode);
                     } catch (RemoteException e) {
-                        Log.i(TAG, "Observer no longer exists.");
                     } //end catch
                 } //end if
             } //end run
@@ -9584,7 +9397,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         if (DEBUG_REMOVE) Slog.d(TAG, "deleteSystemPackageLI: newPs=" + newPs
                 + " disabledPs=" + disabledPs);
         if (disabledPs == null) {
-            Slog.w(TAG, "Attempt to delete unknown system package "+ newPs.name);
             return false;
         } else if (DEBUG_REMOVE) {
             Slog.d(TAG, "Deleting system pkg from data partition");
@@ -9628,8 +9440,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 parseFlags, SCAN_MONITOR | SCAN_NO_PATHS, 0, null);
 
         if (newPkg == null) {
-            Slog.w(TAG, "Failed to restore system package:" + newPs.name
-                    + " with error:" + mLastScanError);
             return false;
         }
         // writer
@@ -9687,7 +9497,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             int flags, PackageRemovedInfo outInfo,
             boolean writeSettings) {
         if (packageName == null) {
-            Slog.w(TAG, "Attempt to delete null packageName.");
             return false;
         }
         if (DEBUG_REMOVE) Slog.d(TAG, "deletePackageLI: " + packageName + " user " + user);
@@ -9698,7 +9507,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         synchronized (mPackages) {
             ps = mSettings.mPackages.get(packageName);
             if (ps == null) {
-                Slog.w(TAG, "Package named '" + packageName + "' doesn't exist.");
                 return false;
             }
             if ((!isSystemApp(ps) || (flags&PackageManager.DELETE_SYSTEM_APP) != 0) && user != null
@@ -9887,7 +9695,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     try {
                         observer.onRemoveCompleted(packageName, succeeded);
                     } catch (RemoteException e) {
-                        Log.i(TAG, "Observer no longer exists.");
                     }
                 } //end if observer
             } //end run
@@ -9896,7 +9703,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
     private boolean clearApplicationUserDataLI(String packageName, int userId) {
         if (packageName == null) {
-            Slog.w(TAG, "Attempt to delete null packageName.");
             return false;
         }
         PackageParser.Package p;
@@ -9908,7 +9714,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 dataOnly = true;
                 PackageSetting ps = mSettings.mPackages.get(packageName);
                 if ((ps == null) || (ps.pkg == null)) {
-                    Slog.w(TAG, "Package named '" + packageName + "' doesn't exist.");
                     return false;
                 }
                 p = ps.pkg;
@@ -9916,7 +9721,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             if (!dataOnly) {
                 // need to check this only for fully installed applications
                 if (p == null) {
-                    Slog.w(TAG, "Package named '" + packageName + "' doesn't exist.");
                     return false;
                 }
                 final ApplicationInfo applicationInfo = p.applicationInfo;
@@ -9933,8 +9737,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
         int retCode = mInstaller.clearUserData(packageName, userId);
         if (retCode < 0) {
-            Slog.w(TAG, "Couldn't remove cache files for package: "
-                    + packageName);
             return false;
         }
         removeKeystoreDataIfNeeded(userId, appId);
@@ -9982,7 +9784,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     try {
                         observer.onRemoveCompleted(packageName, succeded);
                     } catch (RemoteException e) {
-                        Log.i(TAG, "Observer no longer exists.");
                     }
                 } //end if observer
             } //end run
@@ -9991,7 +9792,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
     private boolean deleteApplicationCacheFilesLI(String packageName, int userId) {
         if (packageName == null) {
-            Slog.w(TAG, "Attempt to delete null packageName.");
             return false;
         }
         PackageParser.Package p;
@@ -9999,7 +9799,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             p = mPackages.get(packageName);
         }
         if (p == null) {
-            Slog.w(TAG, "Package named '" + packageName +"' doesn't exist.");
             return false;
         }
         final ApplicationInfo applicationInfo = p.applicationInfo;
@@ -10009,8 +9808,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
         int retCode = mInstaller.deleteCacheFiles(packageName, userId);
         if (retCode < 0) {
-            Slog.w(TAG, "Couldn't remove cache files for package: "
-                       + packageName + " u" + userId);
             return false;
         }
         return true;
@@ -10035,7 +9832,6 @@ public class PackageManagerService extends IPackageManager.Stub {
     private boolean getPackageSizeInfoLI(String packageName, int userHandle,
             PackageStats pStats) {
         if (packageName == null) {
-            Slog.w(TAG, "Attempt to get size of null packageName.");
             return false;
         }
         PackageParser.Package p;
@@ -10048,7 +9844,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             if(p == null) {
                 dataOnly = true;
                 if((ps == null) || (ps.pkg == null)) {
-                    Slog.w(TAG, "Package named '" + packageName +"' doesn't exist.");
                     return false;
                 }
                 p = ps.pkg;
@@ -10091,11 +9886,9 @@ public class PackageManagerService extends IPackageManager.Stub {
 
 
     public void addPackageToPreferred(String packageName) {
-        Slog.w(TAG, "addPackageToPreferred: this is now a no-op");
     }
 
     public void removePackageFromPreferred(String packageName) {
-        Slog.w(TAG, "removePackageFromPreferred: this is now a no-op");
     }
 
     public List<PackageInfo> getPreferredPackages(int flags) {
@@ -10136,7 +9929,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         int callingUid = Binder.getCallingUid();
         enforceCrossUserPermission(callingUid, userId, true, "add preferred activity");
         if (filter.countActions() == 0) {
-            Slog.w(TAG, "Cannot set a preferred activity with no filter actions");
             return;
         }
         synchronized (mPackages) {
@@ -10145,15 +9937,12 @@ public class PackageManagerService extends IPackageManager.Stub {
                     != PackageManager.PERMISSION_GRANTED) {
                 if (getUidTargetSdkVersionLockedLPr(callingUid)
                         < Build.VERSION_CODES.FROYO) {
-                    Slog.w(TAG, "Ignoring addPreferredActivity() from uid "
-                            + callingUid);
                     return;
                 }
                 mContext.enforceCallingOrSelfPermission(
                         android.Manifest.permission.SET_PREFERRED_APPLICATIONS, null);
             }
 
-            Slog.i(TAG, "Adding preferred activity " + activity + " for user " + userId + " :");
             filter.dump(new LogPrinter(Log.INFO, TAG), "  ");
             mSettings.editPreferredActivitiesLPw(userId).addFilter(
                     new PreferredActivity(filter, match, set, activity, always));
@@ -10181,8 +9970,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     != PackageManager.PERMISSION_GRANTED) {
                 if (getUidTargetSdkVersionLockedLPr(Binder.getCallingUid())
                         < Build.VERSION_CODES.FROYO) {
-                    Slog.w(TAG, "Ignoring replacePreferredActivity() from uid "
-                            + Binder.getCallingUid());
                     return;
                 }
                 mContext.enforceCallingOrSelfPermission(
@@ -10228,8 +10015,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                         != PackageManager.PERMISSION_GRANTED) {
                     if (getUidTargetSdkVersionLockedLPr(Binder.getCallingUid())
                             < Build.VERSION_CODES.FROYO) {
-                        Slog.w(TAG, "Ignoring clearPackagePreferredActivities() from uid "
-                                + Binder.getCallingUid());
                         return;
                     }
                     mContext.enforceCallingOrSelfPermission(
@@ -10474,9 +10259,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     if (pkg.applicationInfo.targetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN) {
                         throw new IllegalArgumentException("Component class " + className
                                 + " does not exist in " + packageName);
-                    } else {
-                        Slog.w(TAG, "Failed setComponentEnabledSetting: component class "
-                                + className + " does not exist in " + packageName);
                     }
                 }
                 switch (newState) {
@@ -10639,8 +10421,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                 if (removed.size() > 0) {
                     for (int j=0; j<removed.size(); j++) {
                         PreferredActivity pa = removed.get(i);
-                        Slog.w(TAG, "Removing dangling preferred activity: "
-                                + pa.mPref.mComponent);
                         pir.removeFilter(pa);
                     }
                     mSettings.writePackageRestrictionsLPr(
@@ -11137,9 +10917,6 @@ public class PackageManagerService extends IPackageManager.Stub {
         // reader; this apparently protects mMediaMounted, but should probably
         // be a different lock in that case.
         synchronized (mPackages) {
-            Log.i(TAG, "Updating external media status from "
-                    + (mMediaMounted ? "mounted" : "unmounted") + " to "
-                    + (mediaStatus ? "mounted" : "unmounted"));
             if (DEBUG_SD_INSTALL)
                 Log.i(TAG, "updateExternalMediaStatus:: mediaStatus=" + mediaStatus
                         + ", mMediaMounted=" + mMediaMounted);
@@ -11208,7 +10985,6 @@ public class PackageManagerService extends IPackageManager.Stub {
 
                     final PackageSetting ps = mSettings.mPackages.get(pkgName);
                     if (ps == null) {
-                        Log.i(TAG, "Deleting container with no matching settings " + cid);
                         removeCids.add(cid);
                         continue;
                     }
@@ -11237,7 +11013,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                             uidList[num++] = uid;
                         }
                     } else {
-                        Log.i(TAG, "Deleting stale container for " + cid);
                         removeCids.add(cid);
                     }
                 }
@@ -11369,9 +11144,6 @@ public class PackageManagerService extends IPackageManager.Stub {
             // allow... it would be nice to have some better way to handle
             // this situation.
             final boolean regrantPermissions = mSettings.mExternalSdkPlatform != mSdkVersion;
-            if (regrantPermissions)
-                Slog.i(TAG, "Platform changed from " + mSettings.mExternalSdkPlatform + " to "
-                        + mSdkVersion + "; regranting permissions for external storage");
             mSettings.mExternalSdkPlatform = mSdkVersion;
 
             // Make sure group IDs have been assigned, and any permission
@@ -11396,10 +11168,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         if (removeCids != null) {
             for (String cid : removeCids) {
                 if (cid.startsWith(mTempContainerPrefix)) {
-                    Log.i(TAG, "Destroying stale temporary container " + cid);
                     PackageHelper.destroySdDir(cid);
-                } else {
-                    Log.w(TAG, "Container " + cid + " is stale");
                }
            }
         }
@@ -11515,7 +11284,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                                 : PackageManager.INSTALL_INTERNAL;
 
                         if (newFlags == currFlags) {
-                            Slog.w(TAG, "No move required. Trying to move to same location");
                             returnCode = PackageManager.MOVE_FAILED_INVALID_LOCATION;
                         } else {
                             if (isForwardLocked(pkg)) {
@@ -11565,14 +11333,8 @@ public class PackageManagerService extends IPackageManager.Stub {
                     synchronized (mPackages) {
                         PackageParser.Package pkg = mPackages.get(mp.packageName);
                         if (pkg == null) {
-                            Slog.w(TAG, " Package " + mp.packageName
-                                    + " doesn't exist. Aborting move");
                             returnCode = PackageManager.MOVE_FAILED_DOESNT_EXIST;
                         } else if (!mp.srcArgs.getCodePath().equals(pkg.applicationInfo.sourceDir)) {
-                            Slog.w(TAG, "Package " + mp.packageName + " code path changed from "
-                                    + mp.srcArgs.getCodePath() + " to "
-                                    + pkg.applicationInfo.sourceDir
-                                    + " Aborting move and returning error");
                             returnCode = PackageManager.MOVE_FAILED_INTERNAL_ERROR;
                         } else {
                             uidArr = new int[] {
@@ -11591,15 +11353,9 @@ public class PackageManagerService extends IPackageManager.Stub {
                                 PackageParser.Package pkg = mPackages.get(mp.packageName);
                                 // Recheck for package again.
                                 if (pkg == null) {
-                                    Slog.w(TAG, " Package " + mp.packageName
-                                            + " doesn't exist. Aborting move");
                                     returnCode = PackageManager.MOVE_FAILED_DOESNT_EXIST;
                                 } else if (!mp.srcArgs.getCodePath().equals(
                                         pkg.applicationInfo.sourceDir)) {
-                                    Slog.w(TAG, "Package " + mp.packageName
-                                            + " code path changed from " + mp.srcArgs.getCodePath()
-                                            + " to " + pkg.applicationInfo.sourceDir
-                                            + " Aborting move and returning error");
                                     returnCode = PackageManager.MOVE_FAILED_INTERNAL_ERROR;
                                 } else {
                                     final String oldCodePath = pkg.mPath;
@@ -11696,7 +11452,6 @@ public class PackageManagerService extends IPackageManager.Stub {
                     try {
                         observer.packageMoved(mp.packageName, returnCode);
                     } catch (RemoteException e) {
-                        Log.i(TAG, "Observer no longer exists.");
                     }
                 }
             }

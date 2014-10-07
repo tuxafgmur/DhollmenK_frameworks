@@ -64,7 +64,7 @@ import java.util.Objects;
 public final class MediaRouterService extends IMediaRouterService.Stub
         implements Watchdog.Monitor {
     private static final String TAG = "MediaRouterService";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = false;
 
     /**
      * Timeout in milliseconds for a selected route to transition from a

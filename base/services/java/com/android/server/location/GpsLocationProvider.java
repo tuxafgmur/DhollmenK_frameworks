@@ -95,8 +95,8 @@ public class GpsLocationProvider implements LocationProviderInterface {
 
     private static final String TAG = "GpsLocationProvider";
 
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
-    private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
+    private static final boolean DEBUG = false;
+    private static final boolean VERBOSE = false;
 
     private static final ProviderProperties PROPERTIES = new ProviderProperties(
             true, true, false, false, true, true, true,

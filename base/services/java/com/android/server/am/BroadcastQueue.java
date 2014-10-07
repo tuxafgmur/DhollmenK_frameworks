@@ -51,9 +51,9 @@ import android.util.Slog;
 public final class BroadcastQueue {
     static final String TAG = "BroadcastQueue";
     static final String TAG_MU = ActivityManagerService.TAG_MU;
-    static final boolean DEBUG_BROADCAST = ActivityManagerService.DEBUG_BROADCAST;
-    static final boolean DEBUG_BROADCAST_LIGHT = ActivityManagerService.DEBUG_BROADCAST_LIGHT;
-    static final boolean DEBUG_MU = ActivityManagerService.DEBUG_MU;
+    static final boolean DEBUG_BROADCAST = false;
+    static final boolean DEBUG_BROADCAST_LIGHT = false;
+    static final boolean DEBUG_MU = false;
 
     static final int MAX_BROADCAST_HISTORY = ActivityManager.isLowRamDeviceStatic() ? 10 : 50;
     static final int MAX_BROADCAST_SUMMARY_HISTORY
@@ -343,9 +343,6 @@ public final class BroadcastQueue {
         final int state = r.state;
         final ActivityInfo receiver = r.curReceiver;
         r.state = BroadcastRecord.IDLE;
-        if (state == BroadcastRecord.IDLE) {
-            Slog.w(TAG, "finishReceiver [" + mQueueName + "] called but state is IDLE");
-        }
         r.receiver = null;
         r.intent.setComponent(null);
         if (r.curApp != null) {
@@ -387,8 +384,6 @@ public final class BroadcastQueue {
                 // on.  If there are background services currently starting, then we will go into a
                 // special state where we hold off on continuing this broadcast until they are done.
                 if (mService.mServices.hasBackgroundServices(r.userId)) {
-                    Slog.i(ActivityManagerService.TAG, "Delay finish: "
-                            + r.curComponent.flattenToShortString());
                     r.state = BroadcastRecord.WAITING_SERVICES;
                     return false;
                 }
@@ -408,7 +403,6 @@ public final class BroadcastQueue {
         if (mOrderedBroadcasts.size() > 0) {
             BroadcastRecord br = mOrderedBroadcasts.get(0);
             if (br.userId == userId && br.state == BroadcastRecord.WAITING_SERVICES) {
-                Slog.i(ActivityManagerService.TAG, "Resuming delayed broadcast");
                 br.curComponent = null;
                 br.state = BroadcastRecord.IDLE;
                 processNextBroadcast(false);
@@ -830,8 +824,6 @@ public final class BroadcastQueue {
             }
             if (r.curApp != null && r.curApp.crashing) {
                 // If the target process is crashing, just skip it.
-                Slog.w(TAG, "Skipping deliver ordered [" + mQueueName + "] " + r
-                        + " to " + r.curApp + ": process crashing");
                 skip = true;
             }
             if (!skip) {
@@ -1012,22 +1004,17 @@ public final class BroadcastQueue {
             // for started services to finish as well before going on.  So if we have actually
             // waited long enough time timeout the broadcast, let's give up on the whole thing
             // and just move on to the next.
-            Slog.i(ActivityManagerService.TAG, "Waited long enough for: " + (br.curComponent != null
-                    ? br.curComponent.flattenToShortString() : "(null)"));
             br.curComponent = null;
             br.state = BroadcastRecord.IDLE;
             processNextBroadcast(false);
             return;
         }
 
-        Slog.w(TAG, "Timeout of broadcast " + r + " - receiver=" + r. receiver
-                + ", started " + (now - r.receiverTime) + "ms ago");
         r.receiverTime = now;
         r.anrCount++;
 
         // Current receiver has passed its expiration date.
         if (r.nextReceiver <= 0) {
-            Slog.w(TAG, "Timeout on receiver with nextReceiver <= 0");
             return;
         }
 
@@ -1035,7 +1022,6 @@ public final class BroadcastQueue {
         String anrMessage = null;
 
         Object curReceiver = r.receivers.get(r.nextReceiver-1);
-        Slog.w(TAG, "Receiver during timeout: " + curReceiver);
         logBroadcastReceiverDiscardLocked(r);
         if (curReceiver instanceof BroadcastFilter) {
             BroadcastFilter bf = (BroadcastFilter)curReceiver;
@@ -1101,14 +1087,6 @@ public final class BroadcastQueue {
                         System.identityHashCode(r), r.intent.getAction(),
                         r.nextReceiver - 1, ri.toString());
             }
-        } else {
-            Slog.w(TAG, "Discarding broadcast before first receiver is invoked: "
-                    + r);
-            EventLog.writeEvent(EventLogTags.AM_BROADCAST_DISCARD_APP,
-                    -1, System.identityHashCode(r),
-                    r.intent.getAction(),
-                    r.nextReceiver,
-                    "NONE");
         }
     }
 

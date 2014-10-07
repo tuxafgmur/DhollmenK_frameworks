@@ -137,7 +137,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 class BackupManagerService extends IBackupManager.Stub {
     private static final String TAG = "BackupManagerService";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final boolean MORE_DEBUG = false;
 
     // Historical and current algorithm names
@@ -256,7 +256,7 @@ class BackupManagerService extends IBackupManager.Stub {
     volatile long mNextBackupPass;
 
     // For debugging, we maintain a progress trace of operations during backup
-    static final boolean DEBUG_BACKUP_TRACE = true;
+    static final boolean DEBUG_BACKUP_TRACE = false;
     final List<String> mBackupTrace = new ArrayList<String>();
 
     // A similar synchronization mechanism around clearing apps' data for restore

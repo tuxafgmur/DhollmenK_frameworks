@@ -157,11 +157,6 @@ public final class WifiService extends IWifiManager.Stub {
                     break;
                 }
                 case AsyncChannel.CMD_CHANNEL_DISCONNECTED: {
-                    if (msg.arg1 == AsyncChannel.STATUS_SEND_UNSUCCESSFUL) {
-                        if (DBG) Slog.d(TAG, "Send failed, client connection lost");
-                    } else {
-                        if (DBG) Slog.d(TAG, "Client connection lost with reason: " + msg.arg1);
-                    }
                     mTrafficPoller.removeClient(msg.replyTo);
                     break;
                 }
@@ -212,7 +207,6 @@ public final class WifiService extends IWifiManager.Stub {
                     break;
                 }
                 default: {
-                    Slog.d(TAG, "ClientHandler.handleMessage ignoring msg=" + msg);
                     break;
                 }
             }
@@ -263,7 +257,6 @@ public final class WifiService extends IWifiManager.Stub {
                     break;
                 }
                 default: {
-                    Slog.d(TAG, "WifiStateMachineHandler.handleMessage ignoring msg=" + msg);
                     break;
                 }
             }
@@ -326,9 +319,6 @@ public final class WifiService extends IWifiManager.Stub {
     public void checkAndStartWifi() {
         /* Check if wi-fi needs to be enabled */
         boolean wifiEnabled = mSettingsStore.isWifiToggleEnabled();
-        Slog.i(TAG, "WifiService starting up with Wi-Fi " +
-                (wifiEnabled ? "enabled" : "disabled"));
-
         // If we are already disabled (could be due to airplane mode), avoid changing persist
         // state here
         if (wifiEnabled) setWifiEnabled(wifiEnabled);
@@ -590,8 +580,6 @@ public final class WifiService extends IWifiManager.Stub {
      */
     public synchronized boolean setWifiEnabled(boolean enable) {
         enforceChangePermission();
-        Slog.d(TAG, "setWifiEnabled: " + enable + " pid=" + Binder.getCallingPid()
-                    + ", uid=" + Binder.getCallingUid());
         if (DBG) {
             Slog.e(TAG, "Invoking mWifiStateMachine.setWifiEnabled\n");
         }
@@ -868,8 +856,6 @@ public final class WifiService extends IWifiManager.Stub {
      * not available from telephony.
      */
     public void setCountryCode(String countryCode, boolean persist) {
-        Slog.i(TAG, "WifiService trying to set country code to " + countryCode +
-                " with persist set to " + persist);
         enforceConnectivityInternalPermission();
         final long token = Binder.clearCallingIdentity();
         try {
@@ -894,13 +880,10 @@ public final class WifiService extends IWifiManager.Stub {
      *     {@link WifiManager#WIFI_FREQUENCY_BAND_5GHZ},
      *     {@link WifiManager#WIFI_FREQUENCY_BAND_2GHZ},
      * @param persist {@code true} if the setting should be remembered.
-     *
      */
     public void setFrequencyBand(int band, boolean persist) {
         enforceChangePermission();
         if (!isDualBandSupported()) return;
-        Slog.i(TAG, "WifiService trying to set frequency band to " + band +
-                " with persist set to " + persist);
         final long token = Binder.clearCallingIdentity();
         try {
             mWifiStateMachine.setFrequencyBand(band, persist);

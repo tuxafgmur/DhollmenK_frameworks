@@ -47,18 +47,8 @@ public class BootReceiver extends BroadcastReceiver {
     private static final int LOG_SIZE =
         SystemProperties.getInt("ro.debuggable", 0) == 1 ? 98304 : 65536;
 
-    private static final File TOMBSTONE_DIR = new File("/data/tombstones");
-
-    // The pre-froyo package and class of the system updater, which
-    // ran in the system process.  We need to remove its packages here
-    // in order to clean up after a pre-froyo-to-froyo update.
-    private static final String OLD_UPDATER_PACKAGE =
-        "com.google.android.systemupdater";
-    private static final String OLD_UPDATER_CLASS =
-        "com.google.android.systemupdater.SystemUpdateReceiver";
-
-    // Keep a reference to the observer so the finalizer doesn't disable it.
-    private static FileObserver sTombstoneObserver = null;
+    private static final String OLD_UPDATER_PACKAGE = "com.google.android.systemupdater";
+    private static final String OLD_UPDATER_CLASS = "com.google.android.systemupdater.SystemUpdateReceiver";
 
     @Override
     public void onReceive(final Context context, Intent intent) {
@@ -67,9 +57,7 @@ public class BootReceiver extends BroadcastReceiver {
             @Override
             public void run() {
                 try {
-                    logBootEvents(context);
                 } catch (Exception e) {
-                    Slog.e(TAG, "Can't log boot events", e);
                 }
                 try {
                     boolean onlyCore = false;
@@ -82,7 +70,6 @@ public class BootReceiver extends BroadcastReceiver {
                         removeOldUpdatePackages(context);
                     }
                 } catch (Exception e) {
-                    Slog.e(TAG, "Can't remove old update packages", e);
                 }
 
             }
@@ -93,72 +80,10 @@ public class BootReceiver extends BroadcastReceiver {
         Downloads.removeAllDownloadsByPackage(context, OLD_UPDATER_PACKAGE, OLD_UPDATER_CLASS);
     }
 
-    private void logBootEvents(Context ctx) throws IOException {
-        final DropBoxManager db = (DropBoxManager) ctx.getSystemService(Context.DROPBOX_SERVICE);
-        final SharedPreferences prefs = ctx.getSharedPreferences("log_files", Context.MODE_PRIVATE);
-        final String headers = new StringBuilder(512)
-            .append("Build: ").append(Build.FINGERPRINT).append("\n")
-            .append("Hardware: ").append(Build.BOARD).append("\n")
-            .append("Revision: ")
-            .append(SystemProperties.get("ro.revision", "")).append("\n")
-            .append("Bootloader: ").append(Build.BOOTLOADER).append("\n")
-            .append("Radio: ").append(Build.RADIO).append("\n")
-            .append("Kernel: ")
-            .append(FileUtils.readTextFile(new File("/proc/version"), 1024, "...\n"))
-            .append("\n").toString();
-
-        String recovery = RecoverySystem.handleAftermath();
-        if (recovery != null && db != null) {
-            db.addText("SYSTEM_RECOVERY_LOG", headers + recovery);
-        }
-
-        if (SystemProperties.getLong("ro.runtime.firstboot", 0) == 0) {
-            String now = Long.toString(System.currentTimeMillis());
-            SystemProperties.set("ro.runtime.firstboot", now);
-            if (db != null) db.addText("SYSTEM_BOOT", headers);
-
-            // Negative sizes mean to take the *tail* of the file (see FileUtils.readTextFile())
-            addFileToDropBox(db, prefs, headers, "/proc/last_kmsg",
-                    -LOG_SIZE, "SYSTEM_LAST_KMSG");
-            addFileToDropBox(db, prefs, headers, "/cache/recovery/log",
-                    -LOG_SIZE, "SYSTEM_RECOVERY_LOG");
-            addFileToDropBox(db, prefs, headers, "/data/dontpanic/apanic_console",
-                    -LOG_SIZE, "APANIC_CONSOLE");
-            addFileToDropBox(db, prefs, headers, "/data/dontpanic/apanic_threads",
-                    -LOG_SIZE, "APANIC_THREADS");
-            addAuditErrorsToDropBox(db, prefs, headers, -LOG_SIZE, "SYSTEM_AUDIT");
-            addFsckErrorsToDropBox(db, prefs, headers, -LOG_SIZE, "SYSTEM_FSCK");
-        } else {
-            if (db != null) db.addText("SYSTEM_RESTART", headers);
-        }
-
-        // Scan existing tombstones (in case any new ones appeared)
-        File[] tombstoneFiles = TOMBSTONE_DIR.listFiles();
-        for (int i = 0; tombstoneFiles != null && i < tombstoneFiles.length; i++) {
-            addFileToDropBox(db, prefs, headers, tombstoneFiles[i].getPath(),
-                    LOG_SIZE, "SYSTEM_TOMBSTONE");
-        }
-
-        // Start watching for new tombstone files; will record them as they occur.
-        // This gets registered with the singleton file observer thread.
-        sTombstoneObserver = new FileObserver(TOMBSTONE_DIR.getPath(), FileObserver.CLOSE_WRITE) {
-            @Override
-            public void onEvent(int event, String path) {
-                try {
-                    String filename = new File(TOMBSTONE_DIR, path).getPath();
-                    addFileToDropBox(db, prefs, headers, filename, LOG_SIZE, "SYSTEM_TOMBSTONE");
-                } catch (IOException e) {
-                    Slog.e(TAG, "Can't log tombstone", e);
-                }
-            }
-        };
-
-        sTombstoneObserver.startWatching();
-    }
-
     private static void addFileToDropBox(
             DropBoxManager db, SharedPreferences prefs,
             String headers, String filename, int maxSize, String tag) throws IOException {
+        if (db != null) return;  // Logging disabled
         if (db == null || !db.isTagEnabled(tag)) return;  // Logging disabled
 
         File file = new File(filename);
@@ -173,14 +98,13 @@ public class BootReceiver extends BroadcastReceiver {
             prefs.edit().putLong(filename, fileTime).apply();
         }
 
-        Slog.i(TAG, "Copying " + filename + " to DropBox (" + tag + ")");
         db.addText(tag, headers + FileUtils.readTextFile(file, maxSize, "[[TRUNCATED]]\n"));
     }
 
     private static void addAuditErrorsToDropBox(DropBoxManager db,  SharedPreferences prefs,
             String headers, int maxSize, String tag) throws IOException {
+        if (db != null) return;  // Logging disabled
         if (db == null || !db.isTagEnabled(tag)) return;  // Logging disabled
-        Slog.i(TAG, "Copying audit failures to DropBox");
 
         File file = new File("/proc/last_kmsg");
         long fileTime = file.lastModified();
@@ -201,15 +125,14 @@ public class BootReceiver extends BroadcastReceiver {
                 sb.append(line + "\n");
             }
         }
-        Slog.i(TAG, "Copied " + sb.toString().length() + " worth of audits to DropBox");
         db.addText(tag, headers + sb.toString());
     }
 
     private static void addFsckErrorsToDropBox(DropBoxManager db,  SharedPreferences prefs,
             String headers, int maxSize, String tag) throws IOException {
         boolean upload_needed = false;
+        if (db != null) return;  // Logging disabled
         if (db == null || !db.isTagEnabled(tag)) return;  // Logging disabled
-        Slog.i(TAG, "Checking for fsck errors");
 
         File file = new File("/dev/fscklogs/log");
         long fileTime = file.lastModified();

@@ -334,9 +334,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
         DeathRecipient deathRecipient = new DeathRecipient();
         mSeq = seq;
         mEnforceSizeCompat = (mAttrs.privateFlags & PRIVATE_FLAG_COMPATIBLE_WINDOW) != 0;
-        if (WindowManagerService.localLOGV) Slog.v(
-            TAG, "Window " + this + " client=" + c.asBinder()
-            + " token=" + token + " (" + mAttrs.token + ")" + " params=" + a);
         try {
             c.asBinder().linkToDeath(deathRecipient, 0);
         } catch (RemoteException e) {
@@ -363,7 +360,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
                     + WindowManagerService.TYPE_LAYER_OFFSET;
             mSubLayer = mPolicy.subWindowTypeToLayerLw(a.type);
             mAttachedWindow = attachedWindow;
-            if (WindowManagerService.DEBUG_ADD_REMOVE) Slog.v(TAG, "Adding " + this + " to " + mAttachedWindow);
 
             int children_size = mAttachedWindow.mChildWindows.size();
             if (children_size == 0) {
@@ -442,9 +438,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
     }
 
     void attach() {
-        if (WindowManagerService.localLOGV) Slog.v(
-            TAG, "Attaching " + this + " token=" + mToken
-            + ", list=" + mToken.windows);
         mSession.windowAddedLocked();
     }
 
@@ -511,8 +504,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
         }
 
         if (!mParentFrame.equals(pf)) {
-            //Slog.i(TAG, "Window " + this + " content frame from " + mParentFrame
-            //        + " to " + pf);
             mParentFrame.set(pf);
             mContentChanged = true;
         }
@@ -545,8 +536,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
         Gravity.apply(mAttrs.gravity, w, h, mContainingFrame,
                 (int) (x + mAttrs.horizontalMargin * pw),
                 (int) (y + mAttrs.verticalMargin * ph), mFrame);
-
-        //System.out.println("Out: " + mFrame);
 
         // Now make sure the window fits in the overall display.
         Gravity.applyDisplay(mAttrs.gravity, df, mFrame);
@@ -1000,7 +989,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
         disposeInputChannel();
 
         if (mAttachedWindow != null) {
-            if (WindowManagerService.DEBUG_ADD_REMOVE) Slog.v(TAG, "Removing " + this + " from " + mAttachedWindow);
             mAttachedWindow.mChildWindows.remove(this);
         }
         mWinAnimator.destroyDeferredSurfaceLocked();
@@ -1045,17 +1033,14 @@ final class WindowState implements WindowManagerPolicy.WindowState {
             try {
                 synchronized(mService.mWindowMap) {
                     WindowState win = mService.windowForClientLocked(mSession, mClient, false);
-                    Slog.i(TAG, "WIN DEATH: " + win);
                     if (win != null) {
                         mService.removeWindowLocked(mSession, win);
                     } else if (mHasSurface) {
-                        Slog.e(TAG, "!!! LEAK !!! Window removed but surface still valid.");
                         mService.removeWindowLocked(mSession, WindowState.this);
                     }
                 }
             } catch (IllegalArgumentException ex) {
-                // This will happen if the window has already been
-                // removed.
+                // This will happen if the window has already been removed.
             }
         }
     }
@@ -1081,8 +1066,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
 
     boolean showLw(boolean doAnimation, boolean requestAnim) {
         if (isHiddenFromUserLocked()) {
-            Slog.w(TAG, "current user violation " + mService.mCurrentUserId + " trying to display "
-                    + this + ", type " + mAttrs.type + ", belonging to " + mOwnerUid);
             return false;
         }
         if (!mAppOpVisibility) {
@@ -1151,8 +1134,6 @@ final class WindowState implements WindowManagerPolicy.WindowState {
             // we allow the display to be enabled now.
             mService.enableScreenIfNeededLocked();
             if (mService.mCurrentFocus == this) {
-                if (WindowManagerService.DEBUG_FOCUS_LIGHT) Slog.i(TAG,
-                        "WindowState.hideLw: setting mFocusMayChange true");
                 mService.mFocusMayChange = true;
             }
         }

@@ -169,9 +169,8 @@ import javax.net.ssl.SSLSession;
 public class ConnectivityService extends IConnectivityManager.Stub {
     private static final String TAG = "ConnectivityService";
 
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
-
     private static final boolean LOGD_RULES = false;
 
     // TODO: create better separation between radio types and network types
@@ -526,8 +525,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                 continue;
             }
             if (mRadioAttributes[r.mType] != null) {
-                loge("Error in radioAttributes - ignoring attempt to redefine type " +
-                        r.mType);
                 continue;
             }
             mRadioAttributes[r.mType] = r;
@@ -535,7 +532,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
 
         // TODO: What is the "correct" way to do determine if this is a wifi only device?
         boolean wifiOnly = SystemProperties.getBoolean("ro.radio.noril", false);
-        log("wifiOnly=" + wifiOnly);
         String[] naStrings = context.getResources().getStringArray(
                 com.android.internal.R.array.networkAttributes);
         for (String naString : naStrings) {
@@ -543,18 +539,14 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                 NetworkConfig n = new NetworkConfig(naString);
                 if (VDBG) log("naString=" + naString + " config=" + n);
                 if (n.type > ConnectivityManager.MAX_NETWORK_TYPE) {
-                    loge("Error in networkAttributes - ignoring attempt to define type " +
-                            n.type);
+                    loge("Error in networkAttributes - ignoring attempt to define type " + n.type);
                     continue;
                 }
                 if (wifiOnly && ConnectivityManager.isNetworkTypeMobile(n.type)) {
-                    log("networkAttributes - ignoring mobile as this dev is wifiOnly " +
-                            n.type);
                     continue;
                 }
                 if (mNetConfigs[n.type] != null) {
-                    loge("Error in networkAttributes - ignoring attempt to redefine type " +
-                            n.type);
+                    loge("Error in networkAttributes - ignoring attempt to redefine type " + n.type);
                     continue;
                 }
                 if (mRadioAttributes[n.radio] == null) {
@@ -1227,9 +1219,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
         }
 
         public void binderDied() {
-            log("ConnectivityService FeatureUser binderDied(" +
-                    mNetworkType + ", " + mFeature + ", " + mBinder + "), created " +
-                    (System.currentTimeMillis() - mCreateTime) + " mSec ago");
             stopUsingNetworkFeature(this, false);
         }
 
@@ -2088,10 +2077,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
             // don't signal a reconnect for anything lower or equal priority than our
             // current connected default
             // TODO - don't filter by priority now - nice optimization but risky
-//            int currentPriority = -1;
-//            if (mActiveDefaultNetwork != -1) {
-//                currentPriority = mNetConfigs[mActiveDefaultNetwork].mPriority;
-//            }
 
             for (int checkType=0; checkType <= ConnectivityManager.MAX_NETWORK_TYPE; checkType++) {
                 if (checkType == prevNetType) continue;
@@ -3050,8 +3035,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             && (((state == NetworkInfo.State.CONNECTED)
                                     && (info.getType() == ConnectivityManager.TYPE_MOBILE))
                                 || info.isConnectedToProvisioningNetwork())) {
-                        log("ConnectivityChange checkMobileProvisioning for"
-                                + " TYPE_MOBILE or ProvisioningNetwork");
                         checkMobileProvisioning(CheckMp.MAX_TIMEOUT_MS);
                     }
 
@@ -3142,9 +3125,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             causedBy = mNetTransitionWakeLockCausedBy;
                         }
                     }
-                    if (causedBy != null) {
-                        log("NetTransition Wakelock for " + causedBy + " released by timeout");
-                    }
                     break;
                 }
                 case EVENT_RESTORE_DEFAULT_NETWORK: {
@@ -3208,9 +3188,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                         if (mobileDst != null) {
                             mobileDst.setEnableFailFastMobileData(msg.arg2);
                         }
-                    } else {
-                        log("EVENT_ENABLE_FAIL_FAST_MOBILE_DATA: stale arg1:" + msg.arg1
-                                + " != tag:" + tag);
                     }
                     break;
                 }
@@ -3420,13 +3397,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
             if (DBG) log("handleInetConditionHoldEnd: event hold for obsolete network - ignoring");
             return;
         }
-        // TODO: Figure out why this optimization sometimes causes a
-        //       change in mDefaultInetCondition to be missed and the
-        //       UI to not be updated.
-        //if (mDefaultInetConditionPublished == mDefaultInetCondition) {
-        //    if (DBG) log("no change in condition - aborting");
-        //    return;
-        //}
         NetworkInfo networkInfo = mNetTrackers[mActiveDefaultNetwork].getNetworkInfo();
         if (networkInfo.isConnected() == false) {
             if (DBG) log("handleInetConditionHoldEnd: default network not connected - ignoring");
@@ -4313,7 +4283,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
 
             if (mCs.isNetworkSupported(ConnectivityManager.TYPE_MOBILE) == false) {
                 result = CMP_RESULT_CODE_NO_CONNECTION;
-                log("isMobileOk: X not mobile capable result=" + result);
                 return result;
             }
 
@@ -4328,16 +4297,13 @@ public class ConnectivityService extends IConnectivityManager.Stub {
             MobileDataStateTracker mdstDefault = (MobileDataStateTracker)
                     mCs.mNetTrackers[ConnectivityManager.TYPE_MOBILE];
             boolean isDefaultProvisioning = mdstDefault.isProvisioningNetwork();
-            log("isMobileOk: isDefaultProvisioning=" + isDefaultProvisioning);
 
             MobileDataStateTracker mdstHipri = (MobileDataStateTracker)
                     mCs.mNetTrackers[ConnectivityManager.TYPE_MOBILE_HIPRI];
             boolean isHipriProvisioning = mdstHipri.isProvisioningNetwork();
-            log("isMobileOk: isHipriProvisioning=" + isHipriProvisioning);
 
             if (isDefaultProvisioning || isHipriProvisioning) {
                 result = CMP_RESULT_CODE_PROVISIONING_NETWORK;
-                log("isMobileOk: X default || hipri is provisioning result=" + result);
                 return result;
             }
 
@@ -4360,8 +4326,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                     }
                 }
 
-                log("isMobileOk: start hipri url=" + params.mUrl);
-
                 // First wait until we can start using hipri
                 Binder binder = new Binder();
                 while(SystemClock.elapsedRealtime() < endTime) {
@@ -4369,7 +4333,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             Phone.FEATURE_ENABLE_HIPRI, binder);
                     if ((ret == PhoneConstants.APN_ALREADY_ACTIVE)
                         || (ret == PhoneConstants.APN_REQUEST_STARTED)) {
-                            log("isMobileOk: hipri started");
                             break;
                     }
                     if (VDBG) log("isMobileOk: hipri not started yet");
@@ -4386,10 +4349,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                         NetworkInfo.State state = mCs
                                 .getNetworkInfo(ConnectivityManager.TYPE_MOBILE_HIPRI).getState();
                         if (state != NetworkInfo.State.CONNECTED) {
-                            if (true/*VDBG*/) {
-                                log("isMobileOk: not connected ni=" +
-                                    mCs.getNetworkInfo(ConnectivityManager.TYPE_MOBILE_HIPRI));
-                            }
                             sleep(POLLING_SLEEP_SEC);
                             result = CMP_RESULT_CODE_NO_CONNECTION;
                             continue;
@@ -4416,18 +4375,14 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             addresses = InetAddress.getAllByName(orgUri.getHost());
                         } catch (UnknownHostException e) {
                             result = CMP_RESULT_CODE_NO_DNS;
-                            log("isMobileOk: X UnknownHostException result=" + result);
                             return result;
                         }
-                        log("isMobileOk: addresses=" + inetAddressesToString(addresses));
 
                         // Get the type of addresses supported by this link
                         LinkProperties lp = mCs.getLinkProperties(
                                 ConnectivityManager.TYPE_MOBILE_HIPRI);
                         boolean linkHasIpv4 = lp.hasIPv4Address();
                         boolean linkHasIpv6 = lp.hasIPv6Address();
-                        log("isMobileOk: linkHasIpv4=" + linkHasIpv4
-                                + " linkHasIpv6=" + linkHasIpv6);
 
                         final ArrayList<InetAddress> validAddresses =
                                 new ArrayList<InetAddress>(addresses.length);
@@ -4448,11 +4403,9 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             // Loop through at most MAX_LOOPS valid addresses or until
                             // we run out of time
                             if (addrTried++ >= MAX_LOOPS) {
-                                log("isMobileOk: too many loops tried - giving up");
                                 break;
                             }
                             if (SystemClock.elapsedRealtime() >= endTime) {
-                                log("isMobileOk: spend too much time - giving up");
                                 break;
                             }
 
@@ -4463,12 +4416,8 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             if (mCs.requestRouteToHostAddress(ConnectivityManager.TYPE_MOBILE_HIPRI,
                                     hostAddr.getAddress(), null)) {
                                 // Wait a short time to be sure the route is established ??
-                                log("isMobileOk:"
-                                        + " wait to establish route to hostAddr=" + hostAddr);
                                 sleep(NET_ROUTE_ESTABLISHMENT_SLEEP_SEC);
                             } else {
-                                log("isMobileOk:"
-                                        + " could not establish route to hostAddr=" + hostAddr);
                                 // Wait a short time before the next attempt
                                 sleep(NET_ERROR_SLEEP_SEC);
                                 continue;
@@ -4485,7 +4434,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             String scheme = (addrTried <= (MAX_LOOPS/2)) ? "https" : "http";
                             newUrl = new URL(scheme, hostAddr.getHostAddress(),
                                         orgUri.getPath());
-                            log("isMobileOk: newUrl=" + newUrl);
 
                             HttpURLConnection urlConn = null;
                             try {
@@ -4508,7 +4456,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
 
                                 // For debug display the headers
                                 Map<String, List<String>> headers = urlConn.getHeaderFields();
-                                log("isMobileOk: headers=" + headers);
 
                                 // Close the connection
                                 urlConn.disconnect();
@@ -4517,28 +4464,23 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                                 if (mTestingFailures) {
                                     // Pretend no connection, this tests using http and https
                                     result = CMP_RESULT_CODE_NO_CONNECTION;
-                                    log("isMobileOk: TESTING_FAILURES, pretend no connction");
                                     continue;
                                 }
 
                                 if (responseCode == 204) {
                                     // Return
                                     result = CMP_RESULT_CODE_CONNECTABLE;
-                                    log("isMobileOk: X got expected responseCode=" + responseCode
-                                            + " result=" + result);
                                     return result;
                                 } else {
                                     // Retry to be sure this was redirected, we've gotten
                                     // occasions where a server returned 200 even though
                                     // the device didn't have a "warm" sim.
-                                    log("isMobileOk: not expected responseCode=" + responseCode);
                                     // TODO - it would be nice in the single-address case to do
                                     // another DNS resolve here, but flushing the cache is a bit
                                     // heavy-handed.
                                     result = CMP_RESULT_CODE_REDIRECTED;
                                 }
                             } catch (Exception e) {
-                                log("isMobileOk: HttpURLConnection Exception" + e);
                                 result = CMP_RESULT_CODE_NO_TCP_CONNECTION;
                                 if (urlConn != null) {
                                     urlConn.disconnect();
@@ -4548,16 +4490,12 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                                 continue;
                             }
                         }
-                        log("isMobileOk: X loops|timed out result=" + result);
                         return result;
                     } catch (Exception e) {
-                        log("isMobileOk: Exception e=" + e);
                         continue;
                     }
                 }
-                log("isMobileOk: timed out");
             } finally {
-                log("isMobileOk: F stop hipri");
                 mCs.setEnableFailFastMobileData(DctConstants.DISABLED);
                 mCs.stopUsingNetworkFeature(ConnectivityManager.TYPE_MOBILE,
                         Phone.FEATURE_ENABLE_HIPRI);
@@ -4577,8 +4515,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                         continue;
                     }
                 }
-
-                log("isMobileOk: X result=" + result);
             }
             return result;
         }
@@ -4590,7 +4526,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
 
         @Override
         protected void onPostExecute(Integer result) {
-            log("onPostExecute: result=" + result);
             if ((mParams != null) && (mParams.mCb != null)) {
                 mParams.mCb.onComplete(result);
             }
@@ -4613,16 +4548,10 @@ public class ConnectivityService extends IConnectivityManager.Stub {
         private void printNetworkInfo() {
             boolean hasIccCard = mTm.hasIccCard();
             int simState = mTm.getSimState();
-            log("hasIccCard=" + hasIccCard
-                    + " simState=" + simState);
             NetworkInfo[] ni = mCs.getAllNetworkInfo();
             if (ni != null) {
-                log("ni.length=" + ni.length);
                 for (NetworkInfo netInfo: ni) {
-                    log("netInfo=" + netInfo.toString());
                 }
-            } else {
-                log("no network info ni=null");
             }
         }
 
@@ -4869,9 +4798,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
         String url = getProvisioningUrlBaseFromFile(PROVISIONING);
         if (TextUtils.isEmpty(url)) {
             url = mContext.getResources().getString(R.string.mobile_provisioning_url);
-            log("getMobileProvisioningUrl: mobile_provisioining_url from resource =" + url);
-        } else {
-            log("getMobileProvisioningUrl: mobile_provisioning_url from File =" + url);
         }
         // populate the iccid, imei and phone number in the provisioning url.
         if (!TextUtils.isEmpty(url)) {
@@ -4989,8 +4915,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
 
     private void handleNetworkSamplingTimeout() {
 
-        log("Sampling interval elapsed, updating statistics ..");
-
         // initialize list of interfaces ..
         Map<String, SamplingDataTracker.SamplingSnapshot> mapIfaceToSample =
                 new HashMap<String, SamplingDataTracker.SamplingSnapshot>();
@@ -5019,8 +4943,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                 }
             }
         }
-
-        log("Done.");
 
         int samplingIntervalInSeconds = Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.CONNECTIVITY_SAMPLING_INTERVAL_IN_SECONDS,

@@ -117,8 +117,6 @@ static void setDescriptor(InputDeviceIdentifier& identifier) {
         }
     }
     identifier.descriptor = sha1(rawDescriptor);
-    ALOGV("Created descriptor: raw=%s, cooked=%s", rawDescriptor.string(),
-            identifier.descriptor.string());
 }
 
 // --- Global Functions ---
@@ -661,8 +659,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
         if (mNeedToReopenDevices) {
             mNeedToReopenDevices = false;
 
-            ALOGI("Reopening all input devices due to a configuration change.");
-
             closeAllDevicesLocked();
             mNeedToScanDevices = true;
             break; // return to the caller before we actually rescan
@@ -671,8 +667,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
         // Report any devices that had last been added/removed.
         while (mClosingDevices) {
             Device* device = mClosingDevices;
-            ALOGV("Reporting device closed: id=%d, name=%s\n",
-                 device->id, device->path.string());
             mClosingDevices = device->next;
             event->when = now;
             event->deviceId = device->id == mBuiltInKeyboardId ? BUILT_IN_KEYBOARD_ID : device->id;
@@ -693,8 +687,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
 
         while (mOpeningDevices != NULL) {
             Device* device = mOpeningDevices;
-            ALOGV("Reporting device opened: id=%d, name=%s\n",
-                 device->id, device->path.string());
             mOpeningDevices = device->next;
             event->when = now;
             event->deviceId = device->id == mBuiltInKeyboardId ? 0 : device->id;
@@ -723,15 +715,12 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
             if (eventItem.data.u32 == EPOLL_ID_INOTIFY) {
                 if (eventItem.events & EPOLLIN) {
                     mPendingINotify = true;
-                } else {
-                    ALOGW("Received unexpected epoll event 0x%08x for INotify.", eventItem.events);
                 }
                 continue;
             }
 
             if (eventItem.data.u32 == EPOLL_ID_WAKE) {
                 if (eventItem.events & EPOLLIN) {
-                    ALOGV("awoken after wake()");
                     awoken = true;
                     char buffer[16];
                     ssize_t nRead;
@@ -775,10 +764,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
                     size_t count = size_t(readSize) / sizeof(struct input_event);
                     for (size_t i = 0; i < count; i++) {
                         struct input_event& iev = readBuffer[i];
-                        ALOGV("%s got: time=%d.%06d, type=%d, code=%d, value=%d",
-                                device->path.string(),
-                                (int) iev.time.tv_sec, (int) iev.time.tv_usec,
-                                iev.type, iev.code, iev.value);
 
                         // Some input devices may have a better concept of the time
                         // when an input event was actually generated than the kernel
@@ -801,8 +786,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
                                 device->timestampOverrideSec = 0;
                                 device->timestampOverrideUsec = 0;
                             }
-                            ALOGV("applied override time %d.%06d",
-                                    int(iev.time.tv_sec), int(iev.time.tv_usec));
                         }
 
 #ifdef HAVE_POSIX_CLOCKS
@@ -819,7 +802,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
                         // system call that also queries ktime_get_ts().
                         event->when = nsecs_t(iev.time.tv_sec) * 1000000000LL
                                 + nsecs_t(iev.time.tv_usec) * 1000LL;
-                        ALOGV("event time %lld, now %lld", event->when, now);
 
                         // Bug 7291243: Add a guard in case the kernel generates timestamps
                         // that appear to be far into the future because they were generated
@@ -840,18 +822,7 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
                             // Double-check.  Time may have moved on.
                             nsecs_t time = systemTime(SYSTEM_TIME_MONOTONIC);
                             if (event->when > time) {
-                                ALOGW("An input event from %s has a timestamp that appears to "
-                                        "have been generated using the wrong clock source "
-                                        "(expected CLOCK_MONOTONIC): "
-                                        "event time %lld, current time %lld, call time %lld.  "
-                                        "Using current time instead.",
-                                        device->path.string(), event->when, time, now);
                                 event->when = time;
-                            } else {
-                                ALOGV("Event time is ok but failed the fast path and required "
-                                        "an extra call to systemTime: "
-                                        "event time %lld, current time %lld, call time %lld.",
-                                        event->when, time, now);
                             }
                         }
 #else
@@ -872,8 +843,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
                     }
                 }
             } else if (eventItem.events & EPOLLHUP) {
-                ALOGI("Removing device %s due to epoll hang-up event.",
-                        device->identifier.name.string());
                 deviceChanged = true;
                 closeDeviceLocked(device);
             } else {
@@ -949,8 +918,6 @@ size_t EventHub::getEvents(int timeoutMillis, RawEvent* buffer, size_t bufferSiz
 }
 
 void EventHub::wake() {
-    ALOGV("wake() called");
-
     ssize_t nWrite;
     do {
         nWrite = write(mWakeWritePipeFd, "W", 1);
@@ -1000,8 +967,6 @@ static const int32_t GAMEPAD_KEYCODES[] = {
 status_t EventHub::openDeviceLocked(const char *devicePath) {
     char buffer[80];
 
-    ALOGV("Opening device: %s", devicePath);
-
     int fd = open(devicePath, O_RDWR | O_CLOEXEC);
     if(fd < 0) {
         ALOGE("could not open %s, %s\n", devicePath, strerror(errno));
@@ -1022,7 +987,6 @@ status_t EventHub::openDeviceLocked(const char *devicePath) {
     for (size_t i = 0; i < mExcludedDevices.size(); i++) {
         const String8& item = mExcludedDevices.itemAt(i);
         if (identifier.name == item) {
-            ALOGI("ignoring event id %s driver %s\n", devicePath, item.string());
             close(fd);
             return -1;
         }
@@ -1031,7 +995,6 @@ status_t EventHub::openDeviceLocked(const char *devicePath) {
     // Get device driver version.
     int driverVersion;
     if(ioctl(fd, EVIOCGVERSION, &driverVersion)) {
-        ALOGE("could not get driver version for %s, %s\n", devicePath, strerror(errno));
         close(fd);
         return -1;
     }
@@ -1226,8 +1189,6 @@ status_t EventHub::openDeviceLocked(const char *devicePath) {
 
     // If the device isn't recognized as something we handle, don't monitor it.
     if (device->classes == 0) {
-        ALOGV("Dropping device: id=%d, path='%s', name='%s'",
-                deviceId, devicePath, device->identifier.name.string());
         delete device;
         return -1;
     }
@@ -1314,16 +1275,8 @@ void EventHub::loadConfigurationLocked(Device* device) {
     device->configurationFile = getInputDeviceConfigurationFilePathByDeviceIdentifier(
             device->identifier, INPUT_DEVICE_CONFIGURATION_FILE_TYPE_CONFIGURATION);
     if (device->configurationFile.isEmpty()) {
-        ALOGD("No input device configuration file found for device '%s'.",
-                device->identifier.name.string());
     } else {
-        status_t status = PropertyMap::load(device->configurationFile,
-                &device->configuration);
-        if (status) {
-            ALOGE("Error loading input device configuration file for device '%s'.  "
-                    "Using default configuration.",
-                    device->identifier.name.string());
-        }
+        status_t status = PropertyMap::load(device->configurationFile, &device->configuration);
     }
 }
 
@@ -1354,12 +1307,9 @@ bool EventHub::isExternalDeviceLocked(Device* device) {
 
 int32_t EventHub::getNextControllerNumberLocked(Device* device) {
     if (mControllerNumbers.isFull()) {
-        ALOGI("Maximum number of controllers reached, assigning controller number 0 to device %s",
-                device->identifier.name.string());
         return 0;
     }
-    // Since the controller number 0 is reserved for non-controllers, translate all numbers up by
-    // one
+    // Since the controller number 0 is reserved for non-controllers, translate all numbers up by one
     return static_cast<int32_t>(mControllerNumbers.markFirstUnmarkedBit() + 1);
 }
 
@@ -1377,7 +1327,7 @@ bool EventHub::hasKeycodeLocked(Device* device, int keycode) const {
     if (!device->keyMap.haveKeyLayout() || !device->keyBitmask) {
         return false;
     }
-    
+
     Vector<int32_t> scanCodes;
     device->keyMap.keyLayoutMap->findScanCodesForKey(keycode, &scanCodes);
     const size_t N = scanCodes.size();
@@ -1387,7 +1337,7 @@ bool EventHub::hasKeycodeLocked(Device* device, int keycode) const {
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -1397,7 +1347,6 @@ status_t EventHub::closeDeviceByPathLocked(const char *devicePath) {
         closeDeviceLocked(device);
         return 0;
     }
-    ALOGV("Remove device: %s not found, device may already have been removed.", devicePath);
     return -1;
 }
 
@@ -1408,10 +1357,6 @@ void EventHub::closeAllDevicesLocked() {
 }
 
 void EventHub::closeDeviceLocked(Device* device) {
-    ALOGI("Removed device: path=%s name=%s id=%d fd=%d classes=0x%x\n",
-         device->path.string(), device->identifier.name.string(), device->id,
-         device->fd, device->classes);
-
     if (device->id == mBuiltInKeyboardId) {
         ALOGW("built-in keyboard device %s (id=%d) is closing! the apps will not like this",
                 device->path.string(), mBuiltInKeyboardId);
@@ -1444,7 +1389,6 @@ void EventHub::closeDeviceLocked(Device* device) {
         // Unlink the device from the opening devices list then delete it.
         // We don't need to tell the client that the device was closed because
         // it does not even know it was opened in the first place.
-        ALOGI("Device %s was immediately closed after opening.", device->path.string());
         if (pred) {
             pred->next = device->next;
         } else {
@@ -1468,7 +1412,6 @@ status_t EventHub::readNotifyLocked() {
     int event_pos = 0;
     struct inotify_event *event;
 
-    ALOGV("EventHub::readNotify nfd: %d\n", mINotifyFd);
     res = read(mINotifyFd, event_buf, sizeof(event_buf));
     if(res < (int)sizeof(*event)) {
         if(errno == EINTR)
@@ -1490,7 +1433,6 @@ status_t EventHub::readNotifyLocked() {
             if(event->mask & IN_CREATE) {
                 openDeviceLocked(devname);
             } else {
-                ALOGI("Removing device '%s' due to inotify event\n", devname);
                 closeDeviceByPathLocked(devname);
             }
         }
@@ -1526,8 +1468,6 @@ status_t EventHub::scanDirLocked(const char *dirname)
 }
 
 void EventHub::requestReopenDevices() {
-    ALOGV("requestReopenDevices() called");
-
     AutoMutex _l(mLock);
     mNeedToReopenDevices = true;
 }

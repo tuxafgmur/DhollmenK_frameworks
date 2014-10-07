@@ -93,8 +93,8 @@ import libcore.io.IoUtils;
  */
 public class Vpn extends BaseNetworkStateTracker {
     private static final String TAG = "Vpn";
-    private static final boolean LOGD = true;
-    
+    private static final boolean LOGD = false;
+
     // TODO: create separate trackers for each unique VPN to support
     // automated reconnection
 
@@ -276,7 +276,6 @@ public class Vpn extends BaseNetworkStateTracker {
             mLegacyVpnRunner = null;
         }
 
-        Log.i(TAG, "Switched from " + mPackage + " to " + newPackage);
         mPackage = newPackage;
         mConfig = null;
         updateState(DetailedState.IDLE, "prepare");
@@ -452,7 +451,6 @@ public class Vpn extends BaseNetworkStateTracker {
             mInterface = oldInterface;
             throw e;
         }
-        Log.i(TAG, "Established by " + config.user + " on " + mInterface);
 
         // TODO: ensure that contract class eventually marks as connected
         updateState(DetailedState.AUTHENTICATING, "establish");
@@ -949,7 +947,6 @@ public class Vpn extends BaseNetworkStateTracker {
 
         public void check(String interfaze) {
             if (interfaze.equals(mOuterInterface)) {
-                Log.i(TAG, "Legacy VPN is going down with " + interfaze);
                 exit();
             }
         }
@@ -1174,19 +1171,16 @@ public class Vpn extends BaseNetworkStateTracker {
                                 try {
                                     addVpnUserLocked(user.id);
                                 } catch (Exception e) {
-                                    Log.wtf(TAG, "Failed to add user " + user.id
-                                            + " to owner's VPN");
+                                    Log.wtf(TAG, "Failed to add user " + user.id + " to owner's VPN");
                                 }
                             }
                         }
                     } finally {
                         Binder.restoreCallingIdentity(token);
                     }
-                    Log.i(TAG, "Connected!");
                     updateState(DetailedState.CONNECTED, "execute");
                 }
             } catch (Exception e) {
-                Log.i(TAG, "Aborting", e);
                 // make sure the routing is cleared
                 try {
                     mCallback.clearMarkedForwarding(mConfig.interfaze);

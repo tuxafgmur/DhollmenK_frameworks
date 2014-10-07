@@ -65,7 +65,7 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
     private static final int DEFAULT_QUOTA_KB = 5 * 1024;
     private static final int DEFAULT_QUOTA_PERCENT = 10;
     private static final int DEFAULT_RESERVE_PERCENT = 10;
-    private static final int QUOTA_RESCAN_MILLIS = 5000;
+    private static final int QUOTA_RESCAN_MILLIS = 150000;
 
     // mHandler 'what' value.
     private static final int MSG_SEND_BROADCAST = 1;
@@ -120,7 +120,6 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
                         init();
                         trimToFit();
                     } catch (IOException e) {
-                        Slog.e(TAG, "Can't init", e);
                     }
                 }
             }.start();
@@ -179,6 +178,9 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
         File temp = null;
         OutputStream output = null;
         final String tag = entry.getTag();
+	if (temp == null) {
+            return;
+        }
         try {
             int flags = entry.getFlags();
             if ((flags & DropBoxManager.IS_EMPTY) != 0) throw new IllegalArgumentException();
@@ -235,7 +237,6 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
 
                 long len = temp.length();
                 if (len > max) {
-                    Slog.w(TAG, "Dropping: " + tag + " (" + temp.length() + " > " + max + " bytes)");
                     temp.delete();
                     temp = null;  // Pass temp = null to createEntry() to leave a tombstone
                     break;
@@ -257,7 +258,6 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
             // very lock while waiting for the WindowManagerService lock.
             mHandler.sendMessage(mHandler.obtainMessage(MSG_SEND_BROADCAST, dropboxIntent));
         } catch (IOException e) {
-            Slog.e(TAG, "Can't write: " + tag, e);
         } finally {
             try { if (output != null) output.close(); } catch (IOException e) {}
             entry.close();
@@ -277,6 +277,10 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
 
     public synchronized DropBoxManager.Entry getNextEntry(String tag, long millis) {
         if (mContext.checkCallingOrSelfPermission(android.Manifest.permission.READ_LOGS)
+                == PackageManager.PERMISSION_GRANTED) {
+	    return null;
+	}
+        if (mContext.checkCallingOrSelfPermission(android.Manifest.permission.READ_LOGS)
                 != PackageManager.PERMISSION_GRANTED) {
             throw new SecurityException("READ_LOGS permission required");
         }
@@ -284,7 +288,6 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
         try {
             init();
         } catch (IOException e) {
-            Slog.e(TAG, "Can't init", e);
             return null;
         }
 
@@ -300,7 +303,6 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
                 return new DropBoxManager.Entry(
                         entry.tag, entry.timestampMillis, entry.file, entry.flags);
             } catch (IOException e) {
-                Slog.e(TAG, "Can't read: " + entry.file, e);
                 // Continue to next file
             }
         }
@@ -311,15 +313,12 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
     public synchronized void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
         if (mContext.checkCallingOrSelfPermission(android.Manifest.permission.DUMP)
                 != PackageManager.PERMISSION_GRANTED) {
-            pw.println("Permission Denial: Can't dump DropBoxManagerService");
             return;
         }
 
         try {
             init();
         } catch (IOException e) {
-            pw.println("Can't initialize: " + e);
-            Slog.e(TAG, "Can't init", e);
             return;
         }
 
@@ -605,17 +604,14 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
             // Scan pre-existing files.
             for (File file : files) {
                 if (file.getName().endsWith(".tmp")) {
-                    Slog.i(TAG, "Cleaning temp file: " + file);
                     file.delete();
                     continue;
                 }
 
                 EntryFile entry = new EntryFile(file, mBlockSize);
                 if (entry.tag == null) {
-                    Slog.w(TAG, "Unrecognized file: " + file);
                     continue;
                 } else if (entry.timestampMillis == 0) {
-                    Slog.w(TAG, "Invalid filename: " + file);
                     file.delete();
                     continue;
                 }
@@ -770,7 +766,6 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
                         if (entry.file != null) entry.file.delete();
                         enrollEntry(new EntryFile(mDropBoxDir, entry.tag, entry.timestampMillis));
                     } catch (IOException e) {
-                        Slog.e(TAG, "Can't write tombstone file", e);
                     }
                 }
             }

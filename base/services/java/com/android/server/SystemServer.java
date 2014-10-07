@@ -88,7 +88,6 @@ class ServerThread {
     ContentResolver mContentResolver;
 
     void reportWtf(String msg, Throwable e) {
-        Slog.w(TAG, "***********************************************");
         Log.wtf(TAG, "BOOT FAILURE " + msg, e);
     }
 
@@ -180,16 +179,9 @@ class ServerThread {
         wmHandler.post(new Runnable() {
             @Override
             public void run() {
-                //Looper.myLooper().setMessageLogging(new LogPrinter(
-                //        android.util.Log.DEBUG, TAG, android.util.Log.LOG_ID_SYSTEM));
                 android.os.Process.setThreadPriority(
                         android.os.Process.THREAD_PRIORITY_DISPLAY);
                 android.os.Process.setCanSelfBackground(false);
-
-                // For debug builds, log event loop stalls to dropbox for analysis.
-                if (StrictMode.conditionallyEnableDebugLogging()) {
-                    Slog.i(TAG, "Enabled StrictMode logging for WM Looper");
-                }
             }
         });
 
@@ -200,7 +192,6 @@ class ServerThread {
             // Wait for installd to finished starting up so that it has a chance to
             // create critical directories such as /data/user with the appropriate
             // permissions.  We need this to complete before we initialize other services.
-            Slog.i(TAG, "Waiting for installd to be ready.");
             installer = new Installer();
             installer.ping();
 
@@ -211,7 +202,6 @@ class ServerThread {
             Slog.i(TAG, "Activity Manager");
             context = ActivityManagerService.main(factoryTest);
         } catch (RuntimeException e) {
-            Slog.e("System", "******************************************");
             Slog.e("System", "************ Failure starting bootstrap service", e);
         }
 
@@ -356,7 +346,6 @@ class ServerThread {
                 ServiceManager.addService(BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE, bluetooth);
             }
         } catch (RuntimeException e) {
-            Slog.e("System", "******************************************");
             Slog.e("System", "************ Failure starting core service", e);
         }
 
@@ -630,7 +619,6 @@ class ServerThread {
             }
 
             try {
-                Slog.i(TAG, "DropBox Service");
                 ServiceManager.addService(Context.DROPBOX_SERVICE,
                         new DropBoxManagerService(context, new File("/data/system/dropbox")));
             } catch (Throwable e) {
@@ -978,8 +966,6 @@ class ServerThread {
         // initialization.
         ActivityManagerService.self().systemReady(new Runnable() {
             public void run() {
-                Slog.i(TAG, "Making services ready");
-
                 try {
                     ActivityManagerService.self().startObservingNativeCrashes();
                 } catch (Throwable e) {
@@ -1126,20 +1112,13 @@ class ServerThread {
             }
         });
 
-        // For debug builds, log event loop stalls to dropbox for analysis.
-        if (StrictMode.conditionallyEnableDebugLogging()) {
-            Slog.i(TAG, "Enabled StrictMode for system server main thread.");
-        }
-
         Looper.loop();
-        Slog.d(TAG, "System ServerThread is exiting!");
     }
 
     static final void startSystemUi(Context context) {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.android.systemui",
                     "com.android.systemui.SystemUIService"));
-        //Slog.d(TAG, "Starting service: " + intent);
         context.startServiceAsUser(intent, UserHandle.OWNER);
     }
 }

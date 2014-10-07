@@ -111,7 +111,6 @@ public class EntropyMixer extends Binder {
         try {
             RandomBlock.fromFile(entropyFile).toFile(randomDevice, false);
         } catch (FileNotFoundException e) {
-            Slog.w(TAG, "No existing entropy file -- first boot?");
         } catch (IOException e) {
             Slog.w(TAG, "Failure loading existing entropy file", e);
         }
@@ -119,7 +118,6 @@ public class EntropyMixer extends Binder {
 
     private void writeEntropy() {
         try {
-            Slog.i(TAG, "Writing entropy...");
             RandomBlock.fromFile(randomDevice).toFile(entropyFile, true);
         } catch (IOException e) {
             Slog.w(TAG, "Unable to write entropy", e);

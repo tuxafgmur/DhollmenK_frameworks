@@ -231,9 +231,6 @@ class WindowStateAnimator {
         }
         mTransformation.clear();
         final boolean more = mAnimation.getTransformation(currentTime, mTransformation);
-        if (false && DEBUG_ANIM) Slog.v(
-            TAG, "Stepped animation in " + this +
-            ": more=" + more + ", xform=" + mTransformation);
         return more;
     }
 
@@ -340,8 +337,6 @@ class WindowStateAnimator {
             mWin.mDisplayContent.layoutNeeded = true;
             if (!mWin.mPolicyVisibility) {
                 if (mService.mCurrentFocus == mWin) {
-                    if (WindowManagerService.DEBUG_FOCUS_LIGHT) Slog.i(TAG,
-                            "setAnimationLocked: setting mFocusMayChange true");
                     mService.mFocusMayChange = true;
                 }
                 // Window is no longer visible -- make sure if we were waiting
@@ -380,12 +375,6 @@ class WindowStateAnimator {
     }
 
     void finishExit() {
-        if (WindowManagerService.DEBUG_ANIM) Slog.v(
-                TAG, "finishExit in " + this
-                + ": exiting=" + mWin.mExiting
-                + " remove=" + mWin.mRemoveOnExit
-                + " windowAnimating=" + isWindowAnimating());
-
         final int N = mWin.mChildWindows.size();
         for (int i=0; i<N; i++) {
             mWin.mChildWindows.get(i).mWinAnimator.finishExit();
@@ -399,9 +388,6 @@ class WindowStateAnimator {
             return;
         }
 
-        if (WindowManagerService.localLOGV) Slog.v(
-                TAG, "Exit animation finished in " + this
-                + ": remove=" + mWin.mRemoveOnExit);
         if (mSurfaceControl != null) {
             mService.mDestroySurface.add(mWin);
             mWin.mDestroying = true;
@@ -495,15 +481,11 @@ class WindowStateAnimator {
             super(s, name, w, h, format, flags);
             mName = name != null ? name : "Not named";
             mSize.set(w, h);
-            Slog.v(SURFACE_TAG, "ctor: " + this + ". Called by "
-                    + Debug.getCallers(3));
         }
 
         @Override
         public void setAlpha(float alpha) {
             if (mSurfaceTraceAlpha != alpha) {
-                Slog.v(SURFACE_TAG, "setAlpha(" + alpha + "): OLD:" + this + ". Called by "
-                        + Debug.getCallers(3));
                 mSurfaceTraceAlpha = alpha;
             }
             super.setAlpha(alpha);
@@ -512,8 +494,6 @@ class WindowStateAnimator {
         @Override
         public void setLayer(int zorder) {
             if (zorder != mLayer) {
-                Slog.v(SURFACE_TAG, "setLayer(" + zorder + "): OLD:" + this + ". Called by "
-                        + Debug.getCallers(3));
                 mLayer = zorder;
             }
             super.setLayer(zorder);
@@ -532,8 +512,6 @@ class WindowStateAnimator {
         @Override
         public void setPosition(float x, float y) {
             if (x != mPosition.x || y != mPosition.y) {
-                Slog.v(SURFACE_TAG, "setPosition(" + x + "," + y + "): OLD:" + this
-                        + ". Called by " + Debug.getCallers(3));
                 mPosition.set(x, y);
             }
             super.setPosition(x, y);
@@ -542,8 +520,6 @@ class WindowStateAnimator {
         @Override
         public void setSize(int w, int h) {
             if (w != mSize.x || h != mSize.y) {
-                Slog.v(SURFACE_TAG, "setSize(" + w + "," + h + "): OLD:" + this + ". Called by "
-                        + Debug.getCallers(3));
                 mSize.set(w, h);
             }
             super.setSize(w, h);
@@ -553,8 +529,6 @@ class WindowStateAnimator {
         public void setWindowCrop(Rect crop) {
             if (crop != null) {
                 if (!crop.equals(mWindowCrop)) {
-                    Slog.v(SURFACE_TAG, "setWindowCrop(" + crop.toShortString() + "): OLD:" + this
-                            + ". Called by " + Debug.getCallers(3));
                     mWindowCrop.set(crop);
                 }
             }
@@ -564,8 +538,6 @@ class WindowStateAnimator {
         @Override
         public void setLayerStack(int layerStack) {
             if (layerStack != mLayerStack) {
-                Slog.v(SURFACE_TAG, "setLayerStack(" + layerStack + "): OLD:" + this
-                        + ". Called by " + Debug.getCallers(3));
                 mLayerStack = layerStack;
             }
             super.setLayerStack(layerStack);
@@ -574,7 +546,6 @@ class WindowStateAnimator {
         @Override
         public void hide() {
             if (mShown) {
-                Slog.v(SURFACE_TAG, "hide: OLD:" + this + ". Called by " + Debug.getCallers(3));
                 mShown = false;
             }
             super.hide();
@@ -583,7 +554,6 @@ class WindowStateAnimator {
         @Override
         public void show() {
             if (!mShown) {
-                Slog.v(SURFACE_TAG, "show: OLD:" + this + ". Called by " + Debug.getCallers(3));
                 mShown = true;
             }
             super.show();
@@ -592,15 +562,12 @@ class WindowStateAnimator {
         @Override
         public void destroy() {
             super.destroy();
-            Slog.v(SURFACE_TAG, "destroy: " + this + ". Called by " + Debug.getCallers(3));
             sSurfaces.remove(this);
         }
 
         @Override
         public void release() {
             super.release();
-            Slog.v(SURFACE_TAG, "release: " + this + ". Called by "
-                    + Debug.getCallers(3));
             sSurfaces.remove(this);
         }
 
@@ -703,13 +670,11 @@ class WindowStateAnimator {
                         + " / " + this);
             } catch (OutOfResourcesException e) {
                 mWin.mHasSurface = false;
-                Slog.w(TAG, "OutOfResourcesException creating surface");
                 mService.reclaimSomeSurfaceMemoryLocked(this, "create", true);
                 mDrawState = NO_SURFACE;
                 return null;
             } catch (Exception e) {
                 mWin.mHasSurface = false;
-                Slog.e(TAG, "Exception creating surface", e);
                 mDrawState = NO_SURFACE;
                 return null;
             }
@@ -737,7 +702,6 @@ class WindowStateAnimator {
                     mSurfaceControl.setAlpha(0);
                     mSurfaceShown = false;
                 } catch (RuntimeException e) {
-                    Slog.w(TAG, "Error creating surface in " + w, e);
                     mService.reclaimSomeSurfaceMemoryLocked(this, "create-init", true);
                 }
                 mLastHidden = true;
@@ -746,8 +710,6 @@ class WindowStateAnimator {
                 if (SHOW_LIGHT_TRANSACTIONS) Slog.i(TAG,
                         "<<< CLOSE TRANSACTION createSurfaceLocked");
             }
-            if (WindowManagerService.localLOGV) Slog.v(
-                    TAG, "Created surface " + this);
         }
         return mSurfaceControl;
     }
@@ -773,8 +735,6 @@ class WindowStateAnimator {
                         e = new RuntimeException();
                         e.fillInStackTrace();
                     }
-                    Slog.w(TAG, "Window " + this + " destroying surface "
-                            + mSurfaceControl + ", session " + mSession, e);
                 }
                 if (mSurfaceDestroyDeferred) {
                     if (mSurfaceControl != null && mPendingDestroySurface != mSurfaceControl) {
@@ -935,7 +895,6 @@ class WindowStateAnimator {
             // (a 2x2 matrix + an offset)
             // Here we must not transform the position of the surface
             // since it is already included in the transformation.
-            //Slog.i(TAG, "Transform: " + matrix);
 
             mHaveMatrix = true;
             tmpMatrix.getValues(tmpFloats);
@@ -959,7 +918,6 @@ class WindowStateAnimator {
                     || (!PixelFormat.formatHasAlpha(mWin.mAttrs.format)
                     || (mWin.isIdentityMatrix(mDsDx, mDtDx, mDsDy, mDtDy)
                             && x == frame.left && y == frame.top))) {
-                //Slog.i(TAG, "Applying alpha transform");
                 if (selfTransformation) {
                     mShownAlpha *= mTransformation.getAlpha();
                 }
@@ -975,8 +933,6 @@ class WindowStateAnimator {
                 if (screenAnimation) {
                     mShownAlpha *= screenRotationAnimation.getEnterTransformation().getAlpha();
                 }
-            } else {
-                //Slog.i(TAG, "Not applying alpha transform");
             }
 
             if ((DEBUG_SURFACE_TRACE || WindowManagerService.localLOGV)
@@ -1297,7 +1253,6 @@ class WindowStateAnimator {
                         w.mToken.hasVisible = true;
                     }
                 } catch (RuntimeException e) {
-                    Slog.w(TAG, "Error updating surface in " + w, e);
                     if (!recoveringMemory) {
                         mService.reclaimSomeSurfaceMemoryLocked(this, "update", true);
                     }
@@ -1328,7 +1283,6 @@ class WindowStateAnimator {
 
     void setTransparentRegionHintLocked(final Region region) {
         if (mSurfaceControl == null) {
-            Slog.w(TAG, "setTransparentRegionHint: null mSurface after mHasSurface true");
             return;
         }
         if (SHOW_LIGHT_TRANSACTIONS) Slog.i(TAG,
@@ -1380,8 +1334,6 @@ class WindowStateAnimator {
     // This must be called while inside a transaction.
     boolean performShowLocked() {
         if (mWin.isHiddenFromUserLocked()) {
-            Slog.w(TAG, "current user violation " + mService.mCurrentUserId + " trying to display "
-                    + this + ", type " + mWin.mAttrs.type + ", belonging to " + mWin.mOwnerUid);
             return false;
         }
         if (DEBUG_VISIBILITY || (DEBUG_STARTING_WINDOW &&

@@ -1124,8 +1124,6 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                 // because if the focus changes some time before or after, the
                 // next client receiving focus that has any interest in input will
                 // be calling through here after that change happens.
-                Slog.w(TAG, "Starting input on non-focused client " + cs.client
-                        + " (uid=" + cs.uid + " pid=" + cs.pid + ")");
                 return null;
             }
         } catch (RemoteException e) {
@@ -1512,7 +1510,6 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
         try {
             if (token == null || mCurToken != token) {
                 int uid = Binder.getCallingUid();
-                Slog.w(TAG, "Ignoring setImeWindowStatus of uid " + uid + " token: " + token);
                 return;
             }
             synchronized (mMethodMap) {
@@ -1910,8 +1907,6 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                         // because if the focus changes some time before or after, the
                         // next client receiving focus that has any interest in input will
                         // be calling through here after that change happens.
-                        Slog.w(TAG, "Focus gain on non-focused client " + cs.client
-                                + " (uid=" + cs.uid + " pid=" + cs.pid + ")");
                         return null;
                     }
                 } catch (RemoteException e) {
@@ -1926,8 +1921,6 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                 }
 
                 if (mCurFocusedWindow == windowToken) {
-                    Slog.w(TAG, "Window already focused, ignoring focus gain of: " + client
-                            + " attribute=" + attribute + ", token = " + windowToken);
                     if (attribute != null) {
                         return startInputUncheckedLocked(cs, inputContext, attribute,
                                 controlFlags);
@@ -2484,9 +2477,6 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                 try {
                     ((ClientState)msg.obj).client.setActive(msg.arg1 != 0);
                 } catch (RemoteException e) {
-                    Slog.w(TAG, "Got RemoteException sending setActive(false) notification to pid "
-                            + ((ClientState)msg.obj).pid + " uid "
-                            + ((ClientState)msg.obj).uid);
                 }
                 return true;
 

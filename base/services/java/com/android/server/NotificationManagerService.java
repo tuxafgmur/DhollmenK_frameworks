@@ -454,7 +454,6 @@ public class NotificationManagerService extends INotificationManager.Stub
     private boolean noteNotificationOp(String pkg, int uid) {
         if (mAppOps.noteOpNoThrow(AppOpsManager.OP_POST_NOTIFICATION, uid, pkg)
                 != AppOpsManager.MODE_ALLOWED) {
-            Slog.v(TAG, "notifications are disabled by AppOps for " + pkg);
             return false;
         }
         return true;
@@ -462,8 +461,6 @@ public class NotificationManagerService extends INotificationManager.Stub
 
     public void setNotificationsEnabledForPackage(String pkg, int uid, boolean enabled) {
         checkCallerIsSystem();
-
-        Slog.v(TAG, (enabled?"en":"dis") + "abling notifications for " + pkg);
 
         mAppOps.setMode(AppOpsManager.OP_POST_NOTIFICATION, uid, pkg,
                 enabled ? AppOpsManager.MODE_ALLOWED : AppOpsManager.MODE_IGNORED);
@@ -576,10 +573,6 @@ public class NotificationManagerService extends INotificationManager.Stub
 
                 if (!android.Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE.equals(
                                 info.permission)) {
-                    Slog.w(TAG, "Skipping notification listener service "
-                            + info.packageName + "/" + info.name
-                            + ": it does not require the permission "
-                            + android.Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE);
                     continue;
                 }
                 installed.add(new ComponentName(info.packageName, info.name));
@@ -649,15 +642,12 @@ public class NotificationManagerService extends INotificationManager.Stub
         for (NotificationListenerInfo info : toRemove) {
             final ComponentName component = info.component;
             final int oldUser = info.userid;
-            Slog.v(TAG, "disabling notification listener for user " + oldUser + ": " + component);
             unregisterListenerService(component, info.userid);
         }
 
         final int N = toAdd.size();
         for (int i=0; i<N; i++) {
             final ComponentName component = toAdd.get(i);
-            Slog.v(TAG, "enabling notification listener for user " + currentUser + ": "
-                    + component);
             registerListenerService(component, currentUser);
         }
     }
@@ -1142,10 +1132,7 @@ public class NotificationManagerService extends INotificationManager.Stub
 
         public void onNotificationError(String pkg, String tag, int id,
                 int uid, int initialPid, String message) {
-            Slog.d(TAG, "onNotification error pkg=" + pkg + " tag=" + tag + " id=" + id
-                    + "; will crashApplication(uid=" + uid + ", pid=" + initialPid + ")");
-            // XXX to be totally correct, the caller should tell us which user
-            // this is for.
+            // XXX to be totally correct, the caller should tell us which user this is for.
             cancelNotification(pkg, tag, id, 0, 0, false, UserHandle.getUserId(uid));
             long ident = Binder.clearCallingIdentity();
             try {
@@ -1563,8 +1550,6 @@ public class NotificationManagerService extends INotificationManager.Stub
     }
 
     public void cancelToast(String pkg, ITransientNotification callback) {
-        Slog.i(TAG, "cancelToast pkg=" + pkg + " callback=" + callback);
-
         if (pkg == null || callback == null) {
             Slog.e(TAG, "Not cancelling notification. pkg=" + pkg + " callback=" + callback);
             return ;
@@ -2034,9 +2019,6 @@ public class NotificationManagerService extends INotificationManager.Stub
                     if (mLedNotification == old) {
                         mLedNotification = null;
                     }
-                    //Slog.i(TAG, "notification.lights="
-                    //        + ((old.notification.lights.flags & Notification.FLAG_SHOW_LIGHTS)
-                    //                  != 0));
                     if ((notification.flags & Notification.FLAG_SHOW_LIGHTS) != 0
                             && canInterrupt) {
                         mLights.add(r);

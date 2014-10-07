@@ -58,7 +58,7 @@ import java.util.HashSet;
 final class ActivityRecord {
     static final String TAG = ActivityManagerService.TAG;
     static final String TAG_TIMELINE = "Timeline";
-    static final boolean DEBUG_SAVED_STATE = ActivityStackSupervisor.DEBUG_SAVED_STATE;
+    static final boolean DEBUG_SAVED_STATE = false;
     final public static String RECENTS_PACKAGE_NAME = "com.android.systemui.recent";
 
     final ActivityManagerService service; // owner
@@ -335,7 +335,6 @@ final class ActivityRecord {
         try {
             return token != null ? ((Token)token).weakActivity.get() : null;
         } catch (ClassCastException e) {
-            Slog.w(ActivityManagerService.TAG, "Bad activity token: " + token, e);
             return null;
         }
     }
@@ -483,9 +482,6 @@ final class ActivityRecord {
         if (task != null && task.removeActivity(this)) {
             if (task != newTask) {
                 mStackSupervisor.removeTask(task);
-            } else {
-                Slog.d(TAG, "!!! REMOVE THIS LOG !!! setTask: nearly removed stack=" +
-                        (newTask == null ? null : newTask.stack));
             }
         }
         if (inHistory && !finishing) {
@@ -649,11 +645,7 @@ final class ActivityRecord {
                 app.thread.scheduleNewIntent(ar, appToken);
                 unsent = false;
             } catch (RemoteException e) {
-                Slog.w(ActivityManagerService.TAG,
-                        "Exception thrown sending new intent to " + this, e);
             } catch (NullPointerException e) {
-                Slog.w(ActivityManagerService.TAG,
-                        "Exception thrown sending new intent to " + this, e);
             }
         }
         if (unsent) {
@@ -760,9 +752,6 @@ final class ActivityRecord {
     void updateThumbnail(Bitmap newThumbnail, CharSequence description) {
         if (thumbHolder != null) {
             if (newThumbnail != null) {
-                if (ActivityManagerService.DEBUG_THUMBNAILS) Slog.i(ActivityManagerService.TAG,
-                        "Setting thumbnail of " + this + " holder " + thumbHolder
-                        + " to " + newThumbnail);
                 thumbHolder.lastThumbnail = newThumbnail;
             }
             thumbHolder.lastDescription = description;
@@ -930,8 +919,6 @@ final class ActivityRecord {
                 service.scheduleAppGcsLocked();
             }
         }
-        Log.i(TAG_TIMELINE, "Timeline: Activity_windows_visible id: "
-                + this + " time:" + SystemClock.uptimeMillis());
     }
 
     public void windowsGone() {
@@ -1000,7 +987,6 @@ final class ActivityRecord {
                 }
                 sleeping = _sleeping;
             } catch (RemoteException e) {
-                Slog.w(TAG, "Exception thrown when sleeping: " + intent.getComponent(), e);
             }
         }
     }
