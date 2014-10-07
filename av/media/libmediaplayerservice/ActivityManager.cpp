@@ -47,10 +47,6 @@ int openContentProviderFile(const String16& uri)
                 if (reply.readInt32() != 0) {
                     fd = dup(reply.readFileDescriptor());
                 }
-            } else {
-                // An exception was thrown back; fall through to return failure
-                ALOGD("openContentUri(%s) caught exception %d\n",
-                        String8(uri).string(), exceptionCode);
             }
         }
     }

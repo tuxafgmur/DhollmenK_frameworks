@@ -161,7 +161,6 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
     switch (state) {
         case OMX_StateExecuting:
         {
-            ALOGV("forcing Executing->Idle");
             sendCommand(OMX_CommandStateSet, OMX_StateIdle);
             OMX_ERRORTYPE err;
             int32_t iteration = 0;
@@ -187,7 +186,6 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
 
         case OMX_StateIdle:
         {
-            ALOGV("forcing Idle->Loaded");
             sendCommand(OMX_CommandStateSet, OMX_StateLoaded);
 
             freeActiveBuffers();
@@ -203,7 +201,6 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
                     break;
                 }
 
-                ALOGV("waiting for Loaded state...");
                 usleep(100000);
             }
             CHECK_EQ(err, OMX_ErrorNone);
@@ -220,10 +217,8 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
             break;
     }
 
-    ALOGV("calling destroyComponentInstance");
     OMX_ERRORTYPE err = master->destroyComponentInstance(
             static_cast<OMX_COMPONENTTYPE *>(mHandle));
-    ALOGV("destroyComponentInstance returned err %d", err);
 
     mHandle = NULL;
 
@@ -234,7 +229,6 @@ status_t OMXNodeInstance::freeNode(OMXMaster *master) {
     mOwner->invalidateNodeID(mNodeID);
     mNodeID = NULL;
 
-    ALOGV("OMXNodeInstance going away.");
     delete this;
 
     return StatusFromOMXError(err);
@@ -449,8 +443,6 @@ status_t OMXNodeInstance::prepareForAdaptivePlayback(
     params.nMaxFrameWidth = maxFrameWidth;
     params.nMaxFrameHeight = maxFrameHeight;
     if ((err = OMX_SetParameter(mHandle, index, &params)) != OMX_ErrorNone) {
-        ALOGW("OMX_SetParameter failed for PrepareForAdaptivePlayback "
-              "with error %d (0x%08x)", err, err);
         return UNKNOWN_ERROR;
     }
     return err;
@@ -679,7 +671,6 @@ status_t OMXNodeInstance::signalEndOfInputStream() {
     // flag set).  Seems easier than doing the equivalent from here.
     sp<GraphicBufferSource> bufferSource(getGraphicBufferSource());
     if (bufferSource == NULL) {
-        ALOGW("signalEndOfInputStream can only be used with Surface input");
         return INVALID_OPERATION;
     };
     return bufferSource->signalEndOfInputStream();
@@ -769,10 +760,7 @@ status_t OMXNodeInstance::freeBuffer(
 
     OMX_ERRORTYPE err = OMX_FreeBuffer(mHandle, portIndex, header);
 
-    if (err != OMX_ErrorNone) {
-        ALOGW("OMX_FreeBuffer failed w/ err %x, do not remove from active buffer list", err);
-    } else {
-        ALOGI("OMX_FreeBuffer for buffer header %p successful", header);
+    if (err == OMX_ErrorNone) {
         removeActiveBuffer(portIndex, buffer);
 
         delete buffer_meta;
@@ -829,9 +817,6 @@ status_t OMXNodeInstance::emptyDirectBuffer(
     header->nTimeStamp = timestamp;
 
     OMX_ERRORTYPE err = OMX_EmptyThisBuffer(mHandle, header);
-    if (err != OMX_ErrorNone) {
-        ALOGW("emptyDirectBuffer failed, OMX err=0x%x", err);
-    }
 
     return StatusFromOMXError(err);
 }
@@ -1023,9 +1008,6 @@ void OMXNodeInstance::removeActiveBuffer(
         }
     }
 
-    if (!found) {
-        ALOGW("Attempt to remove an active buffer we know nothing about...");
-    }
 }
 
 void OMXNodeInstance::freeActiveBuffers() {

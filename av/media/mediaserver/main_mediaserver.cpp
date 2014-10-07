@@ -129,7 +129,6 @@ int main(int argc, char** argv)
         }
         sp<ProcessState> proc(ProcessState::self());
         sp<IServiceManager> sm = defaultServiceManager();
-        ALOGI("ServiceManager: %p", sm.get());
 #ifdef SECTVOUT
         SecTVOutService::instantiate();
 #endif

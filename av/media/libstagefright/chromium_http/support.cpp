@@ -317,7 +317,6 @@ SfNetworkLibrary::VerifyResult SfNetworkLibrary::VerifyX509CertChain(
     } else {
         sp<IAudioService> service = interface_cast<IAudioService>(binder);
         int code = service->verifyX509CertChain(cert_chain, hostname, auth_type);
-        ALOGV("verified: %d", code);
         if (code == -1) {
             return VERIFY_OK;
         } else if (code == 2) { // SSL_IDMISMATCH

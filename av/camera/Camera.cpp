@@ -45,7 +45,6 @@ CameraTraits<Camera>::TCamConnectService CameraTraits<Camera>::fnConnectService 
 // construct a camera client from an existing camera remote
 sp<Camera> Camera::create(const sp<ICamera>& camera)
 {
-     ALOGV("create");
      if (camera == 0) {
          ALOGE("camera remote is a NULL pointer");
          return 0;
@@ -79,7 +78,6 @@ sp<Camera> Camera::connect(int cameraId, const String16& clientPackageName,
 
 status_t Camera::reconnect()
 {
-    ALOGV("reconnect");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->connect(this);
@@ -102,17 +100,14 @@ status_t Camera::unlock()
 // pass the buffered IGraphicBufferProducer to the camera service
 status_t Camera::setPreviewTarget(const sp<IGraphicBufferProducer>& bufferProducer)
 {
-    ALOGV("setPreviewTarget(%p)", bufferProducer.get());
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
-    ALOGD_IF(bufferProducer == 0, "app passed NULL surface");
     return c->setPreviewTarget(bufferProducer);
 }
 
 // start preview mode
 status_t Camera::startPreview()
 {
-    ALOGV("startPreview");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->startPreview();
@@ -120,8 +115,6 @@ status_t Camera::startPreview()
 
 status_t Camera::storeMetaDataInBuffers(bool enabled)
 {
-    ALOGV("storeMetaDataInBuffers: %s",
-            enabled? "true": "false");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->storeMetaDataInBuffers(enabled);
@@ -130,7 +123,6 @@ status_t Camera::storeMetaDataInBuffers(bool enabled)
 // start recording mode, must call setPreviewTarget first
 status_t Camera::startRecording()
 {
-    ALOGV("startRecording");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->startRecording();
@@ -139,7 +131,6 @@ status_t Camera::startRecording()
 // stop preview mode
 void Camera::stopPreview()
 {
-    ALOGV("stopPreview");
     sp <ICamera> c = mCamera;
     if (c == 0) return;
     c->stopPreview();
@@ -148,7 +139,6 @@ void Camera::stopPreview()
 // stop recording mode
 void Camera::stopRecording()
 {
-    ALOGV("stopRecording");
     {
         Mutex::Autolock _l(mLock);
         mRecordingProxyListener.clear();
@@ -161,7 +151,6 @@ void Camera::stopRecording()
 // release a recording frame
 void Camera::releaseRecordingFrame(const sp<IMemory>& mem)
 {
-    ALOGV("releaseRecordingFrame");
     sp <ICamera> c = mCamera;
     if (c == 0) return;
     c->releaseRecordingFrame(mem);
@@ -170,7 +159,6 @@ void Camera::releaseRecordingFrame(const sp<IMemory>& mem)
 // get preview state
 bool Camera::previewEnabled()
 {
-    ALOGV("previewEnabled");
     sp <ICamera> c = mCamera;
     if (c == 0) return false;
     return c->previewEnabled();
@@ -179,7 +167,6 @@ bool Camera::previewEnabled()
 // get recording state
 bool Camera::recordingEnabled()
 {
-    ALOGV("recordingEnabled");
     sp <ICamera> c = mCamera;
     if (c == 0) return false;
     return c->recordingEnabled();
@@ -187,7 +174,6 @@ bool Camera::recordingEnabled()
 
 status_t Camera::autoFocus()
 {
-    ALOGV("autoFocus");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->autoFocus();
@@ -195,7 +181,6 @@ status_t Camera::autoFocus()
 
 status_t Camera::cancelAutoFocus()
 {
-    ALOGV("cancelAutoFocus");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->cancelAutoFocus();
@@ -204,7 +189,6 @@ status_t Camera::cancelAutoFocus()
 // take a picture
 status_t Camera::takePicture(int msgType)
 {
-    ALOGV("takePicture: 0x%x", msgType);
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->takePicture(msgType);
@@ -213,7 +197,6 @@ status_t Camera::takePicture(int msgType)
 // set preview/capture parameters - key/value pairs
 status_t Camera::setParameters(const String8& params)
 {
-    ALOGV("setParameters");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->setParameters(params);
@@ -222,7 +205,6 @@ status_t Camera::setParameters(const String8& params)
 // get preview/capture parameters - key/value pairs
 String8 Camera::getParameters() const
 {
-    ALOGV("getParameters");
     String8 params;
     sp <ICamera> c = mCamera;
     if (c != 0) params = mCamera->getParameters();
@@ -232,7 +214,6 @@ String8 Camera::getParameters() const
 // send command to camera driver
 status_t Camera::sendCommand(int32_t cmd, int32_t arg1, int32_t arg2)
 {
-    ALOGV("sendCommand");
     sp <ICamera> c = mCamera;
     if (c == 0) return NO_INIT;
     return c->sendCommand(cmd, arg1, arg2);
@@ -252,7 +233,6 @@ void Camera::setRecordingProxyListener(const sp<ICameraRecordingProxyListener>& 
 
 void Camera::setPreviewCallbackFlags(int flag)
 {
-    ALOGV("setPreviewCallbackFlags");
     sp <ICamera> c = mCamera;
     if (c == 0) return;
     mCamera->setPreviewCallbackFlag(flag);
@@ -317,13 +297,11 @@ void Camera::dataCallbackTimestamp(nsecs_t timestamp, int32_t msgType, const sp<
 }
 
 sp<ICameraRecordingProxy> Camera::getRecordingProxy() {
-    ALOGV("getProxy");
     return new RecordingProxy(this);
 }
 
 status_t Camera::RecordingProxy::startRecording(const sp<ICameraRecordingProxyListener>& listener)
 {
-    ALOGV("RecordingProxy::startRecording");
     mCamera->setRecordingProxyListener(listener);
     mCamera->reconnect();
     return mCamera->startRecording();
@@ -331,13 +309,11 @@ status_t Camera::RecordingProxy::startRecording(const sp<ICameraRecordingProxyLi
 
 void Camera::RecordingProxy::stopRecording()
 {
-    ALOGV("RecordingProxy::stopRecording");
     mCamera->stopRecording();
 }
 
 void Camera::RecordingProxy::releaseRecordingFrame(const sp<IMemory>& mem)
 {
-    ALOGV("RecordingProxy::releaseRecordingFrame");
     mCamera->releaseRecordingFrame(mem);
 }
 

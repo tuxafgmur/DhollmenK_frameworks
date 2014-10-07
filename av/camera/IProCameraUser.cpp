@@ -54,7 +54,6 @@ public:
     // disconnect from camera service
     void disconnect()
     {
-        ALOGV("disconnect");
         Parcel data, reply;
         data.writeInterfaceToken(IProCameraUser::getInterfaceDescriptor());
         remote()->transact(DISCONNECT, data, &reply);
@@ -201,7 +200,6 @@ status_t BnProCameraUser::onTransact(
 {
     switch(code) {
         case DISCONNECT: {
-            ALOGV("DISCONNECT");
             CHECK_INTERFACE(IProCameraUser, data, reply);
             disconnect();
             reply->writeNoException();

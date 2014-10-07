@@ -189,8 +189,6 @@ void NuMediaExtractor::updateDurationAndBitrate() {
         if (!meta->findInt32(kKeyBitRate, &bitrate)) {
             const char *mime;
             CHECK(meta->findCString(kKeyMIMEType, &mime));
-            ALOGV("track of type '%s' does not publish bitrate", mime);
-
             mTotalBitrate = -1ll;
         } else if (mTotalBitrate >= 0ll) {
             mTotalBitrate += bitrate;

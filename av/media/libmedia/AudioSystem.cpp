@@ -57,7 +57,6 @@ const sp<IAudioFlinger>& AudioSystem::get_audio_flinger()
             binder = sm->getService(String16("media.audio_flinger"));
             if (binder != 0)
                 break;
-            ALOGW("AudioFlinger not published, waiting...");
             usleep(500000); // 0.5 s
         } while (true);
         if (gAudioFlingerClient == NULL) {
@@ -200,17 +199,11 @@ static const float dBConvertInverse = 1.0f / dBConvert;
 
 float AudioSystem::linearToLog(int volume)
 {
-    // float v = volume ? exp(float(100 - volume) * dBConvert) : 0;
-    // ALOGD("linearToLog(%d)=%f", volume, v);
-    // return v;
     return volume ? exp(float(100 - volume) * dBConvert) : 0;
 }
 
 int AudioSystem::logToLinear(float volume)
 {
-    // int v = volume ? 100 - int(dBConvertInverse * log(volume) + 0.5) : 0;
-    // ALOGD("logTolinear(%d)=%f", v, volume);
-    // return v;
     return volume ? 100 - int(dBConvertInverse * log(volume) + 0.5) : 0;
 }
 
@@ -239,19 +232,14 @@ status_t AudioSystem::getSamplingRate(audio_io_handle_t output,
     gLock.lock();
     outputDesc = AudioSystem::gOutputs.valueFor(output);
     if (outputDesc == NULL) {
-        ALOGV("getOutputSamplingRate() no output descriptor for output %d in gOutputs", output);
         gLock.unlock();
         const sp<IAudioFlinger>& af = AudioSystem::get_audio_flinger();
         if (af == 0) return PERMISSION_DENIED;
         *samplingRate = af->sampleRate(output);
     } else {
-        ALOGV("getOutputSamplingRate() reading from output desc");
         *samplingRate = outputDesc->samplingRate;
         gLock.unlock();
     }
-
-    ALOGV("getSamplingRate() streamType %d, output %d, sampling rate %u", streamType, output,
-            *samplingRate);
 
     return NO_ERROR;
 }
@@ -289,9 +277,6 @@ status_t AudioSystem::getFrameCount(audio_io_handle_t output,
         *frameCount = outputDesc->frameCount;
         gLock.unlock();
     }
-
-    ALOGV("getFrameCount() streamType %d, output %d, frameCount %d", streamType, output,
-            *frameCount);
 
     return NO_ERROR;
 }
@@ -335,8 +320,6 @@ status_t AudioSystem::getLatency(audio_io_handle_t output,
         gLock.unlock();
     }
 #endif
-
-    ALOGV("getLatency() streamType %d, output %d, latency %d", streamType, output, *latency);
 
     return NO_ERROR;
 }
@@ -435,12 +418,10 @@ void AudioSystem::AudioFlingerClient::binderDied(const wp<IBinder>& who) {
     if (gAudioErrorCallback) {
         gAudioErrorCallback(DEAD_OBJECT);
     }
-    ALOGW("AudioFlinger server died!");
 }
 
 void AudioSystem::AudioFlingerClient::ioConfigChanged(int event, audio_io_handle_t ioHandle,
         const void *param2) {
-    ALOGV("ioConfigChanged() event %d", event);
     const OutputDescriptor *desc;
     audio_stream_type_t stream;
 
@@ -453,7 +434,6 @@ void AudioSystem::AudioFlingerClient::ioConfigChanged(int event, audio_io_handle
         break;
     case OUTPUT_OPENED: {
         if (gOutputs.indexOfKey(ioHandle) >= 0) {
-            ALOGV("ioConfigChanged() opening already existing output! %d", ioHandle);
             break;
         }
         if (param2 == NULL) break;
@@ -461,17 +441,11 @@ void AudioSystem::AudioFlingerClient::ioConfigChanged(int event, audio_io_handle
 
         OutputDescriptor *outputDesc =  new OutputDescriptor(*desc);
         gOutputs.add(ioHandle, outputDesc);
-        ALOGV("ioConfigChanged() new output samplingRate %u, format %d channel mask %#x frameCount %u "
-                "latency %d",
-                outputDesc->samplingRate, outputDesc->format, outputDesc->channelMask,
-                outputDesc->frameCount, outputDesc->latency);
         } break;
     case OUTPUT_CLOSED: {
         if (gOutputs.indexOfKey(ioHandle) < 0) {
-            ALOGW("ioConfigChanged() closing unknown output! %d", ioHandle);
             break;
         }
-        ALOGV("ioConfigChanged() output %d closed", ioHandle);
 
         gOutputs.removeItem(ioHandle);
         } break;
@@ -479,16 +453,11 @@ void AudioSystem::AudioFlingerClient::ioConfigChanged(int event, audio_io_handle
     case OUTPUT_CONFIG_CHANGED: {
         int index = gOutputs.indexOfKey(ioHandle);
         if (index < 0) {
-            ALOGW("ioConfigChanged() modifying unknown output! %d", ioHandle);
             break;
         }
         if (param2 == NULL) break;
         desc = (const OutputDescriptor *)param2;
 
-        ALOGV("ioConfigChanged() new config for output %d samplingRate %u, format %d channel mask %#x "
-                "frameCount %d latency %d",
-                ioHandle, desc->samplingRate, desc->format,
-                desc->channelMask, desc->frameCount, desc->latency);
         OutputDescriptor *outputDesc = gOutputs.valueAt(index);
         delete outputDesc;
         outputDesc =  new OutputDescriptor(*desc);
@@ -536,7 +505,6 @@ const sp<IAudioPolicyService>& AudioSystem::get_audio_policy_service()
             binder = sm->getService(String16("media.audio_policy"));
             if (binder != 0)
                 break;
-            ALOGW("AudioPolicyService not published, waiting...");
             usleep(500000); // 0.5 s
         } while (true);
         if (gAudioPolicyServiceClient == NULL) {
@@ -810,13 +778,11 @@ status_t AudioSystem::setLowRamDevice(bool isLowRamDevice)
 void AudioSystem::clearAudioConfigCache()
 {
     Mutex::Autolock _l(gLock);
-    ALOGV("clearAudioConfigCache()");
     gOutputs.clear();
 }
 
 bool AudioSystem::isOffloadSupported(const audio_offload_info_t& info)
 {
-    ALOGV("isOffloadSupported()");
     const sp<IAudioPolicyService>& aps = AudioSystem::get_audio_policy_service();
     if (aps == 0) return false;
     return aps->isOffloadSupported(info);
@@ -834,8 +800,6 @@ void AudioSystem::AudioPolicyServiceClient::binderDied(const wp<IBinder>& who) {
 #ifdef USE_SAMSUNG_SEPARATEDSTREAM
 extern "C" bool _ZN7android11AudioSystem17isSeparatedStreamE19audio_stream_type_t(audio_stream_type_t stream)
 {
-    ALOGD("audio_stream_type_t: %d", stream);
-    ALOGD("isSeparatedStream: false");
     return false;
 }
 #endif // USE_SAMSUNG_SEPARATEDSTREAM

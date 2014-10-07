@@ -383,7 +383,6 @@ status_t OMXClient::connect() {
     CHECK(mOMX.get() != NULL);
 
     if (!mOMX->livesLocally(NULL /* node */, getpid())) {
-        ALOGI("Using client-side OMX mux.");
         mOMX = new MuxOMX(mOMX);
     }
 

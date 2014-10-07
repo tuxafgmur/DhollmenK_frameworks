@@ -30,16 +30,13 @@ inline void AdaptiveDynamicRangeCompression::set_knee_threshold(float decibel) {
       decibel + 10.39717719035538401328722102334722876548767089843750f;
 }
 
-
 inline void AdaptiveDynamicRangeCompression::set_knee_threshold_via_target_gain(
     float target_gain) {
   const float decibel = target_gain_to_knee_threshold_.Interpolate(
         target_gain);
-  ALOGV("set_knee_threshold_via_target_gain: decibel =%.3fdB", decibel);
   set_knee_threshold(decibel);
 }
 
 }  // namespace le_fx
-
 
 #endif  // LE_FX_ENGINE_DSP_CORE_DYNAMIC_RANGE_COMPRESSION_INL_H_

@@ -132,8 +132,6 @@ void Visualizer_reset(VisualizerContext *pContext)
 
 int Visualizer_setConfig(VisualizerContext *pContext, effect_config_t *pConfig)
 {
-    ALOGV("Visualizer_setConfig start");
-
     if (pConfig->inputCfg.samplingRate != pConfig->outputCfg.samplingRate) return -EINVAL;
     if (pConfig->inputCfg.channels != pConfig->outputCfg.channels) return -EINVAL;
     if (pConfig->inputCfg.format != pConfig->outputCfg.format) return -EINVAL;
@@ -256,8 +254,6 @@ int VisualizerLib_Create(const effect_uuid_t *uuid,
 
     pContext->mState = VISUALIZER_STATE_INITIALIZED;
 
-    ALOGV("VisualizerLib_Create %p", pContext);
-
     return 0;
 
 }
@@ -265,7 +261,6 @@ int VisualizerLib_Create(const effect_uuid_t *uuid,
 int VisualizerLib_Release(effect_handle_t handle) {
     VisualizerContext * pContext = (VisualizerContext *)handle;
 
-    ALOGV("VisualizerLib_Release %p", handle);
     if (pContext == NULL) {
         return -EINVAL;
     }
@@ -279,7 +274,6 @@ int VisualizerLib_GetDescriptor(const effect_uuid_t *uuid,
                                 effect_descriptor_t *pDescriptor) {
 
     if (pDescriptor == NULL || uuid == NULL){
-        ALOGV("VisualizerLib_GetDescriptor() called with NULL pointer");
         return -EINVAL;
     }
 
@@ -418,8 +412,6 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         return -EINVAL;
     }
 
-//    ALOGV("Visualizer_command command %d cmdSize %d",cmdCode, cmdSize);
-
     switch (cmdCode) {
     case EFFECT_CMD_INIT:
         if (pReplyData == NULL || *replySize != sizeof(int)) {
@@ -453,7 +445,6 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
             return -ENOSYS;
         }
         pContext->mState = VISUALIZER_STATE_ACTIVE;
-        ALOGV("EFFECT_CMD_ENABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_DISABLE:
@@ -464,7 +455,6 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
             return -ENOSYS;
         }
         pContext->mState = VISUALIZER_STATE_INITIALIZED;
-        ALOGV("EFFECT_CMD_DISABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_GET_PARAM: {
@@ -484,19 +474,16 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         }
         switch (*(uint32_t *)p->data) {
         case VISUALIZER_PARAM_CAPTURE_SIZE:
-            ALOGV("get mCaptureSize = %d", pContext->mCaptureSize);
             *((uint32_t *)p->data + 1) = pContext->mCaptureSize;
             p->vsize = sizeof(uint32_t);
             *replySize += sizeof(uint32_t);
             break;
         case VISUALIZER_PARAM_SCALING_MODE:
-            ALOGV("get mScalingMode = %d", pContext->mScalingMode);
             *((uint32_t *)p->data + 1) = pContext->mScalingMode;
             p->vsize = sizeof(uint32_t);
             *replySize += sizeof(uint32_t);
             break;
         case VISUALIZER_PARAM_MEASUREMENT_MODE:
-            ALOGV("get mMeasurementMode = %d", pContext->mMeasurementMode);
             *((uint32_t *)p->data + 1) = pContext->mMeasurementMode;
             p->vsize = sizeof(uint32_t);
             *replySize += sizeof(uint32_t);
@@ -520,19 +507,15 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         switch (*(uint32_t *)p->data) {
         case VISUALIZER_PARAM_CAPTURE_SIZE:
             pContext->mCaptureSize = *((uint32_t *)p->data + 1);
-            ALOGV("set mCaptureSize = %d", pContext->mCaptureSize);
             break;
         case VISUALIZER_PARAM_SCALING_MODE:
             pContext->mScalingMode = *((uint32_t *)p->data + 1);
-            ALOGV("set mScalingMode = %d", pContext->mScalingMode);
             break;
         case VISUALIZER_PARAM_LATENCY:
             pContext->mLatency = *((uint32_t *)p->data + 1);
-            ALOGV("set mLatency = %d", pContext->mLatency);
             break;
         case VISUALIZER_PARAM_MEASUREMENT_MODE:
             pContext->mMeasurementMode = *((uint32_t *)p->data + 1);
-            ALOGV("set mMeasurementMode = %d", pContext->mMeasurementMode);
             break;
         default:
             *(int32_t *)pReplyData = -EINVAL;
@@ -547,8 +530,6 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
     case VISUALIZER_CMD_CAPTURE: {
         int32_t captureSize = pContext->mCaptureSize;
         if (pReplyData == NULL || *replySize != captureSize) {
-            ALOGV("VISUALIZER_CMD_CAPTURE() error *replySize %d captureSize %d",
-                    *replySize, captureSize);
             return -EINVAL;
         }
         if (pContext->mState == VISUALIZER_STATE_ACTIVE) {
@@ -559,7 +540,6 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
             if ((pContext->mLastCaptureIdx == pContext->mCaptureIdx) &&
                     (pContext->mBufferUpdateTime.tv_sec != 0) &&
                     (deltaMs > MAX_STALL_TIME_MS)) {
-                    ALOGV("capture going to idle");
                     pContext->mBufferUpdateTime.tv_sec = 0;
                     memset(pReplyData, 0x80, captureSize);
             } else {
@@ -604,7 +584,6 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         // measurements aren't relevant anymore and shouldn't bias the new one)
         const int32_t delayMs = Visualizer_getDeltaTimeMsFromUpdatedTime(pContext);
         if (delayMs > DISCARD_MEASUREMENTS_TIME_MS) {
-            ALOGV("Discarding measurements, last measurement is %dms old", delayMs);
             for (uint32_t i=0 ; i<pContext->mMeasurementWindowSizeInBuffers ; i++) {
                 pContext->mPastMeasurements[i].mIsValid = false;
                 pContext->mPastMeasurements[i].mPeakU16 = 0;
@@ -638,9 +617,6 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         } else {
             pIntReplyData[MEASUREMENT_IDX_PEAK] = (int32_t) (2000 * log10(peakU16 / 32767.0f));
         }
-        ALOGV("VISUALIZER_CMD_MEASURE peak=%d (%dmB), rms=%.1f (%dmB)",
-                peakU16, pIntReplyData[MEASUREMENT_IDX_PEAK],
-                rms, pIntReplyData[MEASUREMENT_IDX_RMS]);
         }
         break;
 
@@ -659,7 +635,6 @@ int Visualizer_getDescriptor(effect_handle_t   self,
     VisualizerContext * pContext = (VisualizerContext *) self;
 
     if (pContext == NULL || pDescriptor == NULL) {
-        ALOGV("Visualizer_getDescriptor() invalid param");
         return -EINVAL;
     }
 

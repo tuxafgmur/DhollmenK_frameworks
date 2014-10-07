@@ -267,7 +267,6 @@ static const bool kAgcDefaultLimiter = true;
 
 int  AgcInit (preproc_effect_t *effect)
 {
-    ALOGV("AgcInit");
     webrtc::GainControl *agc = static_cast<webrtc::GainControl *>(effect->engine);
     agc->set_mode(webrtc::GainControl::kFixedDigital);
     agc->set_target_level_dbfs(kAgcDefaultTargetLevel);
@@ -279,7 +278,6 @@ int  AgcInit (preproc_effect_t *effect)
 int  AgcCreate(preproc_effect_t *effect)
 {
     webrtc::GainControl *agc = effect->session->apm->gain_control();
-    ALOGV("AgcCreate got agc %p", agc);
     if (agc == NULL) {
         ALOGW("AgcCreate Error");
         return -ENOMEM;
@@ -329,16 +327,12 @@ int AgcGetParameter(preproc_effect_t *effect,
     switch (param) {
     case AGC_PARAM_TARGET_LEVEL:
         *(int16_t *) pValue = (int16_t)(agc->target_level_dbfs() * -100);
-        ALOGV("AgcGetParameter() target level %d milliBels", *(int16_t *) pValue);
         break;
     case AGC_PARAM_COMP_GAIN:
         *(int16_t *) pValue = (int16_t)(agc->compression_gain_db() * 100);
-        ALOGV("AgcGetParameter() comp gain %d milliBels", *(int16_t *) pValue);
         break;
     case AGC_PARAM_LIMITER_ENA:
         *(bool *) pValue = (bool)agc->is_limiter_enabled();
-        ALOGV("AgcGetParameter() limiter enabled %s",
-             (*(int16_t *) pValue != 0) ? "true" : "false");
         break;
     case AGC_PARAM_PROPERTIES:
         pProperties->targetLevel = (int16_t)(agc->target_level_dbfs() * -100);
@@ -362,22 +356,15 @@ int AgcSetParameter (preproc_effect_t *effect, void *pParam, void *pValue)
 
     switch (param) {
     case AGC_PARAM_TARGET_LEVEL:
-        ALOGV("AgcSetParameter() target level %d milliBels", *(int16_t *)pValue);
         status = agc->set_target_level_dbfs(-(*(int16_t *)pValue / 100));
         break;
     case AGC_PARAM_COMP_GAIN:
-        ALOGV("AgcSetParameter() comp gain %d milliBels", *(int16_t *)pValue);
         status = agc->set_compression_gain_db(*(int16_t *)pValue / 100);
         break;
     case AGC_PARAM_LIMITER_ENA:
-        ALOGV("AgcSetParameter() limiter enabled %s", *(bool *)pValue ? "true" : "false");
         status = agc->enable_limiter(*(bool *)pValue);
         break;
     case AGC_PARAM_PROPERTIES:
-        ALOGV("AgcSetParameter() properties level %d, gain %d limiter %d",
-             pProperties->targetLevel,
-             pProperties->compGain,
-             pProperties->limiterEnabled);
         status = agc->set_target_level_dbfs(-(pProperties->targetLevel / 100));
         if (status != 0) break;
         status = agc->set_compression_gain_db(pProperties->compGain / 100);
@@ -390,25 +377,20 @@ int AgcSetParameter (preproc_effect_t *effect, void *pParam, void *pValue)
         break;
     }
 
-    ALOGV("AgcSetParameter() done status %d", status);
-
     return status;
 }
 
 void AgcEnable(preproc_effect_t *effect)
 {
     webrtc::GainControl *agc = static_cast<webrtc::GainControl *>(effect->engine);
-    ALOGV("AgcEnable agc %p", agc);
     agc->Enable(true);
 }
 
 void AgcDisable(preproc_effect_t *effect)
 {
-    ALOGV("AgcDisable");
     webrtc::GainControl *agc = static_cast<webrtc::GainControl *>(effect->engine);
     agc->Enable(false);
 }
-
 
 static const preproc_ops_t sAgcOps = {
         AgcCreate,
@@ -432,7 +414,6 @@ static const bool kAecDefaultComfortNoise = true;
 
 int  AecInit (preproc_effect_t *effect)
 {
-    ALOGV("AecInit");
     webrtc::EchoControlMobile *aec = static_cast<webrtc::EchoControlMobile *>(effect->engine);
     aec->set_routing_mode(kAecDefaultMode);
     aec->enable_comfort_noise(kAecDefaultComfortNoise);
@@ -442,7 +423,6 @@ int  AecInit (preproc_effect_t *effect)
 int  AecCreate(preproc_effect_t *effect)
 {
     webrtc::EchoControlMobile *aec = effect->session->apm->echo_control_mobile();
-    ALOGV("AecCreate got aec %p", aec);
     if (aec == NULL) {
         ALOGW("AgcCreate Error");
         return -ENOMEM;
@@ -467,7 +447,6 @@ int AecGetParameter(preproc_effect_t     *effect,
     case AEC_PARAM_ECHO_DELAY:
     case AEC_PARAM_PROPERTIES:
         *(uint32_t *)pValue = 1000 * effect->session->apm->stream_delay_ms();
-        ALOGV("AecGetParameter() echo delay %d us", *(uint32_t *)pValue);
         break;
     default:
         ALOGW("AecGetParameter() unknown param %08x value %08x", param, *(uint32_t *)pValue);
@@ -487,7 +466,6 @@ int AecSetParameter (preproc_effect_t *effect, void *pParam, void *pValue)
     case AEC_PARAM_ECHO_DELAY:
     case AEC_PARAM_PROPERTIES:
         status = effect->session->apm->set_stream_delay_ms(value/1000);
-        ALOGV("AecSetParameter() echo delay %d us, status %d", value, status);
         break;
     default:
         ALOGW("AecSetParameter() unknown param %08x value %08x", param, *(uint32_t *)pValue);
@@ -500,20 +478,17 @@ int AecSetParameter (preproc_effect_t *effect, void *pParam, void *pValue)
 void AecEnable(preproc_effect_t *effect)
 {
     webrtc::EchoControlMobile *aec = static_cast<webrtc::EchoControlMobile *>(effect->engine);
-    ALOGV("AecEnable aec %p", aec);
     aec->Enable(true);
 }
 
 void AecDisable(preproc_effect_t *effect)
 {
-    ALOGV("AecDisable");
     webrtc::EchoControlMobile *aec = static_cast<webrtc::EchoControlMobile *>(effect->engine);
     aec->Enable(false);
 }
 
 int AecSetDevice(preproc_effect_t *effect, uint32_t device)
 {
-    ALOGV("AecSetDevice %08x", device);
     webrtc::EchoControlMobile *aec = static_cast<webrtc::EchoControlMobile *>(effect->engine);
     webrtc::EchoControlMobile::RoutingMode mode = webrtc::EchoControlMobile::kQuietEarpieceOrHeadset;
 
@@ -556,7 +531,6 @@ static const webrtc::NoiseSuppression::Level kNsDefaultLevel = webrtc::NoiseSupp
 
 int  NsInit (preproc_effect_t *effect)
 {
-    ALOGV("NsInit");
     webrtc::NoiseSuppression *ns = static_cast<webrtc::NoiseSuppression *>(effect->engine);
     ns->set_level(kNsDefaultLevel);
     return 0;
@@ -565,7 +539,6 @@ int  NsInit (preproc_effect_t *effect)
 int  NsCreate(preproc_effect_t *effect)
 {
     webrtc::NoiseSuppression *ns = effect->session->apm->noise_suppression();
-    ALOGV("NsCreate got ns %p", ns);
     if (ns == NULL) {
         ALOGW("AgcCreate Error");
         return -ENOMEM;
@@ -593,13 +566,11 @@ int NsSetParameter (preproc_effect_t *effect, void *pParam, void *pValue)
 void NsEnable(preproc_effect_t *effect)
 {
     webrtc::NoiseSuppression *ns = static_cast<webrtc::NoiseSuppression *>(effect->engine);
-    ALOGV("NsEnable ns %p", ns);
     ns->Enable(true);
 }
 
 void NsDisable(preproc_effect_t *effect)
 {
-    ALOGV("NsDisable");
     webrtc::NoiseSuppression *ns = static_cast<webrtc::NoiseSuppression *>(effect->engine);
     ns->Enable(false);
 }
@@ -638,7 +609,6 @@ extern "C" const struct effect_interface_s sEffectInterfaceReverse;
 int Effect_SetState(preproc_effect_t *effect, uint32_t state)
 {
     int status = 0;
-    ALOGV("Effect_SetState proc %d, new %d old %d", effect->procId, state, effect->state);
     switch(state) {
     case PREPROC_EFFECT_STATE_INIT:
         switch(effect->state) {
@@ -772,8 +742,6 @@ extern "C" int Session_CreateEffect(preproc_session_t *session,
 {
     int status = -ENOMEM;
 
-    ALOGV("Session_CreateEffect procId %d, createdMsk %08x", procId, session->createdMsk);
-
     if (session->createdMsk == 0) {
         session->apm = webrtc::AudioProcessing::Create(session->io);
         if (session->apm == NULL) {
@@ -822,7 +790,6 @@ extern "C" int Session_CreateEffect(preproc_session_t *session,
     if (status < 0) {
         goto error;
     }
-    ALOGV("Session_CreateEffect OK");
     session->createdMsk |= (1<<procId);
     return status;
 
@@ -888,8 +855,6 @@ int Session_SetConfig(preproc_session_t *session, effect_config_t *config)
         return -EINVAL;
     }
 
-    ALOGV("Session_SetConfig sr %d cnl %08x",
-         config->inputCfg.samplingRate, config->inputCfg.channels);
     int status;
 
     // if at least one process is enabled, do not accept configuration changes
@@ -1025,9 +990,6 @@ int Session_SetReverseConfig(preproc_session_t *session, effect_config_t *config
         return -EINVAL;
     }
 
-    ALOGV("Session_SetReverseConfig sr %d cnl %08x",
-         config->inputCfg.samplingRate, config->inputCfg.channels);
-
     if (session->state < PREPROC_SESSION_STATE_CONFIG) {
         return -ENOSYS;
     }
@@ -1088,8 +1050,6 @@ void Session_SetProcEnabled(preproc_session_t *session, uint32_t procId, bool en
             session->revEnabledMsk &= ~(1 << procId);
         }
     }
-    ALOGV("Session_SetProcEnabled proc %d, enabled %d enabledMsk %08x revEnabledMsk %08x",
-         procId, enabled, session->enabledMsk, session->revEnabledMsk);
     session->processedMsk = 0;
     if (HasReverseStream(procId)) {
         session->revProcessedMsk = 0;
@@ -1166,7 +1126,6 @@ int PreProcessingFx_Process(effect_handle_t     self,
     int    status = 0;
 
     if (effect == NULL){
-        ALOGV("PreProcessingFx_Process() ERROR effect == NULL");
         return -EINVAL;
     }
     preproc_session_t * session = (preproc_session_t *)effect->session;
@@ -1178,9 +1137,6 @@ int PreProcessingFx_Process(effect_handle_t     self,
     }
 
     session->processedMsk |= (1<<effect->procId);
-
-//    ALOGV("PreProcessingFx_Process In %d frames enabledMsk %08x processedMsk %08x",
-//         inBuffer->frameCount, session->enabledMsk, session->processedMsk);
 
     if ((session->processedMsk & session->enabledMsk) == session->enabledMsk) {
         effect->session->processedMsk = 0;
@@ -1347,8 +1303,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
         return -EINVAL;
     }
 
-    //ALOGV("PreProcessingFx_Command: command %d cmdSize %d",cmdCode, cmdSize);
-
     switch (cmdCode){
         case EFFECT_CMD_INIT:
             if (pReplyData == NULL || *replySize != sizeof(int)){
@@ -1365,8 +1319,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
                 cmdSize     != sizeof(effect_config_t)||
                 pReplyData  == NULL||
                 *replySize  != sizeof(int)){
-                ALOGV("PreProcessingFx_Command cmdCode Case: "
-                        "EFFECT_CMD_SET_CONFIG: ERROR");
                 return -EINVAL;
             }
 #ifdef DUAL_MIC_TEST
@@ -1394,8 +1346,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
         case EFFECT_CMD_GET_CONFIG:
             if (pReplyData == NULL ||
                 *replySize != sizeof(effect_config_t)) {
-                ALOGV("\tLVM_ERROR : PreProcessingFx_Command cmdCode Case: "
-                        "EFFECT_CMD_GET_CONFIG: ERROR");
                 return -EINVAL;
             }
 
@@ -1407,8 +1357,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
                 cmdSize != sizeof(effect_config_t) ||
                 pReplyData == NULL ||
                 *replySize != sizeof(int)) {
-                ALOGV("PreProcessingFx_Command cmdCode Case: "
-                        "EFFECT_CMD_SET_CONFIG_REVERSE: ERROR");
                 return -EINVAL;
             }
             *(int *)pReplyData = Session_SetReverseConfig(effect->session,
@@ -1421,8 +1369,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
         case EFFECT_CMD_GET_CONFIG_REVERSE:
             if (pReplyData == NULL ||
                 *replySize != sizeof(effect_config_t)){
-                ALOGV("PreProcessingFx_Command cmdCode Case: "
-                        "EFFECT_CMD_GET_CONFIG_REVERSE: ERROR");
                 return -EINVAL;
             }
             Session_GetReverseConfig(effect->session, (effect_config_t *)pCmdData);
@@ -1439,8 +1385,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
                     cmdSize < (int)sizeof(effect_param_t) ||
                     pReplyData == NULL ||
                     *replySize < (int)sizeof(effect_param_t)){
-                ALOGV("PreProcessingFx_Command cmdCode Case: "
-                        "EFFECT_CMD_GET_PARAM: ERROR");
                 return -EINVAL;
             }
             effect_param_t *p = (effect_param_t *)pCmdData;
@@ -1464,15 +1408,11 @@ int PreProcessingFx_Command(effect_handle_t  self,
                     cmdSize < (int)sizeof(effect_param_t) ||
                     pReplyData == NULL ||
                     *replySize != sizeof(int32_t)){
-                ALOGV("PreProcessingFx_Command cmdCode Case: "
-                        "EFFECT_CMD_SET_PARAM: ERROR");
                 return -EINVAL;
             }
             effect_param_t *p = (effect_param_t *) pCmdData;
 
             if (p->psize != sizeof(int32_t)){
-                ALOGV("PreProcessingFx_Command cmdCode Case: "
-                        "EFFECT_CMD_SET_PARAM: ERROR, psize is not sizeof(int32_t)");
                 return -EINVAL;
             }
             if (effect->ops->set_parameter) {
@@ -1484,7 +1424,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
 
         case EFFECT_CMD_ENABLE:
             if (pReplyData == NULL || *replySize != sizeof(int)){
-                ALOGV("PreProcessingFx_Command cmdCode Case: EFFECT_CMD_ENABLE: ERROR");
                 return -EINVAL;
             }
             *(int *)pReplyData = Effect_SetState(effect, PREPROC_EFFECT_STATE_ACTIVE);
@@ -1492,7 +1431,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
 
         case EFFECT_CMD_DISABLE:
             if (pReplyData == NULL || *replySize != sizeof(int)){
-                ALOGV("PreProcessingFx_Command cmdCode Case: EFFECT_CMD_DISABLE: ERROR");
                 return -EINVAL;
             }
             *(int *)pReplyData  = Effect_SetState(effect, PREPROC_EFFECT_STATE_CONFIG);
@@ -1502,7 +1440,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
         case EFFECT_CMD_SET_INPUT_DEVICE:
             if (pCmdData == NULL ||
                 cmdSize != sizeof(uint32_t)) {
-                ALOGV("PreProcessingFx_Command cmdCode Case: EFFECT_CMD_SET_DEVICE: ERROR");
                 return -EINVAL;
             }
 
@@ -1534,7 +1471,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
             effect->cur_channel_config = (effect->session->inChannelCount == 1) ?
                     CHANNEL_CFG_MONO : CHANNEL_CFG_STEREO;
 
-            ALOGV("PREPROC_CMD_DUAL_MIC_ENABLE: %s", gDualMicEnabled ? "enabled" : "disabled");
             *replySize = sizeof(int);
             *(int *)pReplyData = 0;
             } break;
@@ -1553,8 +1489,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
             char *path = strndup((char *)pCmdData, cmdSize);
             gPcmDumpFh = fopen((char *)path, "wb");
             pthread_mutex_unlock(&gPcmDumpLock);
-            ALOGV("PREPROC_CMD_DUAL_MIC_PCM_DUMP_START: path %s gPcmDumpFh %p",
-                  path, gPcmDumpFh);
             ALOGE_IF(gPcmDumpFh <= 0, "gPcmDumpFh open error %d %s", errno, strerror(errno));
             free(path);
             *replySize = sizeof(int);
@@ -1573,7 +1507,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
                 gPcmDumpFh = NULL;
             }
             pthread_mutex_unlock(&gPcmDumpLock);
-            ALOGV("PREPROC_CMD_DUAL_MIC_PCM_DUMP_STOP");
             *replySize = sizeof(int);
             *(int *)pReplyData = 0;
             } break;
@@ -1592,8 +1525,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
             }
             if (*(uint32_t *)pCmdData != EFFECT_FEATURE_AUX_CHANNELS ||
                   !effect->aux_channels_on) {
-                ALOGV("PreProcessingFx_Command feature EFFECT_FEATURE_AUX_CHANNELS not supported by"
-                        " fx %d", effect->procId);
                 *(uint32_t *)pReplyData = -ENOSYS;
                 *replySize = sizeof(uint32_t);
                 break;
@@ -1614,8 +1545,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
                 num_configs = CHANNEL_CFG_CNT;
                 *(uint32_t *)pReplyData = 0;
             }
-            ALOGV("PreProcessingFx_Command EFFECT_CMD_GET_FEATURE_SUPPORTED_CONFIGS num config %d",
-                  num_configs);
 
             *replySize = 2 * sizeof(uint32_t) + num_configs * sizeof(channel_config_t);
             *((uint32_t *)pReplyData + 1) = num_configs;
@@ -1637,7 +1566,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
                 *replySize = sizeof(uint32_t);
                 break;
             }
-            ALOGV("PreProcessingFx_Command EFFECT_CMD_GET_FEATURE_CONFIG");
             *(uint32_t *)pReplyData = 0;
             *replySize = sizeof(uint32_t) + sizeof(channel_config_t);
             memcpy((uint32_t *)pReplyData + 1,
@@ -1645,9 +1573,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
                    sizeof(channel_config_t));
             break;
         case EFFECT_CMD_SET_FEATURE_CONFIG: {
-            ALOGV("PreProcessingFx_Command EFFECT_CMD_SET_FEATURE_CONFIG: "
-                    "gDualMicEnabled %d effect->aux_channels_on %d",
-                  gDualMicEnabled, effect->aux_channels_on);
             if(!gDualMicEnabled) {
                 return -EINVAL;
             }
@@ -1663,10 +1588,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
             *replySize = sizeof(uint32_t);
             if (*(uint32_t *)pCmdData != EFFECT_FEATURE_AUX_CHANNELS || !effect->aux_channels_on) {
                 *(uint32_t *)pReplyData = -ENOSYS;
-                ALOGV("PreProcessingFx_Command cmdCode Case: "
-                                        "EFFECT_CMD_SET_FEATURE_CONFIG: ERROR\n"
-                                        "CmdData %d effect->aux_channels_on %d",
-                                        *(uint32_t *)pCmdData, effect->aux_channels_on);
                 break;
             }
             size_t i;
@@ -1683,8 +1604,6 @@ int PreProcessingFx_Command(effect_handle_t  self,
             } else {
                 effect->cur_channel_config = i;
                 *(uint32_t *)pReplyData = 0;
-                ALOGV("PreProcessingFx_Command EFFECT_CMD_SET_FEATURE_CONFIG New config"
-                        "[%08x].[%08x]", sDualMicConfigs[i].main_channels, sDualMicConfigs[i].aux_channels);
             }
             } break;
 #endif
@@ -1728,10 +1647,6 @@ int PreProcessingFx_ProcessReverse(effect_handle_t     self,
     }
 
     session->revProcessedMsk |= (1<<effect->procId);
-
-//    ALOGV("PreProcessingFx_ProcessReverse In %d frames revEnabledMsk %08x revProcessedMsk %08x",
-//         inBuffer->frameCount, session->revEnabledMsk, session->revProcessedMsk);
-
 
     if ((session->revProcessedMsk & session->revEnabledMsk) == session->revEnabledMsk) {
         effect->session->revProcessedMsk = 0;
@@ -1823,7 +1738,6 @@ int PreProcessingLib_Create(const effect_uuid_t *uuid,
                             int32_t             ioId,
                             effect_handle_t  *pInterface)
 {
-    ALOGV("EffectCreate: uuid: %08x session %d IO: %d", uuid->timeLow, sessionId, ioId);
 
     int status;
     const effect_descriptor_t *desc;
@@ -1857,7 +1771,6 @@ int PreProcessingLib_Create(const effect_uuid_t *uuid,
 int PreProcessingLib_Release(effect_handle_t interface)
 {
     int status;
-    ALOGV("EffectRelease start %p", interface);
     if (PreProc_Init() != 0) {
         return sInitStatus;
     }
@@ -1879,11 +1792,8 @@ int PreProcessingLib_GetDescriptor(const effect_uuid_t *uuid,
 
     const effect_descriptor_t *desc = PreProc_GetDescriptor(uuid);
     if (desc == NULL) {
-        ALOGV("PreProcessingLib_GetDescriptor() not found");
         return  -EINVAL;
     }
-
-    ALOGV("PreProcessingLib_GetDescriptor() got fx %s", desc->name);
 
     *pDescriptor = *desc;
     return 0;

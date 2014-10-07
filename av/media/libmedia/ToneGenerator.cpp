@@ -812,8 +812,6 @@ const unsigned char /*tone_type*/ ToneGenerator::sToneMappingTable[NUM_REGIONS-1
 ////////////////////////////////////////////////////////////////////////////////
 ToneGenerator::ToneGenerator(audio_stream_type_t streamType, float volume, bool threadCanCallJava) {
 
-    ALOGV("ToneGenerator constructor: streamType=%d, volume=%f", streamType, volume);
-
     mState = TONE_IDLE;
 
     if (AudioSystem::getOutputSamplingRate(&mSamplingRate, streamType) != NO_ERROR) {
@@ -839,11 +837,6 @@ ToneGenerator::ToneGenerator(audio_stream_type_t streamType, float volume, bool 
         mRegion = CEPT;
     }
 
-    if (initAudioTrack()) {
-        ALOGV("ToneGenerator INIT OK, time: %d", (unsigned int)(systemTime()/1000000));
-    } else {
-        ALOGV("!!!ToneGenerator INIT FAILED!!!");
-    }
 }
 
 
@@ -864,11 +857,8 @@ ToneGenerator::ToneGenerator(audio_stream_type_t streamType, float volume, bool 
 //
 ////////////////////////////////////////////////////////////////////////////////
 ToneGenerator::~ToneGenerator() {
-    ALOGV("ToneGenerator destructor");
-
     if (mpAudioTrack != 0) {
         stopTone();
-        ALOGV("Delete Track: %p", mpAudioTrack.get());
         mpAudioTrack.clear();
     }
 }
@@ -902,13 +892,10 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
     }
 
     if (mState == TONE_IDLE) {
-        ALOGV("startTone: try to re-init AudioTrack");
         if (!initAudioTrack()) {
             return lResult;
         }
     }
-
-    ALOGV("startTone");
 
     mLock.lock();
 
@@ -918,7 +905,6 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
     mDurationMs = durationMs;
 
     if (mState == TONE_STOPPED) {
-        ALOGV("Start waiting for previous tone to stop");
         lStatus = mWaitCbkCond.waitRelative(mLock, seconds(3));
         if (lStatus != NO_ERROR) {
             ALOGE("--- start wait for stop timed out, status %d", lStatus);
@@ -930,7 +916,6 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
 
     if (mState == TONE_INIT) {
         if (prepareWave()) {
-            ALOGV("Immediate start, time %d", (unsigned int)(systemTime()/1000000));
             lResult = true;
             mState = TONE_STARTING;
             if (clock_gettime(CLOCK_MONOTONIC, &mStartTime) != 0) {
@@ -940,7 +925,6 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
             mpAudioTrack->start();
             mLock.lock();
             if (mState == TONE_STARTING) {
-                ALOGV("Wait for start callback");
                 lStatus = mWaitCbkCond.waitRelative(mLock, seconds(3));
                 if (lStatus != NO_ERROR) {
                     ALOGE("--- Immediate start timed out, status %d", lStatus);
@@ -952,7 +936,6 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
             mState = TONE_IDLE;
         }
     } else {
-        ALOGV("Delayed start");
         mState = TONE_RESTARTING;
         mStartTime.tv_sec = 0;
         lStatus = mWaitCbkCond.waitRelative(mLock, seconds(3));
@@ -960,7 +943,6 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
             if (mState != TONE_IDLE) {
                 lResult = true;
             }
-            ALOGV("cond received");
         } else {
             ALOGE("--- Delayed start timed out, status %d", lStatus);
             mState = TONE_IDLE;
@@ -968,7 +950,6 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
     }
     mLock.unlock();
 
-    ALOGV_IF(lResult, "Tone started, time %d", (unsigned int)(systemTime()/1000000));
     ALOGW_IF(!lResult, "Tone start failed!!!, time %d", (unsigned int)(systemTime()/1000000));
 
     return lResult;
@@ -988,8 +969,6 @@ bool ToneGenerator::startTone(tone_type toneType, int durationMs) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 void ToneGenerator::stopTone() {
-    ALOGV("stopTone");
-
     mLock.lock();
     if (mState != TONE_IDLE && mState != TONE_INIT) {
         if (mState == TONE_PLAYING || mState == TONE_STARTING || mState == TONE_RESTARTING) {
@@ -1013,12 +992,10 @@ void ToneGenerator::stopTone() {
                     sec = sec * 1000 + nsec / 1000000; // duration in milliseconds
                     mMaxSmp = (unsigned int)(((int64_t)sec * mSamplingRate) / 1000);
                 }
-                ALOGV("stopTone() forcing mMaxSmp to %d, total for far %d", mMaxSmp,  mTotalSmp);
             } else {
                 mState = TONE_STOPPING;
             }
         }
-        ALOGV("waiting cond");
         status_t lStatus = mWaitCbkCond.waitRelative(mLock, seconds(3));
         if (lStatus == NO_ERROR) {
             // If the tone was restarted exit now before calling clearWaveGens();
@@ -1026,7 +1003,6 @@ void ToneGenerator::stopTone() {
                 mLock.unlock();
                 return;
             }
-            ALOGV("track stop complete, time %d", (unsigned int)(systemTime()/1000000));
         } else {
             ALOGE("--- Stop timed out");
             mState = TONE_IDLE;
@@ -1068,7 +1044,6 @@ bool ToneGenerator::initAudioTrack() {
 
     // Open audio track in mono, PCM 16bit, default sampling rate, default buffer size
     mpAudioTrack = new AudioTrack();
-    ALOGV("Create Track: %p", mpAudioTrack.get());
 
     mpAudioTrack->set(mStreamType,
                       0,    // sampleRate
@@ -1096,8 +1071,6 @@ bool ToneGenerator::initAudioTrack() {
     return true;
 
 initAudioTrack_exit:
-
-    ALOGV("Init failed: %p", mpAudioTrack.get());
 
     // Cleanup
     mpAudioTrack.clear();
@@ -1156,22 +1129,16 @@ void ToneGenerator::audioCallback(int event, void* user, void *info) {
             lWaveCmd = WaveGenerator::WAVEGEN_CONT;
             break;
         case TONE_STARTING:
-            ALOGV("Starting Cbk");
-
             lWaveCmd = WaveGenerator::WAVEGEN_START;
             break;
         case TONE_STOPPING:
         case TONE_RESTARTING:
-            ALOGV("Stop/restart Cbk");
-
             lWaveCmd = WaveGenerator::WAVEGEN_STOP;
             lpToneGen->mNextSegSmp = TONEGEN_INF; // forced to skip state machine management below
             break;
         case TONE_STOPPED:
-            ALOGV("Stopped Cbk");
             goto audioCallback_EndLoop;
         default:
-            ALOGV("Extra Cbk");
             goto audioCallback_EndLoop;
         }
 
@@ -1192,8 +1159,6 @@ void ToneGenerator::audioCallback(int event, void* user, void *info) {
         if (lpToneGen->mTotalSmp > lpToneGen->mNextSegSmp) {
             // Time to go to next sequence segment
 
-            ALOGV("End Segment, time: %d", (unsigned int)(systemTime()/1000000));
-
             lGenSmp = lReqSmp;
 
             // If segment,  ON -> OFF transition : ramp volume down
@@ -1207,64 +1172,40 @@ void ToneGenerator::audioCallback(int event, void* user, void *info) {
                     lpWaveGen->getSamples(lpOut, lGenSmp, lWaveCmd);
                     lFrequency = lpToneDesc->segments[lpToneGen->mCurSegment].waveFreq[++lFreqIdx];
                 }
-                ALOGV("ON->OFF, lGenSmp: %d, lReqSmp: %d", lGenSmp, lReqSmp);
             }
 
             // check if we need to loop and loop for the reqd times
             if (lpToneDesc->segments[lpToneGen->mCurSegment].loopCnt) {
                 if (lpToneGen->mLoopCounter < lpToneDesc->segments[lpToneGen->mCurSegment].loopCnt) {
-                    ALOGV ("in if loop loopCnt(%d) loopctr(%d), CurSeg(%d)",
-                          lpToneDesc->segments[lpToneGen->mCurSegment].loopCnt,
-                          lpToneGen->mLoopCounter,
-                          lpToneGen->mCurSegment);
                     lpToneGen->mCurSegment = lpToneDesc->segments[lpToneGen->mCurSegment].loopIndx;
                     ++lpToneGen->mLoopCounter;
                 } else {
                     // completed loop. go to next segment
                     lpToneGen->mLoopCounter = 0;
                     lpToneGen->mCurSegment++;
-                    ALOGV ("in else loop loopCnt(%d) loopctr(%d), CurSeg(%d)",
-                          lpToneDesc->segments[lpToneGen->mCurSegment].loopCnt,
-                          lpToneGen->mLoopCounter,
-                          lpToneGen->mCurSegment);
                 }
             } else {
                 lpToneGen->mCurSegment++;
-                ALOGV ("Goto next seg loopCnt(%d) loopctr(%d), CurSeg(%d)",
-                      lpToneDesc->segments[lpToneGen->mCurSegment].loopCnt,
-                      lpToneGen->mLoopCounter,
-                      lpToneGen->mCurSegment);
-
             }
 
             // Handle loop if last segment reached
             if (lpToneDesc->segments[lpToneGen->mCurSegment].duration == 0) {
-                ALOGV("Last Seg: %d", lpToneGen->mCurSegment);
 
                 // Pre increment loop count and restart if total count not reached. Stop sequence otherwise
                 if (++lpToneGen->mCurCount <= lpToneDesc->repeatCnt) {
-                    ALOGV("Repeating Count: %d", lpToneGen->mCurCount);
 
                     lpToneGen->mCurSegment = lpToneDesc->repeatSegment;
                     if (lpToneDesc->segments[lpToneDesc->repeatSegment].waveFreq[0] != 0) {
                         lWaveCmd = WaveGenerator::WAVEGEN_START;
                     }
 
-                    ALOGV("New segment %d, Next Time: %d", lpToneGen->mCurSegment,
-                            (lpToneGen->mNextSegSmp*1000)/lpToneGen->mSamplingRate);
-
                 } else {
                     lGenSmp = 0;
-                    ALOGV("End repeat, time: %d", (unsigned int)(systemTime()/1000000));
                 }
             } else {
-                ALOGV("New segment %d, Next Time: %d", lpToneGen->mCurSegment,
-                        (lpToneGen->mNextSegSmp*1000)/lpToneGen->mSamplingRate);
                 if (lpToneDesc->segments[lpToneGen->mCurSegment].waveFreq[0] != 0) {
                     // If next segment is not silent,  OFF -> ON transition : reset wave generator
                     lWaveCmd = WaveGenerator::WAVEGEN_START;
-
-                    ALOGV("OFF->ON, lGenSmp: %d, lReqSmp: %d", lGenSmp, lReqSmp);
                 } else {
                     lGenSmp = 0;
                 }
@@ -1302,7 +1243,6 @@ audioCallback_EndLoop:
 
         switch (lpToneGen->mState) {
         case TONE_RESTARTING:
-            ALOGV("Cbk restarting track");
             if (lpToneGen->prepareWave()) {
                 lpToneGen->mState = TONE_STARTING;
                 if (clock_gettime(CLOCK_MONOTONIC, &lpToneGen->mStartTime) != 0) {
@@ -1320,14 +1260,12 @@ audioCallback_EndLoop:
             lSignal = true;
             break;
         case TONE_STOPPING:
-            ALOGV("Cbk Stopping");
             lpToneGen->mState = TONE_STOPPED;
             // Force loop exit
             lNumSmp = 0;
             break;
         case TONE_STOPPED:
             lpToneGen->mState = TONE_INIT;
-            ALOGV("Cbk Stopped track");
             lpToneGen->mpAudioTrack->stop();
             // Force loop exit
             lNumSmp = 0;
@@ -1335,7 +1273,6 @@ audioCallback_EndLoop:
             lSignal = true;
             break;
         case TONE_STARTING:
-            ALOGV("Cbk starting track");
             lpToneGen->mState = TONE_PLAYING;
             lSignal = true;
             break;
@@ -1388,7 +1325,6 @@ bool ToneGenerator::prepareWave() {
         } else {
             mMaxSmp = (mDurationMs * mSamplingRate) / 1000;
         }
-        ALOGV("prepareWave, duration limited to %d ms", mDurationMs);
     }
 
     while (mpToneDesc->segments[segmentIdx].duration) {
@@ -1466,8 +1402,6 @@ unsigned int ToneGenerator::numWaves(unsigned int segmentIdx) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 void ToneGenerator::clearWaveGens() {
-    ALOGV("Clearing mWaveGens:");
-
     for (size_t lIdx = 0; lIdx < mWaveGens.size(); lIdx++) {
         delete mWaveGens.valueAt(lIdx);
     }
@@ -1496,8 +1430,6 @@ ToneGenerator::tone_type ToneGenerator::getToneForRegion(tone_type toneType) {
     } else {
         regionTone = (tone_type) sToneMappingTable[mRegion][toneType - FIRST_SUP_TONE];
     }
-
-    ALOGV("getToneForRegion, tone %d, region %d, regionTone %d", toneType, mRegion, regionTone);
 
     return regionTone;
 }
@@ -1545,8 +1477,6 @@ ToneGenerator::WaveGenerator::WaveGenerator(unsigned short samplingRate,
         d0 = 32767;
     mA1_Q14 = (short) d0;
 
-    ALOGV("WaveGenerator init, mA1_Q14: %d, mS2_0: %d, mAmplitude_Q15: %d",
-            mA1_Q14, mS2_0, mAmplitude_Q15);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -460,7 +460,6 @@ public:
         }
         remote()->transact(OPEN_OUTPUT, data, &reply);
         audio_io_handle_t output = (audio_io_handle_t) reply.readInt32();
-        ALOGV("openOutput() returned output, %d", output);
         devices = (audio_devices_t)reply.readInt32();
         if (pDevices != NULL) *pDevices = devices;
         samplingRate = reply.readInt32();
@@ -1008,7 +1007,6 @@ status_t BnAudioFlinger::onTransact(
                                                  &latency,
                                                  flags,
                                                  hasOffloadInfo ? &offloadInfo : NULL);
-            ALOGV("OPEN_OUTPUT output, %p", output);
             reply->writeInt32((int32_t) output);
             reply->writeInt32(devices);
             reply->writeInt32(samplingRate);

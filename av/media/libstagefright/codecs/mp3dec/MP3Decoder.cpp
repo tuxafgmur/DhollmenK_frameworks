@@ -192,7 +192,6 @@ static bool resync(
     do {
         if (pos + 4 > size) {
             // Don't scan forever.
-            ALOGV("no dice, no valid sequence of frames found.");
             break;
         }
 
@@ -202,8 +201,6 @@ static bool resync(
             ++pos;
             continue;
         }
-
-        ALOGV("found possible frame at %ld (header = 0x%08x)", pos, header);
 
         // We found what looks like a valid frame,
         valid = true;
@@ -467,9 +464,6 @@ status_t MP3Decoder::read(
                 mInputBuffer->set_range(
                     mInputBuffer->range_offset() + syncOffset,
                     mInputBuffer->range_length() - syncOffset);
-                ALOGV("mp3 decoder found a sync point after seek syncOffset %d", syncOffset);
-            } else {
-                ALOGV("NO SYNC POINT found, buffer length %d",mInputBuffer->range_length());
             }
         }
 
@@ -517,7 +511,6 @@ status_t MP3Decoder::read(
     ERROR_CODE decoderErr;
     if ((decoderErr = pvmp3_framedecoder(mConfig, mDecoderBuf))
             != NO_DECODING_ERROR) {
-        ALOGV("mp3 decoder returned error %d", decoderErr);
 
         if ((decoderErr != NO_ENOUGH_MAIN_DATA_ERROR) &&
             (decoderErr != SYNCH_LOST_ERROR)) {

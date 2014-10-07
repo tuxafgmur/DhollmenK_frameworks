@@ -68,7 +68,6 @@ public:
     // disconnect from camera service
     void disconnect()
     {
-        ALOGV("disconnect");
         Parcel data, reply;
         data.writeInterfaceToken(ICameraDeviceUser::getInterfaceDescriptor());
         remote()->transact(DISCONNECT, data, &reply);
@@ -189,7 +188,6 @@ public:
 
     virtual status_t waitUntilIdle()
     {
-        ALOGV("waitUntilIdle");
         Parcel data, reply;
         data.writeInterfaceToken(ICameraDeviceUser::getInterfaceDescriptor());
         remote()->transact(WAIT_UNTIL_IDLE, data, &reply);
@@ -199,7 +197,6 @@ public:
 
     virtual status_t flush()
     {
-        ALOGV("flush");
         Parcel data, reply;
         data.writeInterfaceToken(ICameraDeviceUser::getInterfaceDescriptor());
         remote()->transact(FLUSH, data, &reply);
@@ -222,7 +219,6 @@ status_t BnCameraDeviceUser::onTransact(
 {
     switch(code) {
         case DISCONNECT: {
-            ALOGV("DISCONNECT");
             CHECK_INTERFACE(ICameraDeviceUser, data, reply);
             disconnect();
             reply->writeNoException();
@@ -266,32 +262,21 @@ status_t BnCameraDeviceUser::onTransact(
             int width, height, format;
 
             width = data.readInt32();
-            ALOGV("%s: CREATE_STREAM: width = %d", __FUNCTION__, width);
             height = data.readInt32();
-            ALOGV("%s: CREATE_STREAM: height = %d", __FUNCTION__, height);
             format = data.readInt32();
-            ALOGV("%s: CREATE_STREAM: format = %d", __FUNCTION__, format);
 
             sp<IGraphicBufferProducer> bp;
             if (data.readInt32() != 0) {
                 String16 name = readMaybeEmptyString16(data);
                 bp = interface_cast<IGraphicBufferProducer>(
                         data.readStrongBinder());
-
-                ALOGV("%s: CREATE_STREAM: bp = %p, name = %s", __FUNCTION__,
-                      bp.get(), String8(name).string());
-            } else {
-                ALOGV("%s: CREATE_STREAM: bp = unset, name = unset",
-                      __FUNCTION__);
             }
 
             status_t ret;
             ret = createStream(width, height, format, bp);
 
             reply->writeNoException();
-            ALOGV("%s: CREATE_STREAM: write noException", __FUNCTION__);
             reply->writeInt32(ret);
-            ALOGV("%s: CREATE_STREAM: write ret = %d", __FUNCTION__, ret);
 
             return NO_ERROR;
         } break;

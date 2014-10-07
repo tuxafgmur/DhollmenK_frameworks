@@ -41,22 +41,17 @@ status_t CaptureRequest::readFromParcel(Parcel* parcel) {
         ALOGE("%s: Failed to read metadata from parcel", __FUNCTION__);
         return err;
     }
-    ALOGV("%s: Read metadata from parcel", __FUNCTION__);
-
     int32_t size;
     if ((err = parcel->readInt32(&size)) != OK) {
         ALOGE("%s: Failed to read surface list size from parcel", __FUNCTION__);
         return err;
     }
-    ALOGV("%s: Read surface list size = %d", __FUNCTION__, size);
 
     // Do not distinguish null arrays from 0-sized arrays.
     for (int i = 0; i < size; ++i) {
         // Parcel.writeParcelableArray
         size_t len;
         const char16_t* className = parcel->readString16Inplace(&len);
-        ALOGV("%s: Read surface class = %s", __FUNCTION__,
-              className != NULL ? String8(className).string() : "<null>");
 
         if (className == NULL) {
             continue;
@@ -64,11 +59,7 @@ status_t CaptureRequest::readFromParcel(Parcel* parcel) {
 
         // Surface.writeToParcel
         String16 name = parcel->readString16();
-        ALOGV("%s: Read surface name = %s",
-              __FUNCTION__, String8(name).string());
         sp<IBinder> binder(parcel->readStrongBinder());
-        ALOGV("%s: Read surface binder = %p",
-              __FUNCTION__, binder.get());
 
         sp<Surface> surface;
 

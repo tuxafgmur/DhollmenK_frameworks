@@ -248,15 +248,6 @@ bool NuPlayer::Renderer::onDrainAudioQueue() {
     ssize_t numFramesAvailableToWrite =
         mAudioSink->frameCount() - (mNumFramesWritten - numFramesPlayed);
 
-#if 0
-    if (numFramesAvailableToWrite == mAudioSink->frameCount()) {
-        ALOGI("audio sink underrun");
-    } else {
-        ALOGV("audio queue has %d frames left to play",
-             mAudioSink->frameCount() - numFramesAvailableToWrite);
-    }
-#endif
-
     size_t numBytesAvailableToWrite =
         numFramesAvailableToWrite * mAudioSink->frameSize();
 
@@ -264,8 +255,6 @@ bool NuPlayer::Renderer::onDrainAudioQueue() {
         QueueEntry *entry = &*mAudioQueue.begin();
 
         if (entry->mBuffer == NULL) {
-            // EOS
-
             notifyEOS(true /* audio */, entry->mFinalResult);
 
             mAudioQueue.erase(mAudioQueue.begin());
@@ -276,8 +265,6 @@ bool NuPlayer::Renderer::onDrainAudioQueue() {
         if (entry->mOffset == 0) {
             int64_t mediaTimeUs;
             CHECK(entry->mBuffer->meta()->findInt64("timeUs", &mediaTimeUs));
-
-            ALOGV("rendering audio at media time %.2f secs", mediaTimeUs / 1E6);
 
             mAnchorTimeMediaUs = mediaTimeUs;
 
@@ -291,8 +278,6 @@ bool NuPlayer::Renderer::onDrainAudioQueue() {
                 (mAudioSink->latency() / 2  /* XXX */
                     + numFramesPendingPlayout
                         * mAudioSink->msecsPerFrame()) * 1000ll;
-
-            // ALOGI("realTimeOffsetUs = %lld us", realTimeOffsetUs);
 
             mAnchorTimeRealUs =
                 ALooper::GetNowUs() + realTimeOffsetUs;
@@ -402,21 +387,11 @@ void NuPlayer::Renderer::onDrainVideoQueue() {
         CHECK(entry->mBuffer->meta()->findInt64("timeUs", &realTimeUs));
     } else {
         CHECK(entry->mBuffer->meta()->findInt64("timeUs", &mediaTimeUs));
-
         realTimeUs = mediaTimeUs - mAnchorTimeMediaUs + mAnchorTimeRealUs;
     }
 
     mVideoLateByUs = ALooper::GetNowUs() - realTimeUs;
     bool tooLate = (mVideoLateByUs > 40000);
-
-    if (tooLate) {
-        ALOGV("video late by %lld us (%.2f secs)",
-             mVideoLateByUs, mVideoLateByUs / 1E6);
-    } else if (mFlags & FLAG_REAL_TIME) {
-        ALOGV("rendering video at real time %.2f secs", realTimeUs / 1E6);
-    } else {
-        ALOGV("rendering video at media time %.2f secs", mediaTimeUs / 1E6);
-    }
 
     entry->mNotifyConsumed->setInt32("render", !tooLate);
     entry->mNotifyConsumed->post();
@@ -503,8 +478,6 @@ void NuPlayer::Renderer::onQueueBuffer(const sp<AMessage> &msg) {
 
     int64_t diff = firstVideoTimeUs - firstAudioTimeUs;
 
-    ALOGV("queueDiff = %.2f secs", diff / 1E6);
-
     if (diff > 100000ll) {
         // Audio data starts More than 0.1 secs before video.
         // Drop some audio.
@@ -577,7 +550,6 @@ void NuPlayer::Renderer::onFlush(const sp<AMessage> &msg) {
     // is flushed.
     syncQueuesDone();
 
-    ALOGV("flushing %s", audio ? "audio" : "video");
     if (audio) {
         flushQueue(&mAudioQueue);
 
@@ -696,9 +668,6 @@ void NuPlayer::Renderer::onPause() {
     //for video only stream, reset mAnchorTimeMediaUs on stream's pause scenario
     if (mHasVideo && !mHasAudio)
         mAnchorTimeMediaUs = -1;
-
-    ALOGV("now paused audio queue has %d entries, video has %d entries",
-          mAudioQueue.size(), mVideoQueue.size());
 
     mPaused = true;
 }

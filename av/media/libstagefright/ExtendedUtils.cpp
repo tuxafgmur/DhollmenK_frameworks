@@ -180,13 +180,10 @@ void ExtendedUtils::ShellProp::setEncoderProfile(
         case VIDEO_ENCODER_H264:
             if (strncmp("base", value, 4) == 0) {
                 videoEncoderProfile = OMX_VIDEO_AVCProfileBaseline;
-                ALOGI("H264 Baseline Profile");
             } else if (strncmp("main", value, 4) == 0) {
                 videoEncoderProfile = OMX_VIDEO_AVCProfileMain;
-                ALOGI("H264 Main Profile");
             } else if (strncmp("high", value, 4) == 0) {
                 videoEncoderProfile = OMX_VIDEO_AVCProfileHigh;
-                ALOGI("H264 High Profile");
             } else {
                 ALOGW("Unsupported H264 Profile");
             }
@@ -194,10 +191,8 @@ void ExtendedUtils::ShellProp::setEncoderProfile(
         case VIDEO_ENCODER_MPEG_4_SP:
             if (strncmp("simple", value, 5) == 0 ) {
                 videoEncoderProfile = OMX_VIDEO_MPEG4ProfileSimple;
-                ALOGI("MPEG4 Simple profile");
             } else if (strncmp("asp", value, 3) == 0 ) {
                 videoEncoderProfile = OMX_VIDEO_MPEG4ProfileAdvancedSimple;
-                ALOGI("MPEG4 Advanced Simple Profile");
             } else {
                 ALOGW("Unsupported MPEG4 Profile");
             }
@@ -219,8 +214,6 @@ int64_t ExtendedUtils::ShellProp::getMaxAVSyncLateMargin() {
         maxLateMarginUs = kDefaultAVSyncLateMargin;
     }
 
-    ALOGI("AV Sync late margin : Intended=%lldms Using=%lldms",
-            maxLateMarginUs/1000, newLateMarginUs/1000);
     return maxLateMarginUs;
 }
 
@@ -302,7 +295,6 @@ bool ExtendedUtils::UseQCHWAACEncoder(audio_encoder Encoder,int32_t Channel,int3
     property_get("qcom.hw.aac.encoder",propValue,NULL);
     if (!strncmp(propValue,"true",sizeof("true"))) {
         //check for QCOM's HW AAC encoder only when qcom.aac.encoder =  true;
-        ALOGV("qcom.aac.encoder enabled, check AAC encoder(%d) allowed bitrates",Encoder);
         switch (Encoder) {
         case AUDIO_ENCODER_AAC:// for AAC-LC format
             if (Channel == 1) {//mono
@@ -402,21 +394,17 @@ sp<MediaExtractor> ExtendedUtils::MediaExtractor_CreateIfNeeded(sp<MediaExtracto
     }
 
     if (!bCheckExtendedExtractor) {
-        ALOGD("extended extractor not needed, return default");
         return defaultExt;
     }
 
     //Create Extended Extractor only if default extractor is not selected
-    ALOGD("Try creating ExtendedExtractor");
     sp<MediaExtractor>  retExtExtractor = ExtendedExtractor::Create(source, mime);
 
     if (retExtExtractor == NULL) {
-        ALOGD("Couldn't create the extended extractor, return default one");
         return defaultExt;
     }
 
     if (defaultExt == NULL) {
-        ALOGD("default extractor is NULL, return extended extractor");
         return retExtExtractor;
     }
 
@@ -439,14 +427,12 @@ sp<MediaExtractor> ExtendedUtils::MediaExtractor_CreateIfNeeded(sp<MediaExtracto
              !strncasecmp(mime, MEDIA_MIMETYPE_VIDEO_HEVC,
                                 strlen(MEDIA_MIMETYPE_VIDEO_HEVC)) )) {
 
-            ALOGD("Discarding default extractor and using the extended one");
             bUseDefaultExtractor = false;
             break;
         }
     }
 
     if (bUseDefaultExtractor) {
-        ALOGD("using default extractor inspite of having a new extractor");
         retExtExtractor.clear();
         return defaultExt;
     } else {
@@ -496,8 +482,6 @@ void ExtendedUtils::updateNativeWindowBufferGeometry(ANativeWindow* anw,
         OMX_U32 width, OMX_U32 height, OMX_COLOR_FORMATTYPE colorFormat) {
 #if UPDATE_BUFFER_GEOMETRY_AVAILABLE
     if (anw != NULL) {
-        ALOGI("Calling native window update buffer geometry [%lu x %lu]",
-                width, height);
         status_t err = anw->perform(
                 anw, NATIVE_WINDOW_UPDATE_BUFFERS_GEOMETRY,
                 width, height, colorFormat);

@@ -191,7 +191,6 @@ class StagefrightPlayerFactory :
     }
 
     virtual sp<MediaPlayerBase> createPlayer() {
-        ALOGV(" create StagefrightPlayer");
         return new StagefrightPlayer();
     }
 };
@@ -237,7 +236,6 @@ class NuPlayerFactory : public MediaPlayerFactory::IFactory {
     }
 
     virtual sp<MediaPlayerBase> createPlayer() {
-        ALOGV(" create NuPlayer");
         return new NuPlayerDriver;
     }
 };
@@ -306,7 +304,6 @@ class SonivoxPlayerFactory : public MediaPlayerFactory::IFactory {
     }
 
     virtual sp<MediaPlayerBase> createPlayer() {
-        ALOGV(" create MidiFile");
         return new MidiFile();
     }
 };
@@ -324,7 +321,6 @@ class TestPlayerFactory : public MediaPlayerFactory::IFactory {
     }
 
     virtual sp<MediaPlayerBase> createPlayer() {
-        ALOGV("Create Test Player stub");
         return new TestPlayerStub();
     }
 };

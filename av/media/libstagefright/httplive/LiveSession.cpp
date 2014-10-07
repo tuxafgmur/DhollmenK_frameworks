@@ -145,11 +145,6 @@ status_t LiveSession::dequeueAccessUnit(
             extra.clear();
         }
 
-        ALOGI("[%s] read discontinuity of type %d, extra = %s",
-              streamStr,
-              type,
-              extra == NULL ? "NULL" : extra->debugString().c_str());
-
         int32_t swap;
         if (type == ATSParser::DISCONTINUITY_FORMATCHANGE
                 && (*accessUnit)->meta()->findInt32("swapPacketSource", &swap)
@@ -172,7 +167,6 @@ status_t LiveSession::dequeueAccessUnit(
         if (stream == STREAMTYPE_AUDIO || stream == STREAMTYPE_VIDEO) {
             int64_t timeUs;
             CHECK((*accessUnit)->meta()->findInt64("timeUs",  &timeUs));
-            ALOGV("[%s] read buffer at time %lld us", streamStr, timeUs);
 
             mLastDequeuedTimeUs = timeUs;
             mRealTimeBaseUs = ALooper::GetNowUs() - timeUs;
@@ -181,8 +175,6 @@ status_t LiveSession::dequeueAccessUnit(
                     "trackIndex", mPlaylist->getSelectedIndex());
             (*accessUnit)->meta()->setInt64("baseUs", mRealTimeBaseUs);
         }
-    } else {
-        ALOGI("[%s] encountered error %d", streamStr, err);
     }
 
     return err;
@@ -480,12 +472,6 @@ void LiveSession::onConnect(const sp<AMessage> &msg) {
         headers = NULL;
     }
 
-#if 1
-    ALOGI("onConnect <URL suppressed>");
-#else
-    ALOGI("onConnect %s", url.c_str());
-#endif
-
     mMasterURL = url;
 
     bool dummy;
@@ -688,9 +674,6 @@ ssize_t LiveSession::fetchFile(
         if (bufferRemaining == 0 && getSizeErr != OK) {
             bufferRemaining = 32768;
 
-            ALOGV("increasing download buffer to %d bytes",
-                 buffer->size() + bufferRemaining);
-
             sp<ABuffer> copy = new ABuffer(buffer->size() + bufferRemaining);
             memcpy(copy->data(), buffer->data(), buffer->size());
             copy->setRange(0, buffer->size());
@@ -741,7 +724,6 @@ ssize_t LiveSession::fetchFile(
 
 sp<M3UParser> LiveSession::fetchPlaylist(
         const char *url, uint8_t *curPlaylistHash, bool *unchanged) {
-    ALOGV("fetchPlaylist '%s'", url);
 
     *unchanged = false;
 
@@ -769,8 +751,6 @@ sp<M3UParser> LiveSession::fetchPlaylist(
         // playlist unchanged
         *unchanged = true;
 
-        ALOGV("Playlist unchanged");
-
         return NULL;
     }
 
@@ -783,8 +763,6 @@ sp<M3UParser> LiveSession::fetchPlaylist(
         new M3UParser(actualUrl.string(), buffer->data(), buffer->size());
 
     if (playlist->initCheck() != OK) {
-        ALOGE("failed to parse .m3u8 playlist");
-
         return NULL;
     }
 
@@ -817,9 +795,7 @@ size_t LiveSession::getBandwidthIndex() {
         int32_t bandwidthBps;
         if (mHTTPDataSource != NULL
                 && mHTTPDataSource->estimateBandwidth(&bandwidthBps)) {
-            ALOGV("bandwidth estimated at %.2f kbps", bandwidthBps / 1024.0f);
         } else {
-            ALOGV("no bandwidth estimate.");
             return 0;  // Pick the lowest bandwidth stream by default.
         }
 
@@ -829,7 +805,6 @@ size_t LiveSession::getBandwidthIndex() {
             long maxBw = strtoul(value, &end, 10);
             if (end > value && *end == '\0') {
                 if (maxBw > 0 && bandwidthBps > maxBw) {
-                    ALOGV("bandwidth capped to %ld bps", maxBw);
                     bandwidthBps = maxBw;
                 }
             }
@@ -846,52 +821,6 @@ size_t LiveSession::getBandwidthIndex() {
             --index;
         }
     }
-#elif 0
-    // Change bandwidth at random()
-    size_t index = uniformRand() * mBandwidthItems.size();
-#elif 0
-    // There's a 50% chance to stay on the current bandwidth and
-    // a 50% chance to switch to the next higher bandwidth (wrapping around
-    // to lowest)
-    const size_t kMinIndex = 0;
-
-    static ssize_t mPrevBandwidthIndex = -1;
-
-    size_t index;
-    if (mPrevBandwidthIndex < 0) {
-        index = kMinIndex;
-    } else if (uniformRand() < 0.5) {
-        index = (size_t)mPrevBandwidthIndex;
-    } else {
-        index = mPrevBandwidthIndex + 1;
-        if (index == mBandwidthItems.size()) {
-            index = kMinIndex;
-        }
-    }
-    mPrevBandwidthIndex = index;
-#elif 0
-    // Pick the highest bandwidth stream below or equal to 1.2 Mbit/sec
-
-    size_t index = mBandwidthItems.size() - 1;
-    while (index > 0 && mBandwidthItems.itemAt(index).mBandwidth > 1200000) {
-        --index;
-    }
-#elif 1
-    char value[PROPERTY_VALUE_MAX];
-    size_t index;
-    if (property_get("media.httplive.bw-index", value, NULL)) {
-        char *end;
-        index = strtoul(value, &end, 10);
-        CHECK(end > value && *end == '\0');
-
-        if (index >= mBandwidthItems.size()) {
-            index = mBandwidthItems.size() - 1;
-        }
-    } else {
-        index = 0;
-    }
-#else
-    size_t index = mBandwidthItems.size() - 1;  // Highest bandwidth stream
 #endif
 
     CHECK_GE(index, 0);
@@ -969,9 +898,6 @@ void LiveSession::changeConfiguration(
     mReconfigurationInProgress = true;
 
     mPrevBandwidthIndex = bandwidthIndex;
-
-    ALOGV("changeConfiguration => timeUs:%lld us, bwIndex:%d, pickTrack:%d",
-          timeUs, bandwidthIndex, pickTrack);
 
     if (pickTrack) {
         mPlaylist->pickRandomMediaItems();
@@ -1072,7 +998,6 @@ void LiveSession::onChangeConfiguration2(const sp<AMessage> &msg) {
         if (streamMask & indexToType(i)) {
             const AString &uriKey = mStreams[i].uriKey();
             CHECK(msg->findString(uriKey.c_str(), &URIs[i]));
-            ALOGV("%s = '%s'", uriKey.c_str(), URIs[i].c_str());
         }
     }
 
@@ -1143,7 +1068,6 @@ void LiveSession::onChangeConfiguration3(const sp<AMessage> &msg) {
     // Of all existing fetchers:
     // * Resume fetchers that are still needed and assign them original packet sources.
     // * Mark otherwise unneeded fetchers for removal.
-    ALOGV("resuming fetchers for mask 0x%08x", resumeMask);
     for (size_t i = 0; i < mFetcherInfos.size(); ++i) {
         const AString &uri = mFetcherInfos.keyAt(i);
 
@@ -1165,10 +1089,6 @@ void LiveSession::onChangeConfiguration3(const sp<AMessage> &msg) {
     }
 
     // streamMask now only contains the types that need a new fetcher created.
-
-    if (streamMask != 0) {
-        ALOGV("creating new fetchers for mask 0x%08x", streamMask);
-    }
 
     // Find out when the original fetchers have buffered up to and start the new fetchers
     // at a later timestamp.
@@ -1236,7 +1156,6 @@ void LiveSession::onChangeConfiguration3(const sp<AMessage> &msg) {
 
     scheduleCheckBandwidthEvent();
 
-    ALOGV("XXX configuration change completed.");
     mReconfigurationInProgress = false;
     if (switching) {
         mSwitchInProgress = true;

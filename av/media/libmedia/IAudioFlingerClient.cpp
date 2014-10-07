@@ -50,7 +50,6 @@ public:
         data.writeInt32((int32_t) ioHandle);
         if (event == AudioSystem::STREAM_CONFIG_CHANGED) {
             uint32_t stream = *(const uint32_t *)param2;
-            ALOGV("ioConfigChanged stream %d", stream);
             data.writeInt32(stream);
         } else if (event != AudioSystem::OUTPUT_CLOSED && event != AudioSystem::INPUT_CLOSED
 #ifdef QCOM_DIRECTTRACK
@@ -86,7 +85,6 @@ status_t BnAudioFlingerClient::onTransact(
             if (event == AudioSystem::STREAM_CONFIG_CHANGED) {
                 stream = data.readInt32();
                 param2 = &stream;
-                ALOGV("STREAM_CONFIG_CHANGED stream %d", stream);
             } else if (event != AudioSystem::OUTPUT_CLOSED && event != AudioSystem::INPUT_CLOSED) {
                 desc.samplingRate = data.readInt32();
                 desc.format = (audio_format_t) data.readInt32();

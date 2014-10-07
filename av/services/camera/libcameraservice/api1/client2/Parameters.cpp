@@ -1165,12 +1165,8 @@ status_t Parameters::set(const String8& paramString) {
             return BAD_VALUE;
         } else if (fpsRange == NULL) {
             fpsUseSingleValue = true;
-            ALOGV("%s: FPS range not set, using FPS single value",
-                  __FUNCTION__);
         } else if (fpsSingle == NULL) {
             fpsUseSingleValue = false;
-            ALOGV("%s: FPS single not set, using FPS range value",
-                  __FUNCTION__);
         } else {
             int fpsKeyOrder;
             res = newParams.compareSetOrder(
@@ -1183,8 +1179,6 @@ status_t Parameters::set(const String8& paramString) {
 
         }
 
-        ALOGV("%s: Preview FPS value is used from '%s'",
-              __FUNCTION__, fpsUseSingleValue ? "single" : "range");
     }
     newParams.getPreviewFpsRange(&validatedParams.previewFpsRange[0],
             &validatedParams.previewFpsRange[1]);
@@ -1194,10 +1188,6 @@ status_t Parameters::set(const String8& paramString) {
 
     // Ignore the FPS range if the FPS single has higher precedence
     if (!fpsUseSingleValue) {
-        ALOGV("%s: Preview FPS range (%d, %d)", __FUNCTION__,
-                validatedParams.previewFpsRange[0],
-                validatedParams.previewFpsRange[1]);
-
         camera_metadata_ro_entry_t availablePreviewFpsRanges =
             staticInfo(ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES, 2);
         for (i = 0; i < availablePreviewFpsRanges.count; i += 2) {
@@ -1252,8 +1242,6 @@ status_t Parameters::set(const String8& paramString) {
     // - Use only if the single FPS value was set later than the FPS range
     if (fpsUseSingleValue) {
         int previewFps = newParams.getPreviewFrameRate();
-        ALOGV("%s: Preview FPS single value requested: %d",
-              __FUNCTION__, previewFps);
         {
             camera_metadata_ro_entry_t availableFrameRates =
                 staticInfo(ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);

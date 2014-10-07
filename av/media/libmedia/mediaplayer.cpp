@@ -44,7 +44,6 @@ namespace android {
 
 MediaPlayer::MediaPlayer()
 {
-    ALOGV("constructor");
     mListener = NULL;
     mCookie = NULL;
     mStreamType = AUDIO_STREAM_MUSIC;
@@ -65,7 +64,6 @@ MediaPlayer::MediaPlayer()
 
 MediaPlayer::~MediaPlayer()
 {
-    ALOGV("destructor");
     AudioSystem::releaseAudioSessionId(mAudioSessionId);
     disconnect();
     IPCThreadState::self()->flushCommands();
@@ -73,7 +71,6 @@ MediaPlayer::~MediaPlayer()
 
 void MediaPlayer::disconnect()
 {
-    ALOGV("disconnect");
     sp<IMediaPlayer> p;
     {
         Mutex::Autolock _l(mLock);
@@ -97,7 +94,6 @@ void MediaPlayer::clear_l()
 
 status_t MediaPlayer::setListener(const sp<MediaPlayerListener>& listener)
 {
-    ALOGV("setListener");
     Mutex::Autolock _l(mLock);
     mListener = listener;
     return NO_ERROR;
@@ -138,7 +134,6 @@ status_t MediaPlayer::attachNewPlayer(const sp<IMediaPlayer>& player)
 status_t MediaPlayer::setDataSource(
         const char *url, const KeyedVector<String8, String8> *headers)
 {
-    ALOGV("setDataSource(%s)", url);
     status_t err = BAD_VALUE;
     if (url != NULL) {
         const sp<IMediaPlayerService>& service(getMediaPlayerService());
@@ -156,7 +151,6 @@ status_t MediaPlayer::setDataSource(
 
 status_t MediaPlayer::setDataSource(int fd, int64_t offset, int64_t length)
 {
-    ALOGV("setDataSource(%d, %lld, %lld)", fd, offset, length);
     status_t err = UNKNOWN_ERROR;
     const sp<IMediaPlayerService>& service(getMediaPlayerService());
     if (service != 0) {
@@ -172,7 +166,6 @@ status_t MediaPlayer::setDataSource(int fd, int64_t offset, int64_t length)
 
 status_t MediaPlayer::setDataSource(const sp<IStreamSource> &source)
 {
-    ALOGV("setDataSource");
     status_t err = UNKNOWN_ERROR;
     const sp<IMediaPlayerService>& service(getMediaPlayerService());
     if (service != 0) {
@@ -193,7 +186,6 @@ status_t MediaPlayer::invoke(const Parcel& request, Parcel *reply)
             (mCurrentState != MEDIA_PLAYER_STATE_ERROR) &&
             ((mCurrentState & MEDIA_PLAYER_IDLE) != MEDIA_PLAYER_IDLE);
     if ((mPlayer != NULL) && hasBeenInitialized) {
-        ALOGV("invoke %d", request.dataSize());
         return  mPlayer->invoke(request, reply);
     }
     ALOGE("invoke failed: wrong state %X", mCurrentState);
@@ -202,7 +194,6 @@ status_t MediaPlayer::invoke(const Parcel& request, Parcel *reply)
 
 status_t MediaPlayer::setMetadataFilter(const Parcel& filter)
 {
-    ALOGD("setMetadataFilter");
     Mutex::Autolock lock(mLock);
     if (mPlayer == NULL) {
         return NO_INIT;
@@ -212,7 +203,6 @@ status_t MediaPlayer::setMetadataFilter(const Parcel& filter)
 
 status_t MediaPlayer::getMetadata(bool update_only, bool apply_filter, Parcel *metadata)
 {
-    ALOGD("getMetadata");
     Mutex::Autolock lock(mLock);
     if (mPlayer == NULL) {
         return NO_INIT;
@@ -223,7 +213,6 @@ status_t MediaPlayer::getMetadata(bool update_only, bool apply_filter, Parcel *m
 status_t MediaPlayer::setVideoSurfaceTexture(
         const sp<IGraphicBufferProducer>& bufferProducer)
 {
-    ALOGV("setVideoSurfaceTexture");
     Mutex::Autolock _l(mLock);
     if (mPlayer == 0) return NO_INIT;
     return mPlayer->setVideoSurfaceTexture(bufferProducer);
@@ -247,7 +236,6 @@ status_t MediaPlayer::prepareAsync_l()
 // code.
 status_t MediaPlayer::prepare()
 {
-    ALOGV("prepare");
     Mutex::Autolock _l(mLock);
     mLockThreadId = getThreadId();
     if (mPrepareSync) {
@@ -265,21 +253,18 @@ status_t MediaPlayer::prepare()
         mSignal.wait(mLock);  // wait for prepare done
         mPrepareSync = false;
     }
-    ALOGV("prepare complete - status=%d", mPrepareStatus);
     mLockThreadId = 0;
     return mPrepareStatus;
 }
 
 status_t MediaPlayer::prepareAsync()
 {
-    ALOGV("prepareAsync");
     Mutex::Autolock _l(mLock);
     return prepareAsync_l();
 }
 
 status_t MediaPlayer::start()
 {
-    ALOGV("start");
     Mutex::Autolock _l(mLock);
     if (mCurrentState & MEDIA_PLAYER_STARTED)
         return NO_ERROR;
@@ -292,10 +277,6 @@ status_t MediaPlayer::start()
         status_t ret = mPlayer->start();
         if (ret != NO_ERROR) {
             mCurrentState = MEDIA_PLAYER_STATE_ERROR;
-        } else {
-            if (mCurrentState == MEDIA_PLAYER_PLAYBACK_COMPLETE) {
-                ALOGV("playback completed immediately following start()");
-            }
         }
         return ret;
     }
@@ -305,7 +286,6 @@ status_t MediaPlayer::start()
 
 status_t MediaPlayer::stop()
 {
-    ALOGV("stop");
     Mutex::Autolock _l(mLock);
     if (mCurrentState & MEDIA_PLAYER_STOPPED) return NO_ERROR;
     if ( (mPlayer != 0) && ( mCurrentState & ( MEDIA_PLAYER_STARTED | MEDIA_PLAYER_PREPARED |
@@ -324,7 +304,6 @@ status_t MediaPlayer::stop()
 
 status_t MediaPlayer::pause()
 {
-    ALOGV("pause");
     Mutex::Autolock _l(mLock);
     if (mCurrentState & (MEDIA_PLAYER_PAUSED|MEDIA_PLAYER_PLAYBACK_COMPLETE))
         return NO_ERROR;
@@ -347,20 +326,17 @@ bool MediaPlayer::isPlaying()
     if (mPlayer != 0) {
         bool temp = false;
         mPlayer->isPlaying(&temp);
-        ALOGV("isPlaying: %d", temp);
         if ((mCurrentState & MEDIA_PLAYER_STARTED) && ! temp) {
             ALOGE("internal/external state mismatch corrected");
             mCurrentState = MEDIA_PLAYER_PAUSED;
         }
         return temp;
     }
-    ALOGV("isPlaying: no active player");
     return false;
 }
 
 status_t MediaPlayer::getVideoWidth(int *w)
 {
-    ALOGV("getVideoWidth");
     Mutex::Autolock _l(mLock);
     if (mPlayer == 0) return INVALID_OPERATION;
     *w = mVideoWidth;
@@ -369,7 +345,6 @@ status_t MediaPlayer::getVideoWidth(int *w)
 
 status_t MediaPlayer::getVideoHeight(int *h)
 {
-    ALOGV("getVideoHeight");
     Mutex::Autolock _l(mLock);
     if (mPlayer == 0) return INVALID_OPERATION;
     *h = mVideoHeight;
@@ -378,11 +353,9 @@ status_t MediaPlayer::getVideoHeight(int *h)
 
 status_t MediaPlayer::getCurrentPosition(int *msec)
 {
-    ALOGV("getCurrentPosition");
     Mutex::Autolock _l(mLock);
     if (mPlayer != 0) {
         if (mCurrentPosition >= 0) {
-            ALOGV("Using cached seek position: %d", mCurrentPosition);
             *msec = mCurrentPosition;
             return NO_ERROR;
         }
@@ -393,7 +366,6 @@ status_t MediaPlayer::getCurrentPosition(int *msec)
 
 status_t MediaPlayer::getDuration_l(int *msec)
 {
-    ALOGV("getDuration_l");
     bool isValidState = (mCurrentState & (MEDIA_PLAYER_PREPARED | MEDIA_PLAYER_STARTED | MEDIA_PLAYER_PAUSED | MEDIA_PLAYER_STOPPED | MEDIA_PLAYER_PLAYBACK_COMPLETE));
     if (mPlayer != 0 && isValidState) {
         int durationMs;
@@ -410,7 +382,6 @@ status_t MediaPlayer::getDuration_l(int *msec)
         }
         return ret;
     }
-    ALOGE("Attempt to call getDuration without a valid mediaplayer");
     return INVALID_OPERATION;
 }
 
@@ -422,10 +393,8 @@ status_t MediaPlayer::getDuration(int *msec)
 
 status_t MediaPlayer::seekTo_l(int msec)
 {
-    ALOGV("seekTo %d", msec);
     if ((mPlayer != 0) && ( mCurrentState & ( MEDIA_PLAYER_STARTED | MEDIA_PLAYER_PREPARED | MEDIA_PLAYER_PAUSED |  MEDIA_PLAYER_PLAYBACK_COMPLETE) ) ) {
         if ( msec < 0 ) {
-            ALOGW("Attempt to seek to invalid position: %d", msec);
             msec = 0;
         }
 
@@ -433,16 +402,10 @@ status_t MediaPlayer::seekTo_l(int msec)
         status_t err = mPlayer->getDuration(&durationMs);
 
         if (err != OK) {
-            ALOGW("Stream has no duration and is therefore not seekable.");
             return err;
         }
 
         if (msec > durationMs) {
-            ALOGW("Attempt to seek to past end of file: request = %d, "
-                  "durationMs = %d",
-                  msec,
-                  durationMs);
-
             msec = durationMs;
         }
 
@@ -453,7 +416,6 @@ status_t MediaPlayer::seekTo_l(int msec)
             return mPlayer->seekTo(msec);
         }
         else {
-            ALOGV("Seek in progress - queue up seekTo[%d]", msec);
             return NO_ERROR;
         }
     }
@@ -509,14 +471,12 @@ status_t MediaPlayer::doSetRetransmitEndpoint(const sp<IMediaPlayer>& player) {
 
 status_t MediaPlayer::reset()
 {
-    ALOGV("reset");
     Mutex::Autolock _l(mLock);
     return reset_l();
 }
 
 status_t MediaPlayer::setAudioStreamType(audio_stream_type_t type)
 {
-    ALOGV("MediaPlayer::setAudioStreamType");
     Mutex::Autolock _l(mLock);
     if (mStreamType == type) return NO_ERROR;
     if (mCurrentState & ( MEDIA_PLAYER_PREPARED | MEDIA_PLAYER_STARTED |
@@ -532,7 +492,6 @@ status_t MediaPlayer::setAudioStreamType(audio_stream_type_t type)
 
 status_t MediaPlayer::setLooping(int loop)
 {
-    ALOGV("MediaPlayer::setLooping");
     Mutex::Autolock _l(mLock);
     mLoop = (loop != 0);
     if (mPlayer != 0) {
@@ -542,18 +501,15 @@ status_t MediaPlayer::setLooping(int loop)
 }
 
 bool MediaPlayer::isLooping() {
-    ALOGV("isLooping");
     Mutex::Autolock _l(mLock);
     if (mPlayer != 0) {
         return mLoop;
     }
-    ALOGV("isLooping: no active player");
     return false;
 }
 
 status_t MediaPlayer::setVolume(float leftVolume, float rightVolume)
 {
-    ALOGV("MediaPlayer::setVolume(%f, %f)", leftVolume, rightVolume);
     Mutex::Autolock _l(mLock);
     mLeftVolume = leftVolume;
     mRightVolume = rightVolume;
@@ -565,7 +521,6 @@ status_t MediaPlayer::setVolume(float leftVolume, float rightVolume)
 
 status_t MediaPlayer::setAudioSessionId(int sessionId)
 {
-    ALOGV("MediaPlayer::setAudioSessionId(%d)", sessionId);
     Mutex::Autolock _l(mLock);
     if (!(mCurrentState & MEDIA_PLAYER_IDLE)) {
         ALOGE("setAudioSessionId called in state %d", mCurrentState);
@@ -590,7 +545,6 @@ int MediaPlayer::getAudioSessionId()
 
 status_t MediaPlayer::setAuxEffectSendLevel(float level)
 {
-    ALOGV("MediaPlayer::setAuxEffectSendLevel(%f)", level);
     Mutex::Autolock _l(mLock);
     mSendLevel = level;
     if (mPlayer != 0) {
@@ -601,7 +555,6 @@ status_t MediaPlayer::setAuxEffectSendLevel(float level)
 
 status_t MediaPlayer::attachAuxEffect(int effectId)
 {
-    ALOGV("MediaPlayer::attachAuxEffect(%d)", effectId);
     Mutex::Autolock _l(mLock);
     if (mPlayer == 0 ||
         (mCurrentState & MEDIA_PLAYER_IDLE) ||
@@ -615,30 +568,24 @@ status_t MediaPlayer::attachAuxEffect(int effectId)
 
 status_t MediaPlayer::setParameter(int key, const Parcel& request)
 {
-    ALOGV("MediaPlayer::setParameter(%d)", key);
     Mutex::Autolock _l(mLock);
     if (mPlayer != NULL) {
         return  mPlayer->setParameter(key, request);
     }
-    ALOGV("setParameter: no active player");
     return INVALID_OPERATION;
 }
 
 status_t MediaPlayer::getParameter(int key, Parcel *reply)
 {
-    ALOGV("MediaPlayer::getParameter(%d)", key);
     Mutex::Autolock _l(mLock);
     if (mPlayer != NULL) {
         return  mPlayer->getParameter(key, reply);
     }
-    ALOGV("getParameter: no active player");
     return INVALID_OPERATION;
 }
 
 status_t MediaPlayer::setRetransmitEndpoint(const char* addrString,
                                             uint16_t port) {
-    ALOGV("MediaPlayer::setRetransmitEndpoint(%s:%hu)",
-            addrString ? addrString : "(null)", port);
 
     Mutex::Autolock _l(mLock);
     if ((mPlayer != NULL) || (mCurrentState != MEDIA_PLAYER_IDLE))
@@ -665,7 +612,6 @@ status_t MediaPlayer::setRetransmitEndpoint(const char* addrString,
 
 void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
 {
-    ALOGV("message received msg=%d, ext1=%d, ext2=%d", msg, ext1, ext2);
     bool send = true;
     bool locked = false;
 
@@ -688,7 +634,6 @@ void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
 #else
     if (!(msg == MEDIA_ERROR && mCurrentState == MEDIA_PLAYER_IDLE) && mPlayer == 0) {
 #endif
-        ALOGV("notify(%d, %d, %d) callback on disconnected mediaplayer", msg, ext1, ext2);
         if (locked) mLock.unlock();   // release the lock when done.
         return;
     }
@@ -697,17 +642,14 @@ void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
     case MEDIA_NOP: // interface test message
         break;
     case MEDIA_PREPARED:
-        ALOGV("prepared");
         mCurrentState = MEDIA_PLAYER_PREPARED;
         if (mPrepareSync) {
-            ALOGV("signal application thread");
             mPrepareSync = false;
             mPrepareStatus = NO_ERROR;
             mSignal.signal();
         }
         break;
     case MEDIA_PLAYBACK_COMPLETE:
-        ALOGV("playback complete");
         if (mCurrentState == MEDIA_PLAYER_IDLE) {
             ALOGE("playback complete in idle state");
         }
@@ -723,7 +665,6 @@ void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
         mCurrentState = MEDIA_PLAYER_STATE_ERROR;
         if (mPrepareSync)
         {
-            ALOGV("signal application thread");
             mPrepareSync = false;
             mPrepareStatus = ext1;
             mSignal.signal();
@@ -733,42 +674,30 @@ void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
     case MEDIA_INFO:
         // ext1: Media framework error code.
         // ext2: Implementation dependant error code.
-        if (ext1 != MEDIA_INFO_VIDEO_TRACK_LAGGING) {
-            ALOGW("info/warning (%d, %d)", ext1, ext2);
-        }
         break;
     case MEDIA_SEEK_COMPLETE:
-        ALOGV("Received seek complete");
         if (mSeekPosition != mCurrentPosition) {
-            ALOGV("Executing queued seekTo(%d)", mSeekPosition);
             mSeekPosition = -1;
             seekTo_l(mCurrentPosition);
         }
         else {
-            ALOGV("All seeks complete - return to regularly scheduled program");
             mCurrentPosition = mSeekPosition = -1;
         }
         break;
     case MEDIA_BUFFERING_UPDATE:
-        ALOGV("buffering %d", ext1);
         break;
     case MEDIA_SET_VIDEO_SIZE:
-        ALOGV("New video size %d x %d", ext1, ext2);
         mVideoWidth = ext1;
         mVideoHeight = ext2;
         break;
     case MEDIA_TIMED_TEXT:
-        ALOGV("Received timed text message");
         break;
     case MEDIA_SUBTITLE_DATA:
-        ALOGV("Received subtitle data message");
 #ifdef QCOM_HARDWARE
     case MEDIA_QOE:
-        ALOGV("Received QOE Message for event : %d",ext2);
 #endif
         break;
     default:
-        ALOGV("unrecognized message: (%d, %d, %d)", msg, ext1, ext2);
         break;
     }
 
@@ -778,9 +707,7 @@ void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
     // this prevents re-entrant calls into client code
     if ((listener != 0) && send) {
         Mutex::Autolock _l(mNotifyLock);
-        ALOGV("callback application");
         listener->notify(msg, ext1, ext2, obj);
-        ALOGV("back from callback");
     }
 }
 
@@ -788,7 +715,6 @@ void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
                                            int* pNumChannels, audio_format_t* pFormat,
                                            const sp<IMemoryHeap>& heap, size_t *pSize)
 {
-    ALOGV("decode(%s)", url);
     status_t status;
     const sp<IMediaPlayerService>& service = getMediaPlayerService();
     if (service != 0) {
@@ -803,7 +729,6 @@ void MediaPlayer::notify(int msg, int ext1, int ext2, const Parcel *obj)
 
 void MediaPlayer::died()
 {
-    ALOGV("died");
     notify(MEDIA_ERROR, MEDIA_ERROR_SERVER_DIED, 0);
 }
 
@@ -812,7 +737,6 @@ void MediaPlayer::died()
                                         audio_format_t* pFormat,
                                         const sp<IMemoryHeap>& heap, size_t *pSize)
 {
-    ALOGV("decode(%d, %lld, %lld)", fd, offset, length);
     status_t status;
     const sp<IMediaPlayerService>& service = getMediaPlayerService();
     if (service != 0) {

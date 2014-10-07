@@ -119,8 +119,6 @@ status_t Visualizer::setCaptureCallBack(capture_cbk_t cbk, void* user, uint32_t 
     if (cbk != NULL) {
         mCaptureThread = new CaptureThread(*this, rate, ((flags & CAPTURE_CALL_JAVA) != 0));
     }
-    ALOGV("setCaptureCallBack() rate: %d thread %p flags 0x%08x",
-            rate, mCaptureThread.get(), mCaptureFlags);
     return NO_ERROR;
 }
 
@@ -145,8 +143,6 @@ status_t Visualizer::setCaptureSize(uint32_t size)
     *(int32_t *)p->data = VISUALIZER_PARAM_CAPTURE_SIZE;
     *((int32_t *)p->data + 1)= size;
     status_t status = setParameter(p);
-
-    ALOGV("setCaptureSize size %d  status %d p->status %d", size, status, p->status);
 
     if (status == NO_ERROR) {
         status = p->status;
@@ -175,8 +171,6 @@ status_t Visualizer::setScalingMode(uint32_t mode) {
     *((int32_t *)p->data + 1)= mode;
     status_t status = setParameter(p);
 
-    ALOGV("setScalingMode mode %d  status %d p->status %d", mode, status, p->status);
-
     if (status == NO_ERROR) {
         status = p->status;
         if (status == NO_ERROR) {
@@ -204,8 +198,6 @@ status_t Visualizer::setMeasurementMode(uint32_t mode) {
     *(int32_t *)p->data = VISUALIZER_PARAM_MEASUREMENT_MODE;
     *((int32_t *)p->data + 1)= mode;
     status_t status = setParameter(p);
-
-    ALOGV("setMeasurementMode mode %d  status %d p->status %d", mode, status, p->status);
 
     if (status == NO_ERROR) {
         status = p->status;
@@ -243,12 +235,10 @@ status_t Visualizer::getIntMeasurements(uint32_t type, uint32_t number, int32_t 
                 sizeof(uint32_t)  /*cmdSize*/,
                 &type /*cmdData*/,
                 &replySize, measurements);
-        ALOGV("getMeasurements() command returned %d", status);
         if ((status == NO_ERROR) && (replySize == 0)) {
             status = NOT_ENOUGH_DATA;
         }
     } else {
-        ALOGV("getMeasurements() disabled");
         return INVALID_OPERATION;
     }
     return status;
@@ -267,12 +257,10 @@ status_t Visualizer::getWaveForm(uint8_t *waveform)
     if (mEnabled) {
         uint32_t replySize = mCaptureSize;
         status = command(VISUALIZER_CMD_CAPTURE, 0, NULL, &replySize, waveform);
-        ALOGV("getWaveForm() command returned %d", status);
         if ((status == NO_ERROR) && (replySize == 0)) {
             status = NOT_ENOUGH_DATA;
         }
     } else {
-        ALOGV("getWaveForm() disabled");
         memset(waveform, 0x80, mCaptureSize);
     }
     return status;
@@ -331,8 +319,6 @@ status_t Visualizer::doFft(uint8_t *fft, uint8_t *waveform)
 void Visualizer::periodicCapture()
 {
     Mutex::Autolock _l(mCaptureLock);
-    ALOGV("periodicCapture() %p mCaptureCallBack %p mCaptureFlags 0x%08x",
-            this, mCaptureCallBack, mCaptureFlags);
     if (mCaptureCallBack != NULL &&
         (mCaptureFlags & (CAPTURE_WAVEFORM|CAPTURE_FFT)) &&
         mCaptureSize != 0) {
@@ -384,8 +370,6 @@ uint32_t Visualizer::initCaptureSize()
     }
     mCaptureSize = size;
 
-    ALOGV("initCaptureSize size %d status %d", mCaptureSize, status);
-
     return size;
 }
 
@@ -393,10 +377,7 @@ void Visualizer::controlStatusChanged(bool controlGranted) {
     if (controlGranted) {
         // this Visualizer instance regained control of the effect, reset the scaling mode
         //   and capture size as has been cached through it.
-        ALOGV("controlStatusChanged(true) causes effect parameter reset:");
-        ALOGV("    scaling mode reset to %d", mScalingMode);
         setScalingMode(mScalingMode);
-        ALOGV("    capture size reset to %d", mCaptureSize);
         setCaptureSize(mCaptureSize);
     }
     AudioEffect::controlStatusChanged(controlGranted);
@@ -409,18 +390,15 @@ Visualizer::CaptureThread::CaptureThread(Visualizer& receiver, uint32_t captureR
     : Thread(bCanCallJava), mReceiver(receiver)
 {
     mSleepTimeUs = 1000000000 / captureRate;
-    ALOGV("CaptureThread cstor %p captureRate %d mSleepTimeUs %d", this, captureRate, mSleepTimeUs);
 }
 
 bool Visualizer::CaptureThread::threadLoop()
 {
-    ALOGV("CaptureThread %p enter", this);
     while (!exitPending())
     {
         usleep(mSleepTimeUs);
         mReceiver.periodicCapture();
     }
-    ALOGV("CaptureThread %p exiting", this);
     return false;
 }
 

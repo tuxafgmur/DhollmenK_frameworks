@@ -57,9 +57,6 @@ static void *loadExtractorPlugin() {
     if (property_get("media.stagefright.extractor-plugin", lib, "libFFmpegExtractor.so")) {
         if (void *extractorLib = ::dlopen(lib, RTLD_LAZY)) {
             ret = ::dlsym(extractorLib, "getExtractorPlugin");
-            ALOGW_IF(!ret, "Failed to find symbol, dlerror: %s", ::dlerror());
-        } else {
-            ALOGV("Failed to load %s, dlerror: %s", lib, ::dlerror());
         }
     }
     return ret;

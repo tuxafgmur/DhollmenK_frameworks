@@ -57,7 +57,6 @@ SoftFlacEncoder::SoftFlacEncoder(
       , mWroteHeader(false)
 #endif
 {
-    ALOGV("SoftFlacEncoder::SoftFlacEncoder(name=%s)", name);
     initPorts();
 
     mFlacStreamEncoder = FLAC__stream_encoder_new();
@@ -76,7 +75,6 @@ SoftFlacEncoder::SoftFlacEncoder(
 }
 
 SoftFlacEncoder::~SoftFlacEncoder() {
-    ALOGV("SoftFlacEncoder::~SoftFlacEncoder()");
     if (mFlacStreamEncoder != NULL) {
         FLAC__stream_encoder_delete(mFlacStreamEncoder);
         mFlacStreamEncoder = NULL;
@@ -99,7 +97,6 @@ OMX_ERRORTYPE SoftFlacEncoder::initCheck() const {
 }
 
 void SoftFlacEncoder::initPorts() {
-    ALOGV("SoftFlacEncoder::initPorts()");
 
     OMX_PARAM_PORTDEFINITIONTYPE def;
     InitOMXParams(&def);
@@ -145,7 +142,6 @@ void SoftFlacEncoder::initPorts() {
 
 OMX_ERRORTYPE SoftFlacEncoder::internalGetParameter(
         OMX_INDEXTYPE index, OMX_PTR params) {
-    ALOGV("SoftFlacEncoder::internalGetParameter(index=0x%x)", index);
 
     switch (index) {
         case OMX_IndexParamAudioPcm:
@@ -190,7 +186,6 @@ OMX_ERRORTYPE SoftFlacEncoder::internalSetParameter(
     switch (index) {
         case OMX_IndexParamAudioPcm:
         {
-            ALOGV("SoftFlacEncoder::internalSetParameter(OMX_IndexParamAudioPcm)");
             OMX_AUDIO_PARAM_PCMMODETYPE *pcmParams = (OMX_AUDIO_PARAM_PCMMODETYPE *)params;
 
             if (pcmParams->nPortIndex != 0 && pcmParams->nPortIndex != 1) {
@@ -204,14 +199,12 @@ OMX_ERRORTYPE SoftFlacEncoder::internalSetParameter(
 
             mNumChannels = pcmParams->nChannels;
             mSampleRate = pcmParams->nSamplingRate;
-            ALOGV("will encode %ld channels at %ldHz", mNumChannels, mSampleRate);
 
             return configureEncoder();
         }
 
         case OMX_IndexParamStandardComponentRole:
         {
-            ALOGV("SoftFlacEncoder::internalSetParameter(OMX_IndexParamStandardComponentRole)");
             const OMX_PARAM_COMPONENTROLETYPE *roleParams =
                 (const OMX_PARAM_COMPONENTROLETYPE *)params;
 
@@ -251,14 +244,11 @@ OMX_ERRORTYPE SoftFlacEncoder::internalSetParameter(
         }
 
         default:
-            ALOGV("SoftFlacEncoder::internalSetParameter(default)");
             return SimpleSoftOMXComponent::internalSetParameter(index, params);
     }
 }
 
 void SoftFlacEncoder::onQueueFilled(OMX_U32 portIndex) {
-
-    ALOGV("SoftFlacEncoder::onQueueFilled(portIndex=%ld)", portIndex);
 
     if (mSignalledError) {
         return;
@@ -310,7 +300,6 @@ void SoftFlacEncoder::onQueueFilled(OMX_U32 portIndex) {
         for (unsigned i=0 ; i < nbInputSamples ; i++) {
             mInputBufferPcm32[i] = (FLAC__int32) pcm16[i];
         }
-        ALOGV(" about to encode %u samples per channel", nbInputFrames);
         FLAC__bool ok = FLAC__stream_encoder_process_interleaved(
                         mFlacStreamEncoder,
                         mInputBufferPcm32,
@@ -318,15 +307,12 @@ void SoftFlacEncoder::onQueueFilled(OMX_U32 portIndex) {
 
         if (ok) {
             if (mEncoderReturnedEncodedData && (mEncoderReturnedNbBytes != 0)) {
-                ALOGV(" dequeueing buffer on output port after writing data");
                 outInfo->mOwnedByUs = false;
                 outQueue.erase(outQueue.begin());
                 outInfo = NULL;
                 notifyFillBufferDone(outHeader);
                 outHeader = NULL;
                 mEncoderReturnedEncodedData = false;
-            } else {
-                ALOGV(" encoder process_interleaved returned without data to write");
             }
         } else {
             ALOGE(" error encountered during encoding");
@@ -347,12 +333,9 @@ void SoftFlacEncoder::onQueueFilled(OMX_U32 portIndex) {
 FLAC__StreamEncoderWriteStatus SoftFlacEncoder::onEncodedFlacAvailable(
             const FLAC__byte buffer[],
             size_t bytes, unsigned samples, unsigned current_frame) {
-    ALOGV("SoftFlacEncoder::onEncodedFlacAvailable(bytes=%d, samples=%d, curr_frame=%d)",
-            bytes, samples, current_frame);
 
 #ifdef WRITE_FLAC_HEADER_IN_FIRST_BUFFER
     if (samples == 0) {
-        ALOGI(" saving %d bytes of header", bytes);
         memcpy(mHeader + mHeaderOffset, buffer, bytes);
         mHeaderOffset += bytes;// will contain header size when finished receiving header
         return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
@@ -363,7 +346,6 @@ FLAC__StreamEncoderWriteStatus SoftFlacEncoder::onEncodedFlacAvailable(
     if ((samples == 0) || !mEncoderWriteData) {
         // called by the encoder because there's header data to save, but it's not the role
         // of this component (unless WRITE_FLAC_HEADER_IN_FIRST_BUFFER is defined)
-        ALOGV("ignoring %d bytes of header data (samples=%d)", bytes, samples);
         return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
     }
 
@@ -374,7 +356,6 @@ FLAC__StreamEncoderWriteStatus SoftFlacEncoder::onEncodedFlacAvailable(
 
 #ifdef WRITE_FLAC_HEADER_IN_FIRST_BUFFER
     if (!mWroteHeader) {
-        ALOGI(" writing %d bytes of header on output port", mHeaderOffset);
         memcpy(outHeader->pBuffer + outHeader->nOffset + outHeader->nFilledLen,
                 mHeader, mHeaderOffset);
         outHeader->nFilledLen += mHeaderOffset;
@@ -384,7 +365,6 @@ FLAC__StreamEncoderWriteStatus SoftFlacEncoder::onEncodedFlacAvailable(
 #endif
 
     // write encoded data
-    ALOGV(" writing %d bytes of encoded data on output port", bytes);
     if (bytes > outHeader->nAllocLen - outHeader->nOffset - outHeader->nFilledLen) {
         ALOGE(" not enough space left to write encoded data, dropping %u bytes", bytes);
         // a fatal error would stop the encoding
@@ -405,8 +385,6 @@ FLAC__StreamEncoderWriteStatus SoftFlacEncoder::onEncodedFlacAvailable(
 
 
 OMX_ERRORTYPE SoftFlacEncoder::configureEncoder() {
-    ALOGV("SoftFlacEncoder::configureEncoder() numChannel=%ld, sampleRate=%ld",
-            mNumChannels, mSampleRate);
 
     if (mSignalledError || (mFlacStreamEncoder == NULL)) {
         ALOGE("can't configure encoder: no encoder or invalid state");
@@ -433,7 +411,6 @@ OMX_ERRORTYPE SoftFlacEncoder::configureEncoder() {
 
 return_result:
     if (ok) {
-        ALOGV("encoder successfully configured");
         return OMX_ErrorNone;
     } else {
         ALOGE("unknown error when configuring encoder");

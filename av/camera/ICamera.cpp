@@ -62,7 +62,6 @@ public:
     // disconnect from camera service
     void disconnect()
     {
-        ALOGV("disconnect");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(DISCONNECT, data, &reply);
@@ -72,7 +71,6 @@ public:
     // pass the buffered IGraphicBufferProducer to the camera service
     status_t setPreviewTarget(const sp<IGraphicBufferProducer>& bufferProducer)
     {
-        ALOGV("setPreviewTarget");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         sp<IBinder> b(bufferProducer->asBinder());
@@ -85,7 +83,6 @@ public:
     // preview are handled. See Camera.h for details.
     void setPreviewCallbackFlag(int flag)
     {
-        ALOGV("setPreviewCallbackFlag(%d)", flag);
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         data.writeInt32(flag);
@@ -95,7 +92,6 @@ public:
     status_t setPreviewCallbackTarget(
             const sp<IGraphicBufferProducer>& callbackProducer)
     {
-        ALOGV("setPreviewCallbackTarget");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         sp<IBinder> b(callbackProducer->asBinder());
@@ -107,7 +103,6 @@ public:
     // start preview mode, must call setPreviewTarget first
     status_t startPreview()
     {
-        ALOGV("startPreview");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(START_PREVIEW, data, &reply);
@@ -117,7 +112,6 @@ public:
     // start recording mode, must call setPreviewTarget first
     status_t startRecording()
     {
-        ALOGV("startRecording");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(START_RECORDING, data, &reply);
@@ -127,7 +121,6 @@ public:
     // stop preview mode
     void stopPreview()
     {
-        ALOGV("stopPreview");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(STOP_PREVIEW, data, &reply);
@@ -136,7 +129,6 @@ public:
     // stop recording mode
     void stopRecording()
     {
-        ALOGV("stopRecording");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(STOP_RECORDING, data, &reply);
@@ -144,7 +136,6 @@ public:
 
     void releaseRecordingFrame(const sp<IMemory>& mem)
     {
-        ALOGV("releaseRecordingFrame");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         data.writeStrongBinder(mem->asBinder());
@@ -153,7 +144,6 @@ public:
 
     status_t storeMetaDataInBuffers(bool enabled)
     {
-        ALOGV("storeMetaDataInBuffers: %s", enabled? "true": "false");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         data.writeInt32(enabled);
@@ -164,7 +154,6 @@ public:
     // check preview state
     bool previewEnabled()
     {
-        ALOGV("previewEnabled");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(PREVIEW_ENABLED, data, &reply);
@@ -174,7 +163,6 @@ public:
     // check recording state
     bool recordingEnabled()
     {
-        ALOGV("recordingEnabled");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(RECORDING_ENABLED, data, &reply);
@@ -184,7 +172,6 @@ public:
     // auto focus
     status_t autoFocus()
     {
-        ALOGV("autoFocus");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(AUTO_FOCUS, data, &reply);
@@ -195,7 +182,6 @@ public:
     // cancel focus
     status_t cancelAutoFocus()
     {
-        ALOGV("cancelAutoFocus");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(CANCEL_AUTO_FOCUS, data, &reply);
@@ -206,7 +192,6 @@ public:
     // take a picture - returns an IMemory (ref-counted mmap)
     status_t takePicture(int msgType)
     {
-        ALOGV("takePicture: 0x%x", msgType);
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         data.writeInt32(msgType);
@@ -218,7 +203,6 @@ public:
     // set preview/capture parameters - key/value pairs
     status_t setParameters(const String8& params)
     {
-        ALOGV("setParameters");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         data.writeString8(params);
@@ -229,7 +213,6 @@ public:
     // get preview/capture parameters - key/value pairs
     String8 getParameters() const
     {
-        ALOGV("getParameters");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         remote()->transact(GET_PARAMETERS, data, &reply);
@@ -237,7 +220,6 @@ public:
     }
     virtual status_t sendCommand(int32_t cmd, int32_t arg1, int32_t arg2)
     {
-        ALOGV("sendCommand");
         Parcel data, reply;
         data.writeInterfaceToken(ICamera::getInterfaceDescriptor());
         data.writeInt32(cmd);
@@ -279,14 +261,12 @@ status_t BnCamera::onTransact(
 {
     switch(code) {
         case DISCONNECT: {
-            ALOGV("DISCONNECT");
             CHECK_INTERFACE(ICamera, data, reply);
             disconnect();
             reply->writeNoException();
             return NO_ERROR;
         } break;
         case SET_PREVIEW_TARGET: {
-            ALOGV("SET_PREVIEW_TARGET");
             CHECK_INTERFACE(ICamera, data, reply);
             sp<IGraphicBufferProducer> st =
                 interface_cast<IGraphicBufferProducer>(data.readStrongBinder());
@@ -294,14 +274,12 @@ status_t BnCamera::onTransact(
             return NO_ERROR;
         } break;
         case SET_PREVIEW_CALLBACK_FLAG: {
-            ALOGV("SET_PREVIEW_CALLBACK_TYPE");
             CHECK_INTERFACE(ICamera, data, reply);
             int callback_flag = data.readInt32();
             setPreviewCallbackFlag(callback_flag);
             return NO_ERROR;
         } break;
         case SET_PREVIEW_CALLBACK_TARGET: {
-            ALOGV("SET_PREVIEW_CALLBACK_TARGET");
             CHECK_INTERFACE(ICamera, data, reply);
             sp<IGraphicBufferProducer> cp =
                 interface_cast<IGraphicBufferProducer>(data.readStrongBinder());
@@ -309,89 +287,75 @@ status_t BnCamera::onTransact(
             return NO_ERROR;
         }
         case START_PREVIEW: {
-            ALOGV("START_PREVIEW");
             CHECK_INTERFACE(ICamera, data, reply);
             reply->writeInt32(startPreview());
             return NO_ERROR;
         } break;
         case START_RECORDING: {
-            ALOGV("START_RECORDING");
             CHECK_INTERFACE(ICamera, data, reply);
             reply->writeInt32(startRecording());
             return NO_ERROR;
         } break;
         case STOP_PREVIEW: {
-            ALOGV("STOP_PREVIEW");
             CHECK_INTERFACE(ICamera, data, reply);
             stopPreview();
             return NO_ERROR;
         } break;
         case STOP_RECORDING: {
-            ALOGV("STOP_RECORDING");
             CHECK_INTERFACE(ICamera, data, reply);
             stopRecording();
             return NO_ERROR;
         } break;
         case RELEASE_RECORDING_FRAME: {
-            ALOGV("RELEASE_RECORDING_FRAME");
             CHECK_INTERFACE(ICamera, data, reply);
             sp<IMemory> mem = interface_cast<IMemory>(data.readStrongBinder());
             releaseRecordingFrame(mem);
             return NO_ERROR;
         } break;
         case STORE_META_DATA_IN_BUFFERS: {
-            ALOGV("STORE_META_DATA_IN_BUFFERS");
             CHECK_INTERFACE(ICamera, data, reply);
             bool enabled = data.readInt32();
             reply->writeInt32(storeMetaDataInBuffers(enabled));
             return NO_ERROR;
         } break;
         case PREVIEW_ENABLED: {
-            ALOGV("PREVIEW_ENABLED");
             CHECK_INTERFACE(ICamera, data, reply);
             reply->writeInt32(previewEnabled());
             return NO_ERROR;
         } break;
         case RECORDING_ENABLED: {
-            ALOGV("RECORDING_ENABLED");
             CHECK_INTERFACE(ICamera, data, reply);
             reply->writeInt32(recordingEnabled());
             return NO_ERROR;
         } break;
         case AUTO_FOCUS: {
-            ALOGV("AUTO_FOCUS");
             CHECK_INTERFACE(ICamera, data, reply);
             reply->writeInt32(autoFocus());
             return NO_ERROR;
         } break;
         case CANCEL_AUTO_FOCUS: {
-            ALOGV("CANCEL_AUTO_FOCUS");
             CHECK_INTERFACE(ICamera, data, reply);
             reply->writeInt32(cancelAutoFocus());
             return NO_ERROR;
         } break;
         case TAKE_PICTURE: {
-            ALOGV("TAKE_PICTURE");
             CHECK_INTERFACE(ICamera, data, reply);
             int msgType = data.readInt32();
             reply->writeInt32(takePicture(msgType));
             return NO_ERROR;
         } break;
         case SET_PARAMETERS: {
-            ALOGV("SET_PARAMETERS");
             CHECK_INTERFACE(ICamera, data, reply);
             String8 params(data.readString8());
             reply->writeInt32(setParameters(params));
             return NO_ERROR;
          } break;
         case GET_PARAMETERS: {
-            ALOGV("GET_PARAMETERS");
             CHECK_INTERFACE(ICamera, data, reply);
              reply->writeString8(getParameters());
             return NO_ERROR;
          } break;
         case SEND_COMMAND: {
-            ALOGV("SEND_COMMAND");
             CHECK_INTERFACE(ICamera, data, reply);
             int command = data.readInt32();
             int arg1 = data.readInt32();

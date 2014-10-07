@@ -67,7 +67,6 @@ status_t AudioTrack::getMinFrameCount(
         return NO_INIT;
     }
     if(!afSampleRate || !afFrameCount) {
-        ALOGW("samplerate or framecount 0");
         return NO_INIT;
     }
     // Ensure that buffer depth covers at least audio hardware latency
@@ -78,8 +77,6 @@ status_t AudioTrack::getMinFrameCount(
 
     *frameCount = (sampleRate == 0) ? afFrameCount * minBufCount :
             afFrameCount * minBufCount * sampleRate / afSampleRate;
-    ALOGV("getMinFrameCount=%d: afFrameCount=%d, minBufCount=%d, afSampleRate=%d, afLatency=%d",
-            *frameCount, afFrameCount, minBufCount, afSampleRate, afLatency);
     return NO_ERROR;
 }
 
@@ -220,8 +217,6 @@ status_t AudioTrack::set(
         const audio_offload_info_t *offloadInfo,
         int uid)
 {
-    ALOGV("sampleRate %u, channelMask %#x, format %d", sampleRate, channelMask, format);
-    ALOGV("streamType %d", streamType);
     switch (transferType) {
     case TRANSFER_DEFAULT:
         if (sharedBuffer != 0) {
@@ -263,11 +258,6 @@ status_t AudioTrack::set(
         return BAD_VALUE;
     }
     size_t frameCount = frameCountInt;
-
-    ALOGV_IF(sharedBuffer != 0, "sharedBuffer: %p, size: %d", sharedBuffer->pointer(),
-            sharedBuffer->size());
-
-    ALOGV("set() streamType %d frameCount %u flags %04x", streamType, frameCount, flags);
 
     AutoMutex lock(mLock);
 
@@ -317,9 +307,6 @@ status_t AudioTrack::set(
     // or offload was requested
     if ((flags & AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD)
             || !audio_is_linear_pcm(format)) {
-        ALOGV( (flags & AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD)
-                    ? "Offload request, forcing to Direct Output"
-                    : "Not linear PCM, forcing to Direct Output");
         flags = (audio_output_flags_t)
                 // FIXME why can't we allow direct AND fast?
                 ((flags | AUDIO_OUTPUT_FLAG_DIRECT) & ~AUDIO_OUTPUT_FLAG_FAST);
@@ -346,7 +333,6 @@ status_t AudioTrack::set(
          && (channelCount == 1)
          && ((sampleRate == 8000 || sampleRate == 16000)))
     {
-        ALOGD("Turn on Direct Output for VOIP RX");
         flags = (audio_output_flags_t)(flags | AUDIO_OUTPUT_FLAG_VOIP_RX|AUDIO_OUTPUT_FLAG_DIRECT);
     }
 
@@ -408,7 +394,6 @@ status_t AudioTrack::set(
     mSampleRate = sampleRate;
 
     if (flags & AUDIO_OUTPUT_FLAG_LPA || flags & AUDIO_OUTPUT_FLAG_TUNNEL) {
-        ALOGV("Creating Direct Track");
         const sp<IAudioFlinger>& audioFlinger = AudioSystem::get_audio_flinger();
         if (audioFlinger == 0) {
             ALOGE("Could not get audioflinger");
@@ -508,7 +493,6 @@ uint32_t AudioTrack::latency() const
         if (0 != mSampleRate){
             newLatency = afLatency + (1000*mCblk->frameCount_) / mSampleRate;
         }
-        ALOGV("latency() mLatency = %d, newLatency = %d", mLatency, newLatency);
         return newLatency;
     }
     return mLatency;
@@ -689,7 +673,6 @@ void AudioTrack::pause()
     }
 #ifdef QCOM_DIRECTTRACK
     if(mDirectTrack != NULL) {
-        ALOGV("mDirectTrack pause");
         mDirectTrack->pause();
     } else {
 #endif
@@ -702,10 +685,7 @@ void AudioTrack::pause()
     if (isOffloaded()) {
         if (mOutput != 0) {
             uint32_t halFrames;
-            // OffloadThread sends HAL pause in its threadLoop.. time saved
-            // here can be slightly off
             AudioSystem::getRenderPosition(mOutput, &halFrames, &mPausedPosition);
-            ALOGV("AudioTrack::pause for offload, cache current position %u", mPausedPosition);
         }
     }
 }
@@ -721,7 +701,6 @@ status_t AudioTrack::setVolume(float left, float right)
     mVolume[RIGHT] = right;
 #ifdef QCOM_DIRECTTRACK
     if(mDirectTrack != NULL) {
-        ALOGV("mDirectTrack->setVolume(left = %f , right = %f)", left,right);
         mDirectTrack->setVolume(left, right);
     } else
 #endif
@@ -944,7 +923,6 @@ status_t AudioTrack::getPosition(uint32_t *position) const
         uint32_t dspFrames = 0;
 
         if ((mState == STATE_PAUSED) || (mState == STATE_PAUSED_STOPPING)) {
-            ALOGV("getPosition called in paused state, return cached position %u", mPausedPosition);
             *position = mPausedPosition;
             return NO_ERROR;
         }
@@ -1073,16 +1051,12 @@ status_t AudioTrack::createTrack_l(
             (sharedBuffer != 0) ||
             // use case 2: callback handler
             (mCbf != NULL))) {
-        ALOGW("AUDIO_OUTPUT_FLAG_FAST denied by client");
         // once denied, do not request again if IAudioTrack is re-created
         flags = (audio_output_flags_t) (flags & ~AUDIO_OUTPUT_FLAG_FAST);
         mFlags = flags;
     }
-    ALOGV("createTrack_l() output %d afLatency %d", output, afLatency);
 
     if ((flags & AUDIO_OUTPUT_FLAG_FAST) && sampleRate != afSampleRate) {
-        ALOGW("AUDIO_OUTPUT_FLAG_FAST denied by client due to mismatching sample rate (%d vs %d)",
-              sampleRate, afSampleRate);
         flags = (audio_output_flags_t) (flags & ~AUDIO_OUTPUT_FLAG_FAST);
     }
 
@@ -1104,7 +1078,6 @@ status_t AudioTrack::createTrack_l(
             frameCount = sharedBuffer->size();
         } else if (frameCount == 0) {
             frameCount = afFrameCount * 2;
-            ALOGV("Offload: new frameCount = %d", frameCount);
         }
         if (mNotificationFramesAct != frameCount) {
             mNotificationFramesAct = frameCount;
@@ -1136,27 +1109,18 @@ status_t AudioTrack::createTrack_l(
 
         // Ensure that buffer depth covers at least audio hardware latency
         if(!afSampleRate && !afFrameCount) {
-            ALOGW("samplerate or framecount zero");
             return NO_INIT;
         }
         uint32_t minBufCount = afLatency / ((1000 * afFrameCount)/afSampleRate);
-        ALOGV("afFrameCount=%d, minBufCount=%d, afSampleRate=%u, afLatency=%d",
-                afFrameCount, minBufCount, afSampleRate, afLatency);
         if (minBufCount <= nBuffering) {
             minBufCount = nBuffering;
         }
 
         size_t minFrameCount = (afFrameCount*sampleRate*minBufCount)/afSampleRate;
-        ALOGV("minFrameCount: %u, afFrameCount=%d, minBufCount=%d, sampleRate=%u, afSampleRate=%u"
-                ", afLatency=%d",
-                minFrameCount, afFrameCount, minBufCount, sampleRate, afSampleRate, afLatency);
 
         if (frameCount == 0) {
             frameCount = minFrameCount;
         } else if (frameCount < minFrameCount) {
-            // not ALOGW because it happens all the time when playing key clicks over A2DP
-            ALOGV("Minimum buffer size corrected from %d to %d",
-                     frameCount, minFrameCount);
             frameCount = minFrameCount;
         }
         // Make sure that application is notified with sufficient margin before underrun
@@ -1220,17 +1184,10 @@ status_t AudioTrack::createTrack_l(
     audio_track_cblk_t* cblk = static_cast<audio_track_cblk_t*>(iMem->pointer());
     mCblk = cblk;
     size_t temp = cblk->frameCount_;
-    if (temp < frameCount || (frameCount == 0 && temp == 0)) {
-        // In current design, AudioTrack client checks and ensures frame count validity before
-        // passing it to AudioFlinger so AudioFlinger should not return a different value except
-        // for fast track as it uses a special method of assigning frame count.
-        ALOGW("Requested frameCount %u but received frameCount %u", frameCount, temp);
-    }
     frameCount = temp;
     mAwaitBoost = false;
     if (flags & AUDIO_OUTPUT_FLAG_FAST) {
         if (trackFlags & IAudioFlinger::TRACK_FAST) {
-            ALOGV("AUDIO_OUTPUT_FLAG_FAST successful; frameCount %u", frameCount);
             mAwaitBoost = true;
             if (sharedBuffer == 0) {
                 // Theoretically double-buffering is not required for fast tracks,
@@ -1241,7 +1198,6 @@ status_t AudioTrack::createTrack_l(
                 }
             }
         } else {
-            ALOGV("AUDIO_OUTPUT_FLAG_FAST denied by server; frameCount %u", frameCount);
             // once denied, do not request again if IAudioTrack is re-created
             flags = (audio_output_flags_t) (flags & ~AUDIO_OUTPUT_FLAG_FAST);
             mFlags = flags;
@@ -1254,9 +1210,7 @@ status_t AudioTrack::createTrack_l(
     }
     if (flags & AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD) {
         if (trackFlags & IAudioFlinger::TRACK_OFFLOAD) {
-            ALOGV("AUDIO_OUTPUT_FLAG_OFFLOAD successful");
         } else {
-            ALOGW("AUDIO_OUTPUT_FLAG_OFFLOAD denied by server");
             flags = (audio_output_flags_t) (flags & ~AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD);
             mFlags = flags;
             return NO_INIT;
@@ -1437,8 +1391,6 @@ void AudioTrack::releaseBuffer(Buffer* audioBuffer)
         audio_track_cblk_t* cblk = mCblk;
         if (cblk->mFlags & CBLK_DISABLED) {
             android_atomic_and(~CBLK_DISABLED, &cblk->mFlags);
-            ALOGW("releaseBuffer() track %p name=%s disabled due to previous underrun, restarting",
-                    this, mName.string());
             // FIXME ignoring status
             mAudioTrack->start();
         }
@@ -1553,7 +1505,6 @@ status_t TimedAudioTrack::queueTimedBuffer(const sp<IMemory>& buffer,
         if (buffer->size() != 0 && status == NO_ERROR &&
                 (mState == STATE_ACTIVE) && (cblk->mFlags & CBLK_DISABLED)) {
             android_atomic_and(~CBLK_DISABLED, &cblk->mFlags);
-            ALOGW("queueTimedBuffer() track %p disabled, restarting", this);
             // FIXME ignoring status
             mAudioTrack->start();
         }
@@ -1780,7 +1731,6 @@ nsecs_t AudioTrack::processAudioBuffer(const sp<AudioTrackThread>& thread)
     if (ns != NS_WHENEVER) {
         timeout.tv_sec = ns / 1000000000LL;
         timeout.tv_nsec = ns % 1000000000LL;
-        ALOGV("timeout %ld.%03d", timeout.tv_sec, (int) timeout.tv_nsec / 1000000);
         requested = &timeout;
     }
 
@@ -1794,8 +1744,6 @@ nsecs_t AudioTrack::processAudioBuffer(const sp<AudioTrackThread>& thread)
                 "obtainBuffer() err=%d frameCount=%u", err, audioBuffer.frameCount);
         requested = &ClientProxy::kNonBlocking;
         size_t avail = audioBuffer.frameCount + nonContig;
-        ALOGV("obtainBuffer(%u) returned %u = %u + %u err %d",
-                mRemainingFrames, avail, audioBuffer.frameCount, nonContig, err);
         if (err != NO_ERROR) {
             if (err == TIMED_OUT || err == WOULD_BLOCK || err == -EINTR ||
                     (isOffloaded() && (err == DEAD_OBJECT))) {
@@ -1891,8 +1839,6 @@ nsecs_t AudioTrack::processAudioBuffer(const sp<AudioTrackThread>& thread)
 
 status_t AudioTrack::restoreTrack_l(const char *from)
 {
-    ALOGW("dead IAudioTrack, %s, creating a new one from %s()",
-          isOffloaded() ? "Offloaded" : "PCM", from);
     ++mSequence;
     status_t result;
 
@@ -1954,7 +1900,6 @@ status_t AudioTrack::restoreTrack_l(const char *from)
         // As getOutput was called above and resulted in an output stream to be opened,
         // we need to release it.
         AudioSystem::releaseOutput(output);
-        ALOGW("restoreTrack_l() failed status %d", result);
         mState = STATE_STOPPED;
     }
 
@@ -2041,11 +1986,9 @@ void AudioTrack::DeathNotifier::binderDied(const wp<IBinder>& who)
 #ifdef QCOM_DIRECTTRACK
 void AudioTrack::notify(int msg) {
     if (msg == EVENT_UNDERRUN) {
-        ALOGV("Posting event underrun to Audio Sink.");
         mCbf(EVENT_UNDERRUN, mUserData, 0);
     }
     if (msg == EVENT_HW_FAIL) {
-        ALOGV("Posting event HW fail to Audio Sink.");
         mCbf(EVENT_HW_FAIL, mUserData, 0);
     }
 }

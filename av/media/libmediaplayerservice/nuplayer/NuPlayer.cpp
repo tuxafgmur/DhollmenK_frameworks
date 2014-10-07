@@ -315,8 +315,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
     switch (msg->what()) {
         case kWhatSetDataSource:
         {
-            ALOGV("kWhatSetDataSource");
-
             CHECK(mSource == NULL);
 
             sp<RefBase> obj;
@@ -404,8 +402,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
 
         case kWhatSetVideoNativeWindow:
         {
-            ALOGV("kWhatSetVideoNativeWindow");
-
             mDeferredActions.push_back(
                     new ShutdownDecoderAction(
                         false /* audio */, true /* video */));
@@ -430,8 +426,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
 
         case kWhatSetAudioSink:
         {
-            ALOGV("kWhatSetAudioSink");
-
             sp<RefBase> obj;
             CHECK(msg->findObject("sink", &obj));
 
@@ -441,8 +435,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
 
         case kWhatStart:
         {
-            ALOGV("kWhatStart");
-
             mVideoIsAVC = false;
             mAudioEOS = false;
             mVideoEOS = false;
@@ -482,9 +474,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
             }
 
             mScanSourcesPending = false;
-
-            ALOGV("scanning sources haveAudio=%d, haveVideo=%d",
-                 mAudioDecoder != NULL, mVideoDecoder != NULL);
 
             bool mHadAnySourcesBefore =
                 (mAudioDecoder != NULL) || (mVideoDecoder != NULL);
@@ -553,14 +542,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
                 int32_t err;
                 CHECK(codecRequest->findInt32("err", &err));
 
-                if (err == ERROR_END_OF_STREAM) {
-                    ALOGV("got %s decoder EOS", audio ? "audio" : "video");
-                } else {
-                    ALOGV("got %s decoder EOS w/ error %d",
-                         audio ? "audio" : "video",
-                         err);
-                }
-
                 mRenderer->queueEOS(audio, err);
             } else if (what == ACodec::kWhatFlushCompleted) {
                 bool needShutdown;
@@ -575,11 +556,7 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
                     mVideoLateByUs = 0;
                 }
 
-                ALOGV("decoder %s flush completed", audio ? "audio" : "video");
-
                 if (needShutdown) {
-                    ALOGV("initiating %s decoder shutdown",
-                         audio ? "audio" : "video");
 
                     (audio ? mAudioDecoder : mVideoDecoder)->initiateShutdown();
 
@@ -599,9 +576,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
 
                     int32_t sampleRate;
                     CHECK(codecRequest->findInt32("sample-rate", &sampleRate));
-
-                    ALOGV("Audio output format changed to %d Hz, %d channels",
-                         sampleRate, numChannels);
 
                     mAudioSink->close();
 
@@ -654,13 +628,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
                     int32_t displayWidth = cropRight - cropLeft + 1;
                     int32_t displayHeight = cropBottom - cropTop + 1;
 
-                    ALOGV("Video output format changed to %d x %d "
-                         "(crop: %d x %d @ (%d, %d))",
-                         width, height,
-                         displayWidth,
-                         displayHeight,
-                         cropLeft, cropTop);
-
                     sp<AMessage> videoInputFormat =
                         mSource->getFormat(false /* audio */);
 
@@ -671,20 +638,15 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
                                 "sar-width", &sarWidth)
                             && videoInputFormat->findInt32(
                                 "sar-height", &sarHeight)) {
-                        ALOGV("Sample aspect ratio %d : %d",
-                              sarWidth, sarHeight);
 
                         displayWidth = (displayWidth * sarWidth) / sarHeight;
 
-                        ALOGV("display dimensions %d x %d",
-                              displayWidth, displayHeight);
                     }
 
                     notifyListener(
                             MEDIA_SET_VIDEO_SIZE, displayWidth, displayHeight);
                 }
             } else if (what == ACodec::kWhatShutdownCompleted) {
-                ALOGV("%s shutdown completed", audio ? "audio" : "video");
                 if (audio) {
                     mAudioDecoder.clear();
 
@@ -708,12 +670,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
             } else if (what != ACodec::kWhatComponentAllocated
                     && what != ACodec::kWhatComponentConfigured
                     && what != ACodec::kWhatBuffersAllocated) {
-                ALOGV("Unhandled codec notification %d '%c%c%c%c'.",
-                      what,
-                      what >> 24,
-                      (what >> 16) & 0xff,
-                      (what >> 8) & 0xff,
-                      what & 0xff);
             }
 
             break;
@@ -738,7 +694,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
                 }
 
                 if (finalResult == ERROR_END_OF_STREAM) {
-                    ALOGV("reached %s EOS", audio ? "audio" : "video");
                 } else {
                     ALOGE("%s track encountered an error (%d)",
                          audio ? "audio" : "video", finalResult);
@@ -770,11 +725,9 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
                 int32_t audio;
                 CHECK(msg->findInt32("audio", &audio));
 
-                ALOGV("renderer %s flush completed.", audio ? "audio" : "video");
             } else if (what == Renderer::kWhatVideoRenderingStart) {
                 notifyListener(MEDIA_INFO, MEDIA_INFO_RENDERING_START, 0);
             } else if (what == Renderer::kWhatMediaRenderingStart) {
-                ALOGV("media rendering started");
                 notifyListener(MEDIA_STARTED, 0, 0);
             }
             break;
@@ -787,8 +740,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
 
         case kWhatReset:
         {
-            ALOGV("kWhatReset");
-
             mDeferredActions.push_back(
                     new ShutdownDecoderAction(
                         true /* audio */, true /* video */));
@@ -804,8 +755,6 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
         {
             int64_t seekTimeUs;
             CHECK(msg->findInt64("seekTimeUs", &seekTimeUs));
-
-            ALOGV("kWhatSeek seekTimeUs=%lld us", seekTimeUs);
 
             mDeferredActions.push_back(
                     new SimpleAction(&NuPlayer::performDecoderFlush));
@@ -852,8 +801,6 @@ void NuPlayer::finishFlushIfPossible() {
     if (mFlushingVideo != FLUSHED && mFlushingVideo != SHUT_DOWN) {
         return;
     }
-
-    ALOGV("both audio and video are flushed now.");
 
     if (mTimeDiscontinuityPending) {
         mRenderer->signalTimeDiscontinuity();
@@ -948,9 +895,6 @@ status_t NuPlayer::feedDecoderInputData(bool audio, const sp<AMessage> &msg) {
 
                 bool timeChange = (type & ATSParser::DISCONTINUITY_TIME) != 0;
 
-                ALOGI("%s discontinuity (formatChange=%d, time=%d)",
-                     audio ? "audio" : "video", formatChange, timeChange);
-
                 if (audio) {
                     mSkipRenderingAudioUntilMediaTimeUs = -1;
                 } else {
@@ -964,9 +908,6 @@ status_t NuPlayer::feedDecoderInputData(bool audio, const sp<AMessage> &msg) {
                         int64_t resumeAtMediaTimeUs;
                         if (extra->findInt64(
                                     "resume-at-mediatimeUs", &resumeAtMediaTimeUs)) {
-                            ALOGI("suppressing rendering of %s until %lld us",
-                                    audio ? "audio" : "video", resumeAtMediaTimeUs);
-
                             if (audio) {
                                 mSkipRenderingAudioUntilMediaTimeUs =
                                     resumeAtMediaTimeUs;
@@ -1032,16 +973,6 @@ status_t NuPlayer::feedDecoderInputData(bool audio, const sp<AMessage> &msg) {
         }
     } while (dropAccessUnit);
 
-    // ALOGV("returned a valid buffer of %s data", audio ? "audio" : "video");
-
-#if 0
-    int64_t mediaTimeUs;
-    CHECK(accessUnit->meta()->findInt64("timeUs", &mediaTimeUs));
-    ALOGV("feeding %s input buffer at media time %.2f secs",
-         audio ? "audio" : "video",
-         mediaTimeUs / 1E6);
-#endif
-
     reply->setBuffer("buffer", accessUnit);
     reply->post();
 
@@ -1049,8 +980,6 @@ status_t NuPlayer::feedDecoderInputData(bool audio, const sp<AMessage> &msg) {
 }
 
 void NuPlayer::renderBuffer(bool audio, const sp<AMessage> &msg) {
-    // ALOGV("renderBuffer %s", audio ? "audio" : "video");
-
     sp<AMessage> reply;
     CHECK(msg->findMessage("reply", &reply));
 
@@ -1059,9 +988,6 @@ void NuPlayer::renderBuffer(bool audio, const sp<AMessage> &msg) {
         // to complete this, the decoder wants all its buffers back,
         // so we don't want any output buffers it sent us (from before
         // we initiated the flush) to be stuck in the renderer's queue.
-
-        ALOGV("we're still flushing the %s decoder, sending its output buffer"
-             " right back.", audio ? "audio" : "video");
 
         reply->post();
         return;
@@ -1080,10 +1006,6 @@ void NuPlayer::renderBuffer(bool audio, const sp<AMessage> &msg) {
         CHECK(buffer->meta()->findInt64("timeUs", &mediaTimeUs));
 
         if (mediaTimeUs < skipUntilMediaTimeUs) {
-            ALOGV("dropping %s buffer at time %lld as requested.",
-                 audio ? "audio" : "video",
-                 mediaTimeUs);
-
             reply->post();
             return;
         }
@@ -1109,12 +1031,7 @@ void NuPlayer::notifyListener(int msg, int ext1, int ext2, const Parcel *in) {
 }
 
 void NuPlayer::flushDecoder(bool audio, bool needShutdown) {
-    ALOGV("[%s] flushDecoder needShutdown=%d",
-          audio ? "audio" : "video", needShutdown);
-
     if ((audio && mAudioDecoder == NULL) || (!audio && mVideoDecoder == NULL)) {
-        ALOGI("flushDecoder %s without decoder present",
-             audio ? "audio" : "video");
     }
 
     // Make sure we don't continue to scan sources until we finish flushing.
@@ -1230,12 +1147,7 @@ void NuPlayer::processDeferredActions() {
         }
 
         if (mFlushingAudio != NONE || mFlushingVideo != NONE) {
-            // We're currently flushing, postpone the reset until that's
-            // completed.
-
-            ALOGV("postponing action mFlushingAudio=%d, mFlushingVideo=%d",
-                  mFlushingAudio, mFlushingVideo);
-
+            // We're currently flushing, postpone the reset until that's completed.
             break;
         }
 
@@ -1247,9 +1159,6 @@ void NuPlayer::processDeferredActions() {
 }
 
 void NuPlayer::performSeek(int64_t seekTimeUs) {
-    ALOGV("performSeek seekTimeUs=%lld us (%.2f secs)",
-          seekTimeUs,
-          seekTimeUs / 1E6);
 
     mSource->seekTo(seekTimeUs);
 
@@ -1265,8 +1174,6 @@ void NuPlayer::performSeek(int64_t seekTimeUs) {
 }
 
 void NuPlayer::performDecoderFlush() {
-    ALOGV("performDecoderFlush");
-
     if (mAudioDecoder == NULL && mVideoDecoder == NULL) {
         return;
     }
@@ -1283,8 +1190,6 @@ void NuPlayer::performDecoderFlush() {
 }
 
 void NuPlayer::performDecoderShutdown(bool audio, bool video) {
-    ALOGV("performDecoderShutdown audio=%d, video=%d", audio, video);
-
     if ((!audio || mAudioDecoder == NULL)
             && (!video || mVideoDecoder == NULL)) {
         return;
@@ -1310,8 +1215,6 @@ void NuPlayer::performDecoderShutdown(bool audio, bool video) {
 }
 
 void NuPlayer::performReset() {
-    ALOGV("performReset");
-
     CHECK(mAudioDecoder == NULL);
     CHECK(mVideoDecoder == NULL);
 
@@ -1341,8 +1244,6 @@ void NuPlayer::performReset() {
 }
 
 void NuPlayer::performScanSources() {
-    ALOGV("performScanSources");
-
     if (!mStarted) {
         return;
     }
@@ -1353,8 +1254,6 @@ void NuPlayer::performScanSources() {
 }
 
 void NuPlayer::performSetSurface(const sp<NativeWindowWrapper> &wrapper) {
-    ALOGV("performSetSurface");
-
     mNativeWindow = wrapper;
 
     // XXX - ignore error from setVideoScalingMode for now
@@ -1516,7 +1415,6 @@ void NuPlayer::Source::onMessageReceived(const sp<AMessage> &msg) {
 
 void NuPlayer::queueDecoderShutdown(
         bool audio, bool video, const sp<AMessage> &reply) {
-    ALOGI("queueDecoderShutdown audio=%d, video=%d", audio, video);
 
     mDeferredActions.push_back(
             new ShutdownDecoderAction(audio, video));

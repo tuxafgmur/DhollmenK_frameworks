@@ -422,8 +422,6 @@ void Camera2Client::disconnect() {
     mZslProcessorThread->join();
     mCallbackProcessor->join();
 
-    ALOGV("Camera %d: Deleting streams", mCameraId);
-
     mStreamingProcessor->deletePreviewStream();
     mStreamingProcessor->deleteRecordingStream();
     mJpegProcessor->deleteStream();
@@ -799,7 +797,6 @@ status_t Camera2Client::startPreviewL(Parameters &params, bool restart) {
          * preview is not enabled. Don't need stop preview stream as preview is in
          * STOPPED state now.
          */
-        ALOGV("%s: Camera %d: Delete unused preview callback stream.",  __FUNCTION__, mCameraId);
         res = mCallbackProcessor->deleteStream();
         if (res != OK) {
             ALOGE("%s: Camera %d: Unable to delete callback stream %s (%d)",

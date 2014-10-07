@@ -135,7 +135,6 @@ MediaScanResult MediaScanner::doProcessDirectory(
     struct dirent* entry;
 
     if (shouldSkipDirectory(path)) {
-        ALOGD("Skipping: %s", path);
         return MEDIA_SCAN_RESULT_OK;
     }
 
@@ -143,7 +142,6 @@ MediaScanResult MediaScanner::doProcessDirectory(
     if (pathRemaining >= 15 /* strlen(".noscanandnomtp") */ ) {
         strcpy(fileSpot, ".noscanandnomtp");
         if (access(path, F_OK) == 0) {
-            ALOGV("found .noscanandnomtp, completely skipping");
             return MEDIA_SCAN_RESULT_SKIPPED;
         }
 
@@ -155,7 +153,6 @@ MediaScanResult MediaScanner::doProcessDirectory(
     if (pathRemaining >= 8 /* strlen(".nomedia") */ ) {
         strcpy(fileSpot, ".nomedia");
         if (access(path, F_OK) == 0) {
-            ALOGV("found .nomedia, setting noMedia flag");
             noMedia = true;
         }
 
@@ -210,8 +207,6 @@ MediaScanResult MediaScanner::doProcessDirectoryEntry(
             } else if (S_ISDIR(statbuf.st_mode)) {
                 type = DT_DIR;
             }
-        } else {
-            ALOGD("stat() failed for %s: %s", path, strerror(errno) );
         }
     }
     if (type == DT_DIR) {

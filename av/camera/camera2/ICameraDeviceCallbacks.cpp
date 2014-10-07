@@ -48,7 +48,6 @@ public:
 
     void onDeviceError(CameraErrorCode errorCode)
     {
-        ALOGV("onDeviceError");
         Parcel data, reply;
         data.writeInterfaceToken(ICameraDeviceCallbacks::getInterfaceDescriptor());
         data.writeInt32(static_cast<int32_t>(errorCode));
@@ -58,7 +57,6 @@ public:
 
     void onDeviceIdle()
     {
-        ALOGV("onDeviceIdle");
         Parcel data, reply;
         data.writeInterfaceToken(ICameraDeviceCallbacks::getInterfaceDescriptor());
         remote()->transact(CAMERA_IDLE, data, &reply, IBinder::FLAG_ONEWAY);
@@ -67,7 +65,6 @@ public:
 
     void onCaptureStarted(int32_t requestId, int64_t timestamp)
     {
-        ALOGV("onCaptureStarted");
         Parcel data, reply;
         data.writeInterfaceToken(ICameraDeviceCallbacks::getInterfaceDescriptor());
         data.writeInt32(requestId);
@@ -78,7 +75,6 @@ public:
 
 
     void onResultReceived(int32_t requestId, const CameraMetadata& result) {
-        ALOGV("onResultReceived");
         Parcel data, reply;
         data.writeInterfaceToken(ICameraDeviceCallbacks::getInterfaceDescriptor());
         data.writeInt32(requestId);
@@ -97,10 +93,8 @@ IMPLEMENT_META_INTERFACE(CameraDeviceCallbacks,
 status_t BnCameraDeviceCallbacks::onTransact(
     uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
 {
-    ALOGV("onTransact - code = %d", code);
     switch(code) {
         case CAMERA_ERROR: {
-            ALOGV("onDeviceError");
             CHECK_INTERFACE(ICameraDeviceCallbacks, data, reply);
             CameraErrorCode errorCode =
                     static_cast<CameraErrorCode>(data.readInt32());
@@ -109,14 +103,12 @@ status_t BnCameraDeviceCallbacks::onTransact(
             return NO_ERROR;
         } break;
         case CAMERA_IDLE: {
-            ALOGV("onDeviceIdle");
             CHECK_INTERFACE(ICameraDeviceCallbacks, data, reply);
             onDeviceIdle();
             data.readExceptionCode();
             return NO_ERROR;
         } break;
         case CAPTURE_STARTED: {
-            ALOGV("onCaptureStarted");
             CHECK_INTERFACE(ICameraDeviceCallbacks, data, reply);
             int32_t requestId = data.readInt32();
             int64_t timestamp = data.readInt64();
@@ -125,7 +117,6 @@ status_t BnCameraDeviceCallbacks::onTransact(
             return NO_ERROR;
         } break;
         case RESULT_RECEIVED: {
-            ALOGV("onResultReceived");
             CHECK_INTERFACE(ICameraDeviceCallbacks, data, reply);
             int32_t requestId = data.readInt32();
             CameraMetadata result;

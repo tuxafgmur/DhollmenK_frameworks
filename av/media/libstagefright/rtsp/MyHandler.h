@@ -157,8 +157,6 @@ struct MyHandler : public AHandler {
             mSessionURL.append(":");
             mSessionURL.append(StringPrintf("%u", port));
             mSessionURL.append(path);
-
-            ALOGI("rewritten session url: '%s'", mSessionURL.c_str());
         }
 
         mSessionHost = host;
@@ -336,7 +334,6 @@ struct MyHandler : public AHandler {
         if (!GetAttribute(transport.c_str(),
                                  "server_port",
                                  &server_port)) {
-            ALOGI("Missing 'server_port' field in Transport response.");
             return false;
         }
 
@@ -350,12 +347,6 @@ struct MyHandler : public AHandler {
                  server_port.c_str());
 
             return false;
-        }
-
-        if (rtpPort & 1) {
-            ALOGW("Server picked an odd RTP port, it should've picked an "
-                 "even one, we'll let it pass for now, but this may break "
-                 "in the future.");
         }
 
         if (addr.sin_addr.s_addr == INADDR_NONE) {
@@ -395,8 +386,6 @@ struct MyHandler : public AHandler {
             return false;
         }
 
-        ALOGV("successfully poked holes.");
-
         return true;
     }
 
@@ -418,14 +407,12 @@ struct MyHandler : public AHandler {
 
             uint32_t value = strtoul(liveStreamValue, NULL, 10);
             if (value == 1) {
-                ALOGV("found live stream");
                 return true;
             }
         } else {
             // It is a live stream if no duration is returned
             int64_t durationUs;
             if (!desc->getDurationUs(&durationUs)) {
-                ALOGV("No duration found, assume live stream");
                 return true;
             }
         }
@@ -439,9 +426,6 @@ struct MyHandler : public AHandler {
             {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
-
-                ALOGI("connection request completed with result %d (%s)",
-                     result, strerror(-result));
 
                 if (result == OK) {
                     AString request;
@@ -477,9 +461,6 @@ struct MyHandler : public AHandler {
             {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
-
-                ALOGI("DESCRIBE completed with result %d (%s)",
-                     result, strerror(-result));
 
                 if (result == OK) {
                     sp<RefBase> obj;
@@ -583,9 +564,6 @@ struct MyHandler : public AHandler {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
 
-                ALOGI("SDP connection request completed with result %d (%s)",
-                     result, strerror(-result));
-
                 if (result == OK) {
                     sp<RefBase> obj;
                     CHECK(msg->findObject("description", &obj));
@@ -637,9 +615,6 @@ struct MyHandler : public AHandler {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
 
-                ALOGI("SETUP(%d) completed with result %d (%s)",
-                     index, result, strerror(-result));
-
                 if (result == OK) {
                     CHECK(track != NULL);
 
@@ -665,21 +640,11 @@ struct MyHandler : public AHandler {
                                 strtoul(timeoutStr.c_str(), &end, 10);
 
                             if (end == timeoutStr.c_str() || *end != '\0') {
-                                ALOGW("server specified malformed timeout '%s'",
-                                     timeoutStr.c_str());
-
                                 mKeepAliveTimeoutUs = kDefaultKeepAliveTimeoutUs;
                             } else if (timeoutSecs < 15) {
-                                ALOGW("server specified too short a timeout "
-                                     "(%lu secs), using default.",
-                                     timeoutSecs);
-
                                 mKeepAliveTimeoutUs = kDefaultKeepAliveTimeoutUs;
                             } else {
                                 mKeepAliveTimeoutUs = timeoutSecs * 1000000ll;
-
-                                ALOGI("server specified timeout of %lu secs.",
-                                     timeoutSecs);
                             }
                         }
 
@@ -765,9 +730,6 @@ struct MyHandler : public AHandler {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
 
-                ALOGI("PLAY completed with result %d (%s)",
-                     result, strerror(-result));
-
                 if (result == OK) {
                     sp<RefBase> obj;
                     CHECK(msg->findObject("response", &obj));
@@ -823,9 +785,6 @@ struct MyHandler : public AHandler {
             {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
-
-                ALOGI("OPTIONS completed with result %d (%s)",
-                     result, strerror(-result));
 
                 int32_t generation;
                 CHECK(msg->findInt32("generation", &generation));
@@ -905,9 +864,6 @@ struct MyHandler : public AHandler {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
 
-                ALOGI("TEARDOWN completed with result %d (%s)",
-                     result, strerror(-result));
-
                 sp<AMessage> reply = new AMessage('disc', id());
 
                 int32_t reconnect;
@@ -942,8 +898,6 @@ struct MyHandler : public AHandler {
                     ALOGI("stream ended? aborting.");
                     (new AMessage('abor', id()))->post();
                     break;
-#else
-                    ALOGI("haven't seen an AU in a looong time.");
 #endif
                 }
 
@@ -986,7 +940,6 @@ struct MyHandler : public AHandler {
                 CHECK(msg->findSize("track-index", &trackIndex));
 
                 if (trackIndex >= mTracks.size()) {
-                    ALOGV("late packets ignored.");
                     break;
                 }
 
@@ -994,10 +947,7 @@ struct MyHandler : public AHandler {
 
                 int32_t eos;
                 if (msg->findInt32("eos", &eos)) {
-                    ALOGI("received BYE on track index %d", trackIndex);
                     if (!mAllTracksHaveTime && dataReceivedOnAllChannels()) {
-                        ALOGI("No time established => fake existing data");
-
                         track->mEOSReceived = true;
                         mTryFakeRTCP = true;
                         mReceivedFirstRTCPPacket = true;
@@ -1014,13 +964,10 @@ struct MyHandler : public AHandler {
                 uint32_t seqNum = (uint32_t)accessUnit->int32Data();
 
                 if (mSeekPending) {
-                    ALOGV("we're seeking, dropping stale packet.");
                     break;
                 }
 
                 if (seqNum < track->mFirstSeqNumInSegment) {
-                    ALOGV("dropping stale access-unit (%d < %d)",
-                         seqNum, track->mFirstSeqNumInSegment);
                     break;
                 }
 
@@ -1037,12 +984,10 @@ struct MyHandler : public AHandler {
                 int32_t generation;
                 CHECK(msg->findInt32("pausecheck", &generation));
                 if (generation != mPauseGeneration) {
-                    ALOGV("Ignoring outdated pause message.");
                     break;
                 }
 
                 if (!mSeekable) {
-                    ALOGW("This is a live stream, ignoring pause request.");
                     break;
                 }
                 mCheckPending = true;
@@ -1070,8 +1015,6 @@ struct MyHandler : public AHandler {
                 CHECK(msg->findInt32("result", &result));
                 mCheckTimeoutGeneration++;
 
-                ALOGI("PAUSE completed with result %d (%s)",
-                     result, strerror(-result));
                 break;
             }
 
@@ -1105,9 +1048,6 @@ struct MyHandler : public AHandler {
             {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
-
-                ALOGI("PLAY completed with result %d (%s)",
-                     result, strerror(-result));
 
                 mCheckPending = false;
                 postAccessUnitTimeoutCheck();
@@ -1144,8 +1084,6 @@ struct MyHandler : public AHandler {
             case 'seek':
             {
                 if (!mSeekable) {
-                    ALOGW("This is a live stream, ignoring seek request.");
-
                     sp<AMessage> msg = mNotify->dup();
                     msg->setInt32("what", kWhatSeekDone);
                     msg->post();
@@ -1167,7 +1105,6 @@ struct MyHandler : public AHandler {
 
                 if (mPausing) {
                     // PAUSE already sent
-                    ALOGI("Pause already sent");
                     reply->post();
                     break;
                 }
@@ -1240,9 +1177,6 @@ struct MyHandler : public AHandler {
                 int32_t result;
                 CHECK(msg->findInt32("result", &result));
 
-                ALOGI("PLAY completed with result %d (%s)",
-                     result, strerror(-result));
-
                 mCheckPending = false;
                 postAccessUnitTimeoutCheck();
 
@@ -1266,10 +1200,6 @@ struct MyHandler : public AHandler {
 
                         ssize_t i = response->mHeaders.indexOfKey("rtp-info");
                         CHECK_GE(i, 0);
-
-                        ALOGV("rtp-info: %s", response->mHeaders.valueAt(i).c_str());
-
-                        ALOGI("seek completed.");
                     }
                 }
 
@@ -1312,8 +1242,6 @@ struct MyHandler : public AHandler {
                 }
                 if (!mReceivedFirstRTCPPacket) {
                     if (dataReceivedOnAllChannels() && !mTryFakeRTCP) {
-                        ALOGW("We received RTP packets but no RTCP packets, "
-                             "using fake timestamps.");
 
                         mTryFakeRTCP = true;
 
@@ -1334,10 +1262,6 @@ struct MyHandler : public AHandler {
                     }
                 } else {
                     if (!mAllTracksHaveTime) {
-                        ALOGW("We received some RTCP packets, but time "
-                              "could not be established on all tracks, now "
-                              "using fake timestamps");
-
                         fakeTimestamps();
                     }
                 }
@@ -1387,7 +1311,6 @@ struct MyHandler : public AHandler {
     void parsePlayResponse(const sp<ARTSPResponse> &response) {
         mPlayResponseParsed = true;
         if (mTracks.size() == 0) {
-            ALOGV("parsePlayResponse: late packets ignored.");
             return;
         }
 
@@ -1399,7 +1322,6 @@ struct MyHandler : public AHandler {
         }
 
         AString range = response->mHeaders.valueAt(i);
-        ALOGV("Range: %s", range.c_str());
 
         AString val;
         CHECK(GetAttribute(range.c_str(), "npt", &val));
@@ -1407,8 +1329,6 @@ struct MyHandler : public AHandler {
         float npt1, npt2;
         if (!ASessionDescription::parseNTPRange(val.c_str(), &npt1, &npt2)) {
             // This is a live stream and therefore not seekable.
-
-            ALOGI("This is a live stream");
             return;
         }
 
@@ -1423,7 +1343,6 @@ struct MyHandler : public AHandler {
         for (List<AString>::iterator it = streamInfos.begin();
              it != streamInfos.end(); ++it) {
             (*it).trim();
-            ALOGV("streamInfo[%d] = %s", n, (*it).c_str());
 
             CHECK(GetAttribute((*it).c_str(), "url", &val));
 
@@ -1446,8 +1365,6 @@ struct MyHandler : public AHandler {
             CHECK(GetAttribute((*it).c_str(), "rtptime", &val));
 
             uint32_t rtpTime = strtoul(val.c_str(), &end, 10);
-
-            ALOGV("track #%d: rtpTime=%u <=> npt=%.2f", n, rtpTime, npt1);
 
             info->mNormalPlayTimeRTP = rtpTime;
             info->mNormalPlayTimeUs = (int64_t)(npt1 * 1E6);
@@ -1586,8 +1503,6 @@ private:
         info->mTimeScale = timescale;
         info->mEOSReceived = false;
 
-        ALOGV("track #%d URL=%s", mTracks.size(), trackURL.c_str());
-
         AString request = "SETUP ";
         request.append(trackURL);
         request.append(" RTSP/1.0\r\n");
@@ -1711,9 +1626,6 @@ private:
     }
 
     void onTimeUpdate(int32_t trackIndex, uint32_t rtpTime, uint64_t ntpTime) {
-        ALOGV("onTimeUpdate track %d, rtpTime = 0x%08x, ntpTime = 0x%016llx",
-             trackIndex, rtpTime, ntpTime);
-
         int64_t ntpTimeUs = (int64_t)(ntpTime * 1E6 / (1ll << 32));
 
         TrackInfo *track = &mTracks.editItemAt(trackIndex);
@@ -1737,7 +1649,6 @@ private:
             }
             if (allTracksHaveTime) {
                 mAllTracksHaveTime = true;
-                ALOGI("Time now established for all tracks.");
             }
         }
         if (mAllTracksHaveTime && dataReceivedOnAllChannels()) {
@@ -1767,10 +1678,8 @@ private:
 
     void onAccessUnitComplete(
             int32_t trackIndex, const sp<ABuffer> &accessUnit) {
-        ALOGV("onAccessUnitComplete track %d", trackIndex);
 
         if(!mPlayResponseParsed){
-            ALOGI("play response is not parsed, storing accessunit");
             TrackInfo *track = &mTracks.editItemAt(trackIndex);
             track->mPackets.push_back(accessUnit);
             return;
@@ -1781,7 +1690,6 @@ private:
         TrackInfo *track = &mTracks.editItemAt(trackIndex);
 
         if (!mAllTracksHaveTime) {
-            ALOGV("storing accessUnit, no time established yet");
             track->mPackets.push_back(accessUnit);
             return;
         }
@@ -1825,12 +1733,8 @@ private:
         }
 
         if (mediaTimeUs < 0) {
-            ALOGV("dropping early accessUnit.");
             return false;
         }
-
-        ALOGV("track %d rtpTime=%d mediaTimeUs = %lld us (%.2f secs)",
-             trackIndex, rtpTime, mediaTimeUs, mediaTimeUs / 1E6);
 
         accessUnit->meta()->setInt64("timeUs", mediaTimeUs);
 

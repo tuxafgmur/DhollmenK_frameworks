@@ -197,7 +197,6 @@ int EffectQueryNumberEffects(uint32_t *pNumEffects)
     *pNumEffects = gNumEffects;
     gCanQueryEffect = 1;
     pthread_mutex_unlock(&gLibLock);
-    ALOGV("EffectQueryNumberEffects(): %d", *pNumEffects);
     return ret;
 }
 
@@ -239,7 +238,6 @@ int EffectQueryEffect(uint32_t index, effect_descriptor_t *pDescriptor)
 #if (LOG_NDEBUG == 0)
     char str[256];
     dumpEffectDescriptor(pDescriptor, str, 256);
-    ALOGV("EffectQueryEffect() desc:%s", str);
 #endif
     pthread_mutex_unlock(&gLibLock);
     return ret;
@@ -280,11 +278,6 @@ int EffectCreate(const effect_uuid_t *uuid, int32_t sessionId, int32_t ioId, eff
         return -EINVAL;
     }
 
-    ALOGV("EffectCreate() UUID: %08X-%04X-%04X-%04X-%02X%02X%02X%02X%02X%02X\n",
-            uuid->timeLow, uuid->timeMid, uuid->timeHiAndVersion,
-            uuid->clockSeq, uuid->node[0], uuid->node[1],uuid->node[2],
-            uuid->node[3],uuid->node[4],uuid->node[5]);
-
     ret = init();
 
     if (ret < 0) {
@@ -316,10 +309,8 @@ int EffectCreate(const effect_uuid_t *uuid, int32_t sessionId, int32_t ioId, eff
     fx->subItfe = itfe;
     if ((*itfe)->process_reverse != NULL) {
         fx->itfe = (struct effect_interface_s *)&gInterfaceWithReverse;
-        ALOGV("EffectCreate() gInterfaceWithReverse");
     }   else {
         fx->itfe = (struct effect_interface_s *)&gInterface;
-        ALOGV("EffectCreate() gInterface");
     }
     fx->lib = l;
 
@@ -329,8 +320,6 @@ int EffectCreate(const effect_uuid_t *uuid, int32_t sessionId, int32_t ioId, eff
     gEffectList = e;
 
     *pHandle = (effect_handle_t)fx;
-
-    ALOGV("EffectCreate() created entry %p with sub itfe %p in library %s", *pHandle, itfe, l->name);
 
 exit:
     pthread_mutex_unlock(&gLibLock);
@@ -401,11 +390,6 @@ int EffectIsNullUuid(const effect_uuid_t *uuid)
 int EffectGetSubEffects(const effect_uuid_t *uuid, sub_effect_entry_t **pSube,
                         size_t size)
 {
-   ALOGV("EffectGetSubEffects() UUID: %08X-%04X-%04X-%04X-%02X%02X%02X%02X%02X"
-          "%02X\n",uuid->timeLow, uuid->timeMid, uuid->timeHiAndVersion,
-          uuid->clockSeq, uuid->node[0], uuid->node[1],uuid->node[2],
-          uuid->node[3],uuid->node[4],uuid->node[5]);
-
    // Check if the size of the desc buffer is large enough for 2 subeffects
    if ((uuid == NULL) || (pSube == NULL) || (size < 2)) {
        ALOGW("NULL pointer or insufficient memory. Cannot query subeffects");
@@ -421,14 +405,12 @@ int EffectGetSubEffects(const effect_uuid_t *uuid, sub_effect_entry_t **pSube,
    while (e != NULL) {
        d = (effect_descriptor_t*)e->object;
        if (memcmp(uuid, &d->uuid, sizeof(effect_uuid_t)) == 0) {
-           ALOGV("EffectGetSubEffects: effect found in the list");
            list_elem_t *subefx = e->sub_elem;
            while (subefx != NULL) {
                subeffect = (sub_effect_entry_t*)subefx->object;
                pSube[count++] = subeffect;
                subefx = subefx->next;
            }
-           ALOGV("EffectGetSubEffects end - copied the sub effect structures");
            return count;
        }
        e = e->next;
@@ -456,7 +438,6 @@ int init() {
 
     updateNumEffects();
     gInitDone = 1;
-    ALOGV("init() done");
     return 0;
 }
 
@@ -547,7 +528,6 @@ int loadLibrary(cnode *root, const char *name)
     e->next = gLibraryList;
     gLibraryList = e;
     pthread_mutex_unlock(&gLibLock);
-    ALOGV("getLibrary() linked library %p for path %s", l, node->value);
 
     return 0;
 
@@ -563,7 +543,6 @@ error:
 // sub_entry_t to the gSubEffectList
 int addSubEffect(cnode *root)
 {
-    ALOGV("addSubEffect");
     cnode *node;
     effect_uuid_t uuid;
     effect_descriptor_t *d;
@@ -597,7 +576,6 @@ int addSubEffect(cnode *root)
 #if (LOG_NDEBUG==0)
     char s[256];
     dumpEffectDescriptor(d, s, 256);
-    ALOGV("addSubEffect() read descriptor %p:%s",d, s);
 #endif
     if (EFFECT_API_VERSION_MAJOR(d->apiVersion) !=
             EFFECT_API_VERSION_MAJOR(EFFECT_CONTROL_API_VERSION)) {
@@ -613,7 +591,6 @@ int addSubEffect(cnode *root)
     e->object = sub_effect;
     e->next = gSubEffectList->sub_elem;
     gSubEffectList->sub_elem = e;
-    ALOGV("addSubEffect end");
     return 0;
 }
 
@@ -672,7 +649,6 @@ int loadEffect(cnode *root)
 #if (LOG_NDEBUG==0)
     char s[256];
     dumpEffectDescriptor(d, s, 256);
-    ALOGV("loadEffect() read descriptor %p:%s",d, s);
 #endif
     if (EFFECT_API_VERSION_MAJOR(d->apiVersion) !=
             EFFECT_API_VERSION_MAJOR(EFFECT_CONTROL_API_VERSION)) {
@@ -693,7 +669,6 @@ int loadEffect(cnode *root)
     bool hwSubefx = false, swSubefx = false;
     list_sub_elem_t *sube = NULL;
     if (node != NULL) {
-        ALOGV("Adding the effect to gEffectSubList as there are sub effects");
         sube = malloc(sizeof(list_sub_elem_t));
         sube->object = d;
         sube->sub_elem = NULL;
@@ -721,7 +696,6 @@ int loadEffect(cnode *root)
              swSubefx = true;
              *d = *subEffectDesc;
              d->uuid = uuid;
-             ALOGV("loadEffect() Changed the Proxy desc");
        } else
            hwSubefx = true;
        count--;
@@ -759,7 +733,6 @@ int findSubEffect(const effect_uuid_t *uuid,
             l = (lib_entry_t *)effect->lib;
             d = (effect_descriptor_t *)effect->object;
             if (memcmp(&d->uuid, uuid, sizeof(effect_uuid_t)) == 0) {
-                ALOGV("uuid matched");
                 found = 1;
                 break;
             }
@@ -768,10 +741,8 @@ int findSubEffect(const effect_uuid_t *uuid,
         e = e->next;
     }
     if (!found) {
-        ALOGV("findSubEffect() effect not found");
         ret = -ENOENT;
     } else {
-        ALOGV("findSubEffect() found effect: %s in lib %s", d->name, l->name);
         *lib = l;
         if (desc != NULL) {
             *desc = d;
@@ -863,10 +834,8 @@ int findEffect(const effect_uuid_t *type,
         e = e->next;
     }
     if (!found) {
-        ALOGV("findEffect() effect not found");
         ret = -ENOENT;
     } else {
-        ALOGV("findEffect() found effect: %s in lib %s", d->name, l->name);
         *lib = l;
         if (desc) {
             *desc = d;

@@ -63,7 +63,6 @@ int EffectProxyCreate(const effect_uuid_t *uuid,
         ALOGE("EffectProxyCreate() called with NULL pointer");
         return -EINVAL;
     }
-    ALOGV("EffectProxyCreate start..");
     pContext = new EffectContext;
     pContext->sessionId = sessionId;
     pContext->ioId = ioId;
@@ -124,33 +123,20 @@ int EffectProxyCreate(const effect_uuid_t *uuid,
     delete[] sube;
 #if (LOG_NDEBUG == 0)
     effect_uuid_t uuid_print = pContext->desc[SUB_FX_HOST].uuid;
-    ALOGV("EffectCreate() UUID of HOST: %08X-%04X-%04X-%04X-%02X%02X%02X%02X"
-        "%02X%02X\n",uuid_print.timeLow, uuid_print.timeMid,
-        uuid_print.timeHiAndVersion, uuid_print.clockSeq, uuid_print.node[0],
-        uuid_print.node[1], uuid_print.node[2], uuid_print.node[3],
-        uuid_print.node[4], uuid_print.node[5]);
-    ALOGV("EffectCreate() UUID of OFFLOAD: %08X-%04X-%04X-%04X-%02X%02X%02X%02X"
-        "%02X%02X\n", uuid_print.timeLow, uuid_print.timeMid,
-        uuid_print.timeHiAndVersion, uuid_print.clockSeq, uuid_print.node[0],
-        uuid_print.node[1], uuid_print.node[2], uuid_print.node[3],
-        uuid_print.node[4], uuid_print.node[5]);
 #endif
 
     pContext->replySize = PROXY_REPLY_SIZE_DEFAULT;
     pContext->replyData = (char *)malloc(PROXY_REPLY_SIZE_DEFAULT);
 
     *pHandle = (effect_handle_t)pContext;
-    ALOGV("EffectCreate end");
     return 0;
 } //end EffectProxyCreate
 
 int EffectProxyRelease(effect_handle_t handle) {
     EffectContext * pContext = (EffectContext *)handle;
     if (pContext == NULL) {
-        ALOGV("ERROR : EffectRelease called with NULL pointer");
         return -EINVAL;
     }
-    ALOGV("EffectRelease");
     delete[] pContext->desc;
     free(pContext->replyData);
 
@@ -170,7 +156,6 @@ int EffectProxyGetDescriptor(const effect_uuid_t *uuid,
     const effect_descriptor_t *desc = NULL;
 
     if (pDescriptor == NULL || uuid == NULL) {
-        ALOGV("EffectGetDescriptor() called with NULL pointer");
         return -EINVAL;
     }
     desc = &gProxyDescriptor;
@@ -207,28 +192,23 @@ int Effect_command(effect_handle_t  self,
     EffectContext *pContext = (EffectContext *) self;
     int status = 0;
     if (pContext == NULL) {
-        ALOGV("Effect_command() Proxy context is NULL");
         return -EINVAL;
     }
     if (pContext->eHandle[SUB_FX_HOST] == NULL) {
-        ALOGV("Effect_command() Calling HOST EffectCreate");
         status = pContext->aeli[SUB_FX_HOST]->create_effect(
                               &pContext->desc[SUB_FX_HOST].uuid,
                               pContext->sessionId, pContext->ioId,
                               &(pContext->eHandle[SUB_FX_HOST]));
         if (status != NO_ERROR || (pContext->eHandle[SUB_FX_HOST] == NULL)) {
-            ALOGV("Effect_command() Error creating SW sub effect");
             return status;
         }
     }
     if (pContext->eHandle[SUB_FX_OFFLOAD] == NULL) {
-        ALOGV("Effect_command() Calling OFFLOAD EffectCreate");
         status = pContext->aeli[SUB_FX_OFFLOAD]->create_effect(
                               &pContext->desc[SUB_FX_OFFLOAD].uuid,
                               pContext->sessionId, pContext->ioId,
                               &(pContext->eHandle[SUB_FX_OFFLOAD]));
         if (status != NO_ERROR || (pContext->eHandle[SUB_FX_OFFLOAD] == NULL)) {
-            ALOGV("Effect_command() Error creating HW effect");
             pContext->eHandle[SUB_FX_OFFLOAD] = NULL;
             // Do not return error here as SW effect is created
             // Return error if the CMD_OFFLOAD sends the index as OFFLOAD
@@ -240,9 +220,7 @@ int Effect_command(effect_handle_t  self,
     // is moved from one type of thread to another.
     // pCmdData points to a memory holding effect_offload_param_t structure
     if (cmdCode == EFFECT_CMD_OFFLOAD) {
-        ALOGV("Effect_command() cmdCode = EFFECT_CMD_OFFLOAD");
         if (cmdSize == 0 || pCmdData == NULL) {
-            ALOGV("effectsOffload: Effect_command: CMD_OFFLOAD has no data");
              *(int*)pReplyData = FAILED_TRANSACTION;
             return FAILED_TRANSACTION;
         }
@@ -252,31 +230,25 @@ int Effect_command(effect_handle_t  self,
         // if the index is HW and the HW effect is unavailable, return error
         // and reset the index to SW
         if (pContext->eHandle[pContext->index] == NULL) {
-            ALOGV("Effect_command()CMD_OFFLOAD sub effect unavailable");
             *(int*)pReplyData = FAILED_TRANSACTION;
             return FAILED_TRANSACTION;
         }
         pContext->ioId = offloadParam->ioHandle;
-        ALOGV("Effect_command()CMD_OFFLOAD index:%d io %d", pContext->index, pContext->ioId);
         // Update the DSP wrapper with the new ioHandle.
         // Pass the OFFLOAD command to the wrapper.
         // The DSP wrapper needs to handle this CMD
         if (pContext->eHandle[SUB_FX_OFFLOAD]) {
-            ALOGV("Effect_command: Calling OFFLOAD command");
             return (*pContext->eHandle[SUB_FX_OFFLOAD])->command(
                            pContext->eHandle[SUB_FX_OFFLOAD], cmdCode, cmdSize,
                            pCmdData, replySize, pReplyData);
         }
         *(int*)pReplyData = NO_ERROR;
-        ALOGV("Effect_command OFFLOAD return 0, replyData %d",
-                                                *(int*)pReplyData);
 
         return NO_ERROR;
     }
 
     int index = pContext->index;
     if (index != SUB_FX_HOST && index != SUB_FX_OFFLOAD) {
-        ALOGV("Effect_command: effect index is neither offload nor host");
         return -EINVAL;
     }
 
@@ -294,7 +266,6 @@ int Effect_command(effect_handle_t  self,
             tmpSize *= 2;
         }
         if (tmpSize > pContext->replySize) {
-            ALOGV("Effect_command grow reply buf to %d", tmpSize);
             pContext->replyData = (char *)realloc(pContext->replyData, tmpSize);
             pContext->replySize = tmpSize;
         }
@@ -339,13 +310,10 @@ int Effect_getDescriptor(effect_handle_t   self,
     EffectContext * pContext = (EffectContext *) self;
     const effect_descriptor_t *desc;
 
-    ALOGV("Effect_getDescriptor");
     if (pContext == NULL || pDescriptor == NULL) {
-        ALOGV("Effect_getDescriptor() invalid param");
         return -EINVAL;
     }
     if (pContext->desc == NULL) {
-        ALOGV("Effect_getDescriptor() could not get descriptor");
         return -EINVAL;
     }
     desc = &pContext->desc[SUB_FX_HOST];

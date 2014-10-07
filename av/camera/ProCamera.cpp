@@ -65,8 +65,6 @@ void ProCamera::notifyCallback(int32_t msgType, int32_t ext1, int32_t ext2)
 void ProCamera::onLockStatusChanged(
                                  IProCameraCallbacks::LockStatus newLockStatus)
 {
-    ALOGV("%s: newLockStatus = %d", __FUNCTION__, newLockStatus);
-
     sp<ProCameraListener> listener;
     {
         Mutex::Autolock _l(mLock);
@@ -91,7 +89,6 @@ void ProCamera::onLockStatusChanged(
 }
 
 void ProCamera::onResultReceived(int32_t requestId, camera_metadata* result) {
-    ALOGV("%s: requestId = %d, result = %p", __FUNCTION__, requestId, result);
 
     sp<ProCameraListener> listener;
     {
@@ -186,9 +183,6 @@ status_t ProCamera::createStream(int width, int height, int format,
 {
     *streamId = -1;
 
-    ALOGV("%s: createStreamW %dx%d (fmt=0x%x)", __FUNCTION__, width, height,
-                                                                       format);
-
     if (surface == 0) {
         return BAD_VALUE;
     }
@@ -203,9 +197,6 @@ status_t ProCamera::createStream(int width, int height, int format,
                                  /*out*/
                                  int* streamId) {
     *streamId = -1;
-
-    ALOGV("%s: createStreamT %dx%d (fmt=0x%x)", __FUNCTION__, width, height,
-                                                                       format);
 
     if (bufferProducer == 0) {
         return BAD_VALUE;
@@ -241,8 +232,6 @@ status_t ProCamera::createStreamCpu(int width, int height, int format,
                                     sp<CpuConsumer>* cpuConsumer,
                                     int* streamId)
 {
-    ALOGV("%s: createStreamW %dx%d (fmt=0x%x)", __FUNCTION__, width, height,
-                                                                        format);
 
     *cpuConsumer = NULL;
 
@@ -283,7 +272,6 @@ status_t ProCamera::createStreamCpu(int width, int height, int format,
 }
 
 camera_metadata* ProCamera::getCameraInfo(int cameraId) {
-    ALOGV("%s: cameraId = %d", __FUNCTION__, cameraId);
 
     sp <IProCameraUser> c = mCamera;
     if (c == 0) return NULL;
@@ -300,8 +288,6 @@ camera_metadata* ProCamera::getCameraInfo(int cameraId) {
 
 status_t ProCamera::createDefaultRequest(int templateId,
                                              camera_metadata** request) const {
-    ALOGV("%s: templateId = %d", __FUNCTION__, templateId);
-
     sp <IProCameraUser> c = mCamera;
     if (c == 0) return NO_INIT;
 
@@ -309,7 +295,6 @@ status_t ProCamera::createDefaultRequest(int templateId,
 }
 
 void ProCamera::onFrameAvailable(int streamId) {
-    ALOGV("%s: streamId = %d", __FUNCTION__, streamId);
 
     sp<ProCameraListener> listener = mListener;
     StreamInfo& stream = getStreamInfo(streamId);
@@ -368,9 +353,6 @@ int ProCamera::dropFrameBuffer(int streamId, int count) {
     }
 
     if (!si.synchronousMode) {
-        ALOGW("%s: No need to drop frames on asynchronous streams,"
-              " as asynchronous mode only keeps 1 latest frame around.",
-              __FUNCTION__);
         return BAD_VALUE;
     }
 

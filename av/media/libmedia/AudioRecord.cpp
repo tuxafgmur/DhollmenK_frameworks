@@ -134,8 +134,6 @@ status_t AudioRecord::set(
         transfer_type transferType,
         audio_input_flags_t flags)
 {
-    ALOGV("sampleRate %u, channelMask %#x, format %d", sampleRate, channelMask, format);
-    ALOGV("inputSource %d", inputSource);
     switch (transferType) {
     case TRANSFER_DEFAULT:
         if (cbf == NULL || threadCanCallJava) {
@@ -165,9 +163,6 @@ status_t AudioRecord::set(
         return BAD_VALUE;
     }
     size_t frameCount = frameCountInt;
-
-    ALOGV("set(): sampleRate %u, channelMask %#x, frameCount %u", sampleRate, channelMask,
-            frameCount);
 
     AutoMutex lock(mLock);
 
@@ -262,8 +257,6 @@ status_t AudioRecord::set(
     }
 #endif
 
-    ALOGV("AudioRecord::set() minFrameCount = %d", minFrameCount);
-
     if (frameCount == 0) {
         frameCount = minFrameCount;
     } else if (frameCount < minFrameCount) {
@@ -280,7 +273,6 @@ status_t AudioRecord::set(
     } else {
         mSessionId = sessionId;
     }
-    ALOGV("set(): mSessionId %d", mSessionId);
 
     mFlags = flags;
 
@@ -329,8 +321,6 @@ audio_source_t AudioRecord::inputSource() const
 
 status_t AudioRecord::start(AudioSystem::sync_event_t event, int triggerSession)
 {
-    ALOGV("start, sync event %d trigger session %d", event, triggerSession);
-
     AutoMutex lock(mLock);
     if (mActive) {
         return NO_ERROR;
@@ -344,7 +334,6 @@ status_t AudioRecord::start(AudioSystem::sync_event_t event, int triggerSession)
 
     status_t status = NO_ERROR;
     if (!(flags & CBLK_INVALID)) {
-        ALOGV("mAudioRecord->start()");
         status = mAudioRecord->start(event, triggerSession);
         if (status == DEAD_OBJECT) {
             flags |= CBLK_INVALID;
@@ -514,7 +503,6 @@ status_t AudioRecord::openRecord_l(size_t epoch)
     int originalSessionId = mSessionId;
 #ifdef QCOM_DIRECTTRACK
     if (inputSource() == AUDIO_SOURCE_VOICE_COMMUNICATION) {
-        ALOGV("Notify use of Voice Communication");
         trackFlags |= IAudioFlinger::TRACK_VOICE_COMMUNICATION;
     }
 #endif
@@ -557,14 +545,12 @@ status_t AudioRecord::openRecord_l(size_t epoch)
     mAwaitBoost = false;
     if (mFlags & AUDIO_INPUT_FLAG_FAST) {
         if (trackFlags & IAudioFlinger::TRACK_FAST) {
-            ALOGV("AUDIO_INPUT_FLAG_FAST successful; frameCount %u", mFrameCount);
             mAwaitBoost = true;
             // double-buffering is not required for fast tracks, due to tighter scheduling
             if (mNotificationFramesAct == 0 || mNotificationFramesAct > mFrameCount) {
                 mNotificationFramesAct = mFrameCount;
             }
         } else {
-            ALOGV("AUDIO_INPUT_FLAG_FAST denied by server; frameCount %u", mFrameCount);
             // once denied, do not request again if IAudioRecord is re-created
             mFlags = (audio_input_flags_t) (mFlags & ~AUDIO_INPUT_FLAG_FAST);
             if (mNotificationFramesAct == 0 || mNotificationFramesAct > mFrameCount/2) {
@@ -889,7 +875,6 @@ nsecs_t AudioRecord::processAudioBuffer(const sp<AudioRecordThread>& thread)
     if (ns != NS_WHENEVER) {
         timeout.tv_sec = ns / 1000000000LL;
         timeout.tv_nsec = ns % 1000000000LL;
-        ALOGV("timeout %ld.%03d", timeout.tv_sec, (int) timeout.tv_nsec / 1000000);
         requested = &timeout;
     }
 
@@ -903,8 +888,6 @@ nsecs_t AudioRecord::processAudioBuffer(const sp<AudioRecordThread>& thread)
                 "obtainBuffer() err=%d frameCount=%u", err, audioBuffer.frameCount);
         requested = &ClientProxy::kNonBlocking;
         size_t avail = audioBuffer.frameCount + nonContig;
-        ALOGV("obtainBuffer(%u) returned %u = %u + %u",
-                mRemainingFrames, avail, audioBuffer.frameCount, nonContig);
         if (err != NO_ERROR) {
             if (err == TIMED_OUT || err == WOULD_BLOCK || err == -EINTR) {
                 break;

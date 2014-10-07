@@ -338,8 +338,6 @@ void ARTPConnection::onPollStreams() {
             }
 
             if (buffer->size() > 0) {
-                ALOGV("Sending RR...");
-
                 ssize_t n;
                 do {
                     n = sendto(
@@ -371,8 +369,6 @@ void ARTPConnection::onPollStreams() {
 }
 
 status_t ARTPConnection::receive(StreamInfo *s, bool receiveRTP) {
-    ALOGV("receiving %s", receiveRTP ? "RTP" : "RTCP");
-
     CHECK(!s->mIsInjected);
 
     sp<ABuffer> buffer = new ABuffer(65536);
@@ -397,8 +393,6 @@ status_t ARTPConnection::receive(StreamInfo *s, bool receiveRTP) {
     }
 
     buffer->setRange(0, nbytes);
-
-    // ALOGI("received %d bytes.", buffer->size());
 
     status_t err;
     if (receiveRTP) {
@@ -606,13 +600,6 @@ status_t ARTPConnection::parseSR(
     uint32_t id = u32at(&data[4]);
     uint64_t ntpTime = u64at(&data[8]);
     uint32_t rtpTime = u32at(&data[16]);
-
-#if 0
-    ALOGI("XXX timeUpdate: ssrc=0x%08x, rtpTime %u == ntpTime %.3f",
-         id,
-         rtpTime,
-         (ntpTime >> 32) + (double)(ntpTime & 0xffffffff) / (1ll << 32));
-#endif
 
     sp<ARTPSource> source = findSource(s, id);
 

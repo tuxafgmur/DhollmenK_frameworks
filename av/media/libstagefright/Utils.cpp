@@ -283,7 +283,6 @@ static size_t reassembleAVCC(const sp<ABuffer> &csd0, const sp<ABuffer> csd1, ch
                 // there can't be another param here, so use all the rest
                 i = csd0->size();
             }
-            ALOGV("block at %d, last was %d", i, lastparamoffset);
             if (lastparamoffset > 0) {
                 int size = i - lastparamoffset;
                 avcc[avccidx++] = size >> 8;
@@ -298,7 +297,6 @@ static size_t reassembleAVCC(const sp<ABuffer> &csd0, const sp<ABuffer> csd1, ch
             i++;
         }
     } while(i < csd0->size());
-    ALOGV("csd0 contains %d params", numparams);
 
     avcc[5] = 0xe0 | numparams;
     //and now csd-1
@@ -314,7 +312,6 @@ static size_t reassembleAVCC(const sp<ABuffer> &csd0, const sp<ABuffer> csd1, ch
                 // there can't be another param here, so use all the rest
                 i = csd1->size();
             }
-            ALOGV("block at %d, last was %d", i, lastparamoffset);
             if (lastparamoffset > 0) {
                 int size = i - lastparamoffset;
                 avcc[avccidx++] = size >> 8;
@@ -377,8 +374,6 @@ void convertMessageToMetaData(const sp<AMessage> &msg, sp<MetaData> &meta) {
     AString mime;
     if (msg->findString("mime", &mime)) {
         meta->setCString(kKeyMIMEType, mime.c_str());
-    } else {
-        ALOGW("did not find mime type");
     }
 
     int64_t durationUs;
@@ -397,8 +392,6 @@ void convertMessageToMetaData(const sp<AMessage> &msg, sp<MetaData> &meta) {
         if (msg->findInt32("width", &width) && msg->findInt32("height", &height)) {
             meta->setInt32(kKeyWidth, width);
             meta->setInt32(kKeyHeight, height);
-        } else {
-            ALOGW("did not find width and/or height");
         }
 
         int32_t sarWidth, sarHeight;
@@ -458,12 +451,6 @@ void convertMessageToMetaData(const sp<AMessage> &msg, sp<MetaData> &meta) {
         }
     }
 
-    // XXX TODO add whatever other keys there are
-
-#if 0
-    ALOGI("converted %s to:", msg->debugString(0).c_str());
-    meta->dumpToLog();
-#endif
 }
 
 AString MakeUserAgent() {
@@ -508,10 +495,6 @@ status_t sendMetaDataToHal(sp<MediaPlayerBase::AudioSink>& sink,
     if (meta->findInt32(kKeyEncoderPadding, &paddingSamples)) {
         param.addInt(String8(AUDIO_OFFLOAD_CODEC_PADDING_SAMPLES), paddingSamples);
     }
-
-    ALOGV("sendMetaDataToHal: bitRate %d, sampleRate %d, chanMask %d,"
-          "delaySample %d, paddingSample %d", bitRate, sampleRate,
-          channelMask, delaySamples, paddingSamples);
 
     sink->setParameters(param.toString());
     return OK;
@@ -558,8 +541,6 @@ bool canOffloadStream(const sp<MetaData>& meta, bool hasVideo,
     if (mapMimeToAudioFormat(info.format, mime) != OK) {
         ALOGE(" Couldn't map mime type \"%s\" to a valid AudioSystem::audio_format !", mime);
         return false;
-    } else {
-        ALOGV("Mime type \"%s\" mapped to audio_format %d", mime, info.format);
     }
 
     if (AUDIO_FORMAT_INVALID == info.format) {
@@ -574,41 +555,28 @@ bool canOffloadStream(const sp<MetaData>& meta, bool hasVideo,
     int32_t aacaot = -1;
     if (meta->findInt32(kKeyAACAOT, &aacaot)) {
         if (aacaot == 23 || aacaot == 39 ) {
-            ALOGV("track of type '%s' is ELD/LD content", mime);
             return false;
         }
     }
 
     int32_t srate = -1;
-    if (!meta->findInt32(kKeySampleRate, &srate)) {
-        ALOGV("track of type '%s' does not publish sample rate", mime);
-    }
     info.sample_rate = srate;
 
     int32_t cmask = 0;
     if (!meta->findInt32(kKeyChannelMask, &cmask)) {
-        ALOGV("track of type '%s' does not publish channel mask", mime);
 
         // Try a channel count instead
         int32_t channelCount;
-        if (!meta->findInt32(kKeyChannelCount, &channelCount)) {
-            ALOGV("track of type '%s' does not publish channel count", mime);
-        } else {
+        if (meta->findInt32(kKeyChannelCount, &channelCount)) {
             cmask = audio_channel_out_mask_from_count(channelCount);
         }
     }
     info.channel_mask = cmask;
 
     int64_t duration = 0;
-    if (!meta->findInt64(kKeyDuration, &duration)) {
-        ALOGV("track of type '%s' does not publish duration", mime);
-    }
     info.duration_us = duration;
 
     int32_t brate = -1;
-    if (!meta->findInt32(kKeyBitRate, &brate)) {
-        ALOGV("track of type '%s' does not publish bitrate", mime);
-     }
     info.bit_rate = brate;
 
 

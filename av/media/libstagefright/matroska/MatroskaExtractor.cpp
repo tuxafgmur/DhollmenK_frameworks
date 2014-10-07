@@ -183,7 +183,6 @@ MatroskaSource::MatroskaSource(
         CHECK_GE(avccSize, 5u);
 
         mNALSizeLen = 1 + (avcc[4] & 3);
-        ALOGV("mNALSizeLen = %d", mNALSizeLen);
     } else if (!strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_AAC)) {
         mType = AAC;
     }
@@ -233,7 +232,6 @@ void BlockIterator::advance() {
 void BlockIterator::advance_l() {
     for (;;) {
         long res = mCluster->GetEntry(mBlockEntryIndex, mBlockEntry);
-        ALOGV("GetEntry returned %ld", res);
 
         long long pos;
         long len;
@@ -243,7 +241,6 @@ void BlockIterator::advance_l() {
             CHECK_EQ(res, mkvparser::E_BUFFER_NOT_FULL);
 
             res = mCluster->Parse(pos, len);
-            ALOGV("Parse returned %ld", res);
 
             if (res < 0) {
                 // I/O error
@@ -261,7 +258,6 @@ void BlockIterator::advance_l() {
             const mkvparser::Cluster *nextCluster;
             res = mExtractor->mSegment->ParseNext(
                     mCluster, nextCluster, pos, len);
-            ALOGV("ParseNext returned %ld", res);
 
             if (res != 0) {
                 // EOF or error
@@ -277,7 +273,6 @@ void BlockIterator::advance_l() {
             mCluster = nextCluster;
 
             res = mCluster->Parse(pos, len);
-            ALOGV("Parse (2) returned %ld", res);
             CHECK_GE(res, 0);
 
             mBlockEntryIndex = 0;
@@ -320,7 +315,6 @@ void BlockIterator::seek(
     // Special case the 0 seek to avoid loading Cues when the application
     // extraneously seeks to 0 before playing.
     if (seekTimeNs <= 0) {
-        ALOGV("Seek to beginning: %lld", seekTimeUs);
         mCluster = pSegment->GetFirst();
         mBlockEntryIndex = 0;
         do {
@@ -329,16 +323,12 @@ void BlockIterator::seek(
         return;
     }
 
-    ALOGV("Seeking to: %lld", seekTimeUs);
-
     // If the Cues have not been located then find them.
     const mkvparser::Cues* pCues = pSegment->GetCues();
     const mkvparser::SeekHead* pSH = pSegment->GetSeekHead();
     if (!pCues && pSH) {
         const size_t count = pSH->GetCount();
         const mkvparser::SeekHead::Entry* pEntry;
-        ALOGV("No Cues yet");
-
         for (size_t index = 0; index < count; index++) {
             pEntry = pSH->GetEntry(index);
 
@@ -346,7 +336,6 @@ void BlockIterator::seek(
                 long len; long long pos;
                 pSegment->ParseCues(pEntry->pos, pos, len);
                 pCues = pSegment->GetCues();
-                ALOGV("Cues found");
                 break;
             }
         }
@@ -367,7 +356,6 @@ void BlockIterator::seek(
         pCP = pCues->GetLast();
 
         if (pCP->GetTime(pSegment) >= seekTimeNs) {
-            ALOGV("Parsed past relevant Cue");
             break;
         }
     }
@@ -378,7 +366,6 @@ void BlockIterator::seek(
     for (size_t index = 0; index < pTracks->GetTracksCount(); ++index) {
         pTrack = pTracks->GetTrackByIndex(index);
         if (pTrack && pTrack->GetType() == 1) { // VIDEO_TRACK
-            ALOGV("Video track located at %d", index);
             break;
         }
     }
@@ -409,8 +396,6 @@ void BlockIterator::seek(
         if (isAudio || block()->IsKey()) {
             // Accept the first key frame
             *actualFrameTimeUs = (block()->GetTime(mCluster) + 500LL) / 1000LL;
-            ALOGV("Requested seek point: %lld actual: %lld",
-                  seekTimeUs, actualFrameTimeUs);
             break;
         }
     }
@@ -689,13 +674,6 @@ MatroskaExtractor::MatroskaExtractor(const sp<DataSource> &source)
         return;
     }
 
-#if 0
-    const mkvparser::SegmentInfo *info = mSegment->GetInfo();
-    ALOGI("muxing app: %s, writing app: %s",
-         info->GetMuxingAppAsUTF8(),
-         info->GetWritingAppAsUTF8());
-#endif
-
     addTracks();
 }
 
@@ -878,8 +856,6 @@ void MatroskaExtractor::addTracks() {
         }
 
         const char *const codecID = track->GetCodecId();
-        ALOGV("codec id = %s", codecID);
-        ALOGV("codec name = %s", track->GetCodecNameAsUTF8());
 
         size_t codecPrivateSize;
         const unsigned char *codecPrivate =

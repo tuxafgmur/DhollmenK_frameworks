@@ -316,7 +316,6 @@ void PlaylistFetcher::postMonitorQueue(int64_t delayUs, int64_t minDelayUs) {
         maxDelayUs = minDelayUs;
     }
     if (delayUs > maxDelayUs) {
-        ALOGV("Need to refresh playlist in %lld", maxDelayUs);
         delayUs = maxDelayUs;
     }
     sp<AMessage> msg = new AMessage(kWhatMonitorQueue, id());
@@ -627,8 +626,6 @@ void PlaylistFetcher::onMonitorQueue() {
 
             int64_t bufferedStreamDurationUs =
                 mPacketSources.valueAt(i)->getBufferedDurationUs(&finalResult);
-            ALOGV("buffered %lld for stream %d",
-                    bufferedStreamDurationUs, mPacketSources.keyAt(i));
             if (bufferedStreamDurationUs > bufferedDurationUs) {
                 bufferedDurationUs = bufferedStreamDurationUs;
             }
@@ -640,16 +637,12 @@ void PlaylistFetcher::onMonitorQueue() {
     if (!mPrepared && bufferedDurationUs > targetDurationUs && downloadMore) {
         mPrepared = true;
 
-        ALOGV("prepared, buffered=%lld > %lld",
-                bufferedDurationUs, targetDurationUs);
         sp<AMessage> msg = mNotify->dup();
         msg->setInt32("what", kWhatTemporarilyDoneFetching);
         msg->post();
     }
 
     if (finalResult == OK && downloadMore) {
-        ALOGV("monitoring, buffered=%lld < %lld",
-                bufferedDurationUs, durationToBufferUs);
         // delay the next download slightly; hopefully this gives other concurrent fetchers
         // a better chance to run.
         // onDownloadNext();
@@ -664,8 +657,6 @@ void PlaylistFetcher::onMonitorQueue() {
         msg->post();
 
         int64_t delayUs = mPrepared ? kMaxMonitorDelayUs : targetDurationUs / 2;
-        ALOGV("pausing for %lld, buffered=%lld > %lld",
-                delayUs, bufferedDurationUs, durationToBufferUs);
         // :TRICKY: need to enforce minimum delay because the delay to
         // refresh the playlist will become 0
         postMonitorQueue(delayUs, mPrepared ? targetDurationUs * 2 : 0);
@@ -738,18 +729,12 @@ void PlaylistFetcher::onDownloadNext() {
 
         if (mPlaylist->isComplete() || mPlaylist->isEvent()) {
             mSeqNumber = getSeqNumberForTime(mStartTimeUs);
-            ALOGV("Initial sequence number for time %lld is %ld from (%ld .. %ld)",
-                    mStartTimeUs, mSeqNumber, firstSeqNumberInPlaylist,
-                    lastSeqNumberInPlaylist);
         } else {
             // If this is a live session, start 3 segments from the end.
             mSeqNumber = lastSeqNumberInPlaylist - 3;
             if (mSeqNumber < firstSeqNumberInPlaylist) {
                 mSeqNumber = firstSeqNumberInPlaylist;
             }
-            ALOGV("Initial sequence number for live event %ld from (%ld .. %ld)",
-                    mSeqNumber, firstSeqNumberInPlaylist,
-                    lastSeqNumberInPlaylist);
         }
 
         mStartTimeUs = -1ll;
@@ -771,9 +756,6 @@ void PlaylistFetcher::onDownloadNext() {
                 if (delayUs > kMaxMonitorDelayUs) {
                     delayUs = kMaxMonitorDelayUs;
                 }
-                ALOGV("sequence number high: %ld from (%ld .. %ld), monitor in %lld (retry=%d)",
-                        mSeqNumber, firstSeqNumberInPlaylist,
-                        lastSeqNumberInPlaylist, delayUs, mNumRetries);
                 postMonitorQueue(delayUs);
                 return;
             }
@@ -781,10 +763,6 @@ void PlaylistFetcher::onDownloadNext() {
             // we've missed the boat, let's start from the lowest sequence
             // number available and signal a discontinuity.
 
-            ALOGI("We've missed the boat, restarting playback."
-                  "  mStartup=%d, was  looking for %d in %d-%d",
-                    mStartup, mSeqNumber, firstSeqNumberInPlaylist,
-                    lastSeqNumberInPlaylist);
             mSeqNumber = lastSeqNumberInPlaylist - 3;
             if (mSeqNumber < firstSeqNumberInPlaylist) {
                 mSeqNumber = firstSeqNumberInPlaylist;
@@ -823,11 +801,6 @@ void PlaylistFetcher::onDownloadNext() {
         range_offset = 0;
         range_length = -1;
     }
-
-    ALOGV("fetching segment %d from (%d .. %d)",
-          mSeqNumber, firstSeqNumberInPlaylist, lastSeqNumberInPlaylist);
-
-    ALOGV("fetching '%s'", uri.c_str());
 
     sp<DataSource> source;
     sp<ABuffer> buffer, tsBuffer;
@@ -878,16 +851,12 @@ void PlaylistFetcher::onDownloadNext() {
             // Signal discontinuity.
 
             if (mPlaylist->isComplete() || mPlaylist->isEvent()) {
-                // If this was a live event this made no sense since
-                // we don't have access to all the segment before the current
-                // one.
+                // If this was a live event this made no sense since we don't
+		// have access to all the segment before the current one.
                 mNextPTSTimeUs = getSegmentStartTimeUs(mSeqNumber);
             }
 
             if (seekDiscontinuity || explicitDiscontinuity) {
-                ALOGI("queueing discontinuity (seek=%d, explicit=%d)",
-                     seekDiscontinuity, explicitDiscontinuity);
-
                 queueDiscontinuity(
                         explicitDiscontinuity
                             ? ATSParser::DISCONTINUITY_FORMATCHANGE
@@ -950,18 +919,13 @@ void PlaylistFetcher::onDownloadNext() {
                     mTSParser->getSource(srcType).get());
 
             if (source == NULL) {
-                ALOGW("MPEG2 Transport stream does not contain %s data.",
-                      srcType == ATSParser::VIDEO ? "video" : "audio");
-
                 mStreamTypeMask &= ~streamType;
                 mPacketSources.removeItem(streamType);
             }
         }
-
     }
 
     if (checkDecryptPadding(buffer) != OK) {
-        ALOGE("Incorrect padding bytes after decryption.");
         notifyError(ERROR_MALFORMED);
         return;
     }
@@ -972,8 +936,6 @@ void PlaylistFetcher::onDownloadNext() {
         CHECK(buffer->meta()->findString("cipher-method", &method));
         if ((tsBuffer->size() > 0 && method == "NONE")
                 || tsBuffer->size() > 16) {
-            ALOGE("MPEG2 transport stream is not an even multiple of 188 "
-                    "bytes in length.");
             notifyError(ERROR_MALFORMED);
             return;
         }
@@ -1173,7 +1135,6 @@ status_t PlaylistFetcher::extractAndQueueAccessUnitsFromTs(const sp<ABuffer> &bu
 
     if (!mStreamTypeMask) {
         // Signal gap is filled between original and new stream.
-        ALOGV("ERROR OUT OF RANGE");
         return ERROR_OUT_OF_RANGE;
     }
 

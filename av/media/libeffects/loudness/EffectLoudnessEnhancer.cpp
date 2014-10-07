@@ -65,11 +65,8 @@ struct LoudnessEnhancerContext {
 
 void LE_reset(LoudnessEnhancerContext *pContext)
 {
-    ALOGV("  > LE_reset(%p)", pContext);
-
     if (pContext->mCompressor != NULL) {
         float targetAmp = pow(10, pContext->mTargetGainmB/2000.0f); // mB to linear amplification
-        ALOGV("LE_reset(): Target gain=%dmB <=> factor=%.2fX", pContext->mTargetGainmB, targetAmp);
         pContext->mCompressor->Initialize(targetAmp, pContext->mConfig.inputCfg.samplingRate);
     } else {
         ALOGE("LE_reset(%p): null compressors, can't apply target gain", pContext);
@@ -99,8 +96,6 @@ static inline int16_t clamp16(int32_t sample)
 
 int LE_setConfig(LoudnessEnhancerContext *pContext, effect_config_t *pConfig)
 {
-    ALOGV("LE_setConfig(%p)", pContext);
-
     if (pConfig->inputCfg.samplingRate != pConfig->outputCfg.samplingRate) return -EINVAL;
     if (pConfig->inputCfg.channels != pConfig->outputCfg.channels) return -EINVAL;
     if (pConfig->inputCfg.format != pConfig->outputCfg.format) return -EINVAL;
@@ -151,7 +146,6 @@ void LE_getConfig(LoudnessEnhancerContext *pContext, effect_config_t *pConfig)
 
 int LE_init(LoudnessEnhancerContext *pContext)
 {
-    ALOGV("LE_init(%p)", pContext);
 
     pContext->mConfig.inputCfg.accessMode = EFFECT_BUFFER_ACCESS_READ;
     pContext->mConfig.inputCfg.channels = AUDIO_CHANNEL_OUT_STEREO;
@@ -172,7 +166,6 @@ int LE_init(LoudnessEnhancerContext *pContext)
 
     pContext->mTargetGainmB = LOUDNESS_ENHANCER_DEFAULT_TARGET_GAIN_MB;
     float targetAmp = pow(10, pContext->mTargetGainmB/2000.0f); // mB to linear amplification
-    ALOGV("LE_init(): Target gain=%dmB <=> factor=%.2fX", pContext->mTargetGainmB, targetAmp);
 
     if (pContext->mCompressor == NULL) {
         pContext->mCompressor = new le_fx::AdaptiveDynamicRangeCompression();
@@ -192,7 +185,6 @@ int LELib_Create(const effect_uuid_t *uuid,
                          int32_t sessionId,
                          int32_t ioId,
                          effect_handle_t *pHandle) {
-    ALOGV("LELib_Create()");
     int ret;
     int i;
 
@@ -221,8 +213,6 @@ int LELib_Create(const effect_uuid_t *uuid,
 
     pContext->mState = LOUDNESS_ENHANCER_STATE_INITIALIZED;
 
-    ALOGV("  LELib_Create context is %p", pContext);
-
     return 0;
 
 }
@@ -230,7 +220,6 @@ int LELib_Create(const effect_uuid_t *uuid,
 int LELib_Release(effect_handle_t handle) {
     LoudnessEnhancerContext * pContext = (LoudnessEnhancerContext *)handle;
 
-    ALOGV("LELib_Release %p", handle);
     if (pContext == NULL) {
         return -EINVAL;
     }
@@ -248,7 +237,6 @@ int LELib_GetDescriptor(const effect_uuid_t *uuid,
                                 effect_descriptor_t *pDescriptor) {
 
     if (pDescriptor == NULL || uuid == NULL){
-        ALOGV("LELib_GetDescriptor() called with NULL pointer");
         return -EINVAL;
     }
 
@@ -279,7 +267,6 @@ int LE_process(
         return -EINVAL;
     }
 
-    //ALOGV("LE about to process %d samples", inBuffer->frameCount);
     uint16_t inIdx;
     float inputAmp = pow(10, pContext->mTargetGainmB/2000.0f);
     float leftSample, rightSample;
@@ -317,7 +304,6 @@ int LE_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         return -EINVAL;
     }
 
-//    ALOGV("LE_command command %d cmdSize %d",cmdCode, cmdSize);
     switch (cmdCode) {
     case EFFECT_CMD_INIT:
         if (pReplyData == NULL || *replySize != sizeof(int)) {
@@ -351,7 +337,6 @@ int LE_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
             return -ENOSYS;
         }
         pContext->mState = LOUDNESS_ENHANCER_STATE_ACTIVE;
-        ALOGV("EFFECT_CMD_ENABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_DISABLE:
@@ -362,7 +347,6 @@ int LE_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
             return -ENOSYS;
         }
         pContext->mState = LOUDNESS_ENHANCER_STATE_INITIALIZED;
-        ALOGV("EFFECT_CMD_DISABLE() OK");
         *(int *)pReplyData = 0;
         break;
     case EFFECT_CMD_GET_PARAM: {
@@ -382,7 +366,6 @@ int LE_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         }
         switch (*(uint32_t *)p->data) {
         case LOUDNESS_ENHANCER_PARAM_TARGET_GAIN_MB:
-            ALOGV("get target gain(mB) = %d", pContext->mTargetGainmB);
             *((int32_t *)p->data + 1) = pContext->mTargetGainmB;
             p->vsize = sizeof(int32_t);
             *replySize += sizeof(int32_t);
@@ -406,7 +389,6 @@ int LE_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         switch (*(uint32_t *)p->data) {
         case LOUDNESS_ENHANCER_PARAM_TARGET_GAIN_MB:
             pContext->mTargetGainmB = *((int32_t *)p->data + 1);
-            ALOGV("set target gain(mB) = %d", pContext->mTargetGainmB);
             LE_reset(pContext); // apply parameter update
             break;
         default:
@@ -433,7 +415,6 @@ int LE_getDescriptor(effect_handle_t   self,
     LoudnessEnhancerContext * pContext = (LoudnessEnhancerContext *) self;
 
     if (pContext == NULL || pDescriptor == NULL) {
-        ALOGV("LE_getDescriptor() invalid param");
         return -EINVAL;
     }
 

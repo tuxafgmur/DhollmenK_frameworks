@@ -66,14 +66,10 @@ CameraSourceListener::~CameraSourceListener() {
 }
 
 void CameraSourceListener::notify(int32_t msgType, int32_t ext1, int32_t ext2) {
-    ALOGV("notify(%d, %d, %d)", msgType, ext1, ext2);
 }
 
 void CameraSourceListener::postData(int32_t msgType, const sp<IMemory> &dataPtr,
                                     camera_frame_metadata_t *metadata) {
-    ALOGV("postData(%d, ptr:%p, size:%d)",
-         msgType, dataPtr->pointer(), dataPtr->size());
-
     sp<CameraSource> source = mSource.promote();
     if (source.get() != NULL) {
         source->dataCallback(msgType, dataPtr);
@@ -126,9 +122,6 @@ static int32_t getColorFormat(const char* colorFormat) {
     if (!strcmp(colorFormat, CameraParameters::PIXEL_FORMAT_ANDROID_OPAQUE)) {
         return OMX_COLOR_FormatAndroidOpaque;
     }
-
-    ALOGE("Uknown color format (%s), please add it to "
-         "CameraSource::getColorFormat", colorFormat);
 
     CHECK(!"Unknown color format");
 }
@@ -240,7 +233,6 @@ static bool isVideoSizeSupported(
     int32_t width, int32_t height,
     const Vector<Size>& supportedSizes) {
 
-    ALOGV("isVideoSizeSupported");
     for (size_t i = 0; i < supportedSizes.size(); ++i) {
         if (width  == supportedSizes[i].width &&
             height == supportedSizes[i].height) {
@@ -277,7 +269,6 @@ static void getSupportedVideoSizes(
     *isSetVideoSizeSupported = true;
     params.getSupportedVideoSizes(sizes);
     if (sizes.size() == 0) {
-        ALOGD("Camera does not support setVideoSize()");
         params.getSupportedPreviewSizes(sizes);
         *isSetVideoSizeSupported = false;
     }
@@ -317,7 +308,6 @@ status_t CameraSource::configureCamera(
         CameraParameters* params,
         int32_t width, int32_t height,
         int32_t frameRate) {
-    ALOGV("configureCamera");
     Vector<Size> sizes;
     bool isSetVideoSizeSupportedByCamera = true;
     getSupportedVideoSizes(*params, &isSetVideoSizeSupportedByCamera, sizes);
@@ -349,7 +339,6 @@ status_t CameraSource::configureCamera(
         const char* supportedFrameRates =
                 params->get(CameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATES);
         CHECK(supportedFrameRates != NULL);
-        ALOGV("Supported frame rates: %s", supportedFrameRates);
         char buf[4];
         snprintf(buf, 4, "%d", frameRate);
 #ifndef HTC_3D_SUPPORT  // HTC uses invalid frame rates intentionally on the 3D camera
@@ -395,7 +384,6 @@ status_t CameraSource::checkVideoSize(
         const CameraParameters& params,
         int32_t width, int32_t height) {
 
-    ALOGV("checkVideoSize");
     // The actual video size is the same as the preview size
     // if the camera hal does not support separate video and
     // preview output. In this case, we retrieve the video
@@ -447,7 +435,6 @@ status_t CameraSource::checkFrameRate(
         const CameraParameters& params,
         int32_t frameRate) {
 
-    ALOGV("checkFrameRate");
     int32_t frameRateActual = params.getPreviewFrameRate();
     if (frameRateActual < 0) {
         ALOGE("Failed to retrieve preview frame rate (%d)", frameRateActual);
@@ -497,7 +484,6 @@ status_t CameraSource::init(
         int32_t frameRate,
         bool storeMetaDataInVideoBuffers) {
 
-    ALOGV("init");
     status_t err = OK;
     int64_t token = IPCThreadState::self()->clearCallingIdentity();
     err = initWithCameraAccess(camera, proxy, cameraId, clientName, clientUid,
@@ -516,7 +502,6 @@ status_t CameraSource::initWithCameraAccess(
         Size videoSize,
         int32_t frameRate,
         bool storeMetaDataInVideoBuffers) {
-    ALOGV("initWithCameraAccess");
     status_t err = OK;
 
     if ((err = isCameraAvailable(camera, proxy, cameraId,
@@ -599,7 +584,6 @@ CameraSource::~CameraSource() {
 }
 
 void CameraSource::startCameraRecording() {
-    ALOGV("startCameraRecording");
     // Reset the identity to the current thread because media server owns the
     // camera and recording is started by the applications. The applications
     // will connect to the camera in ICameraRecordingProxy::startRecording.
@@ -630,7 +614,6 @@ void CameraSource::startCameraRecording() {
 }
 
 status_t CameraSource::start(MetaData *meta) {
-    ALOGV("start");
     CHECK(!mStarted);
     if (mInitCheck != OK) {
         ALOGE("CameraSource is not initialized yet");
@@ -665,7 +648,6 @@ status_t CameraSource::start(MetaData *meta) {
 }
 
 void CameraSource::stopCameraRecording() {
-    ALOGV("stopCameraRecording");
     if (mCameraFlags & FLAGS_HOT_CAMERA) {
         mCameraRecordingProxy->stopRecording();
     } else {
@@ -675,11 +657,9 @@ void CameraSource::stopCameraRecording() {
 }
 
 void CameraSource::releaseCamera() {
-    ALOGV("releaseCamera");
     if (mCamera != 0) {
         int64_t token = IPCThreadState::self()->clearCallingIdentity();
         if ((mCameraFlags & FLAGS_HOT_CAMERA) == 0) {
-            ALOGV("Camera was cold when we started, stopping preview");
             mCamera->stopPreview();
             mCamera->disconnect();
         }
@@ -696,7 +676,6 @@ void CameraSource::releaseCamera() {
 }
 
 status_t CameraSource::reset() {
-    ALOGD("reset: E");
     Mutex::Autolock autoLock(mLock);
     mStarted = false;
     mFrameAvailableCondition.signal();
@@ -722,23 +701,11 @@ status_t CameraSource::reset() {
         IPCThreadState::self()->restoreCallingIdentity(token);
     }
 
-    if (mCollectStats) {
-        ALOGI("Frames received/encoded/dropped: %d/%d/%d in %lld us",
-                mNumFramesReceived, mNumFramesEncoded, mNumFramesDropped,
-                mLastFrameTimestampUs - mFirstFrameTimeUs);
-    }
-
-    if (mNumGlitches > 0) {
-        ALOGW("%d long delays between neighboring video frames", mNumGlitches);
-    }
-
     CHECK_EQ(mNumFramesReceived, mNumFramesEncoded + mNumFramesDropped);
-    ALOGD("reset: X");
     return OK;
 }
 
 void CameraSource::releaseRecordingFrame(const sp<IMemory>& frame) {
-    ALOGV("releaseRecordingFrame");
     if (mCameraRecordingProxy != NULL) {
         mCameraRecordingProxy->releaseRecordingFrame(frame);
     } else if (mCamera != NULL) {
@@ -767,7 +734,6 @@ void CameraSource::releaseOneRecordingFrame(const sp<IMemory>& frame) {
 }
 
 void CameraSource::signalBufferReturned(MediaBuffer *buffer) {
-    ALOGV("signalBufferReturned: %p", buffer->data());
     Mutex::Autolock autoLock(mLock);
     for (List<sp<IMemory> >::iterator it = mFramesBeingEncoded.begin();
          it != mFramesBeingEncoded.end(); ++it) {
@@ -786,7 +752,6 @@ void CameraSource::signalBufferReturned(MediaBuffer *buffer) {
 
 status_t CameraSource::read(
         MediaBuffer **buffer, const ReadOptions *options) {
-    ALOGV("read");
 
     *buffer = NULL;
 
@@ -833,14 +798,11 @@ status_t CameraSource::read(
 
 void CameraSource::dataCallbackTimestamp(int64_t timestampUs,
         int32_t msgType, const sp<IMemory> &data) {
-    ALOGV("dataCallbackTimestamp: timestamp %lld us", timestampUs);
     if (!mStarted) {
-       ALOGD("Stop recording issued. Return here.");
        return;
     }
     Mutex::Autolock autoLock(mLock);
     if (!mStarted || (mNumFramesReceived == 0 && timestampUs < mStartTimeUs)) {
-        ALOGV("Drop frame at %lld/%lld us", timestampUs, mStartTimeUs);
         releaseOneRecordingFrame(data);
         return;
     }
@@ -879,13 +841,10 @@ void CameraSource::dataCallbackTimestamp(int64_t timestampUs,
     mFramesReceived.push_back(data);
     int64_t timeUs = mStartTimeUs + (timestampUs - mFirstFrameTimeUs);
     mFrameTimes.push_back(timeUs);
-    ALOGV("initial delay: %lld, current time stamp: %lld",
-        mStartTimeUs, timeUs);
     mFrameAvailableCondition.signal();
 }
 
 bool CameraSource::isMetaDataStoredInVideoBuffers() const {
-    ALOGV("isMetaDataStoredInVideoBuffers");
     return mIsMetaDataStoredInVideoBuffers;
 }
 
@@ -899,7 +858,6 @@ void CameraSource::ProxyListener::dataCallbackTimestamp(
 }
 
 void CameraSource::DeathNotifier::binderDied(const wp<IBinder>& who) {
-    ALOGI("Camera recording proxy died");
 }
 
 }  // namespace android

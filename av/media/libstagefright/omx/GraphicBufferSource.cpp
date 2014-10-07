@@ -52,9 +52,6 @@ GraphicBufferSource::GraphicBufferSource(OMXNodeInstance* nodeInstance,
     mLatestSubmittedBufferUseCount(0),
     mRepeatBufferDeferred(false) {
 
-    ALOGV("GraphicBufferSource w=%u h=%u c=%u",
-            bufferWidth, bufferHeight, bufferCount);
-
     if (bufferWidth == 0 || bufferHeight == 0) {
         ALOGE("Invalid dimensions %ux%u", bufferWidth, bufferHeight);
         mInitCheck = BAD_VALUE;
@@ -94,7 +91,6 @@ GraphicBufferSource::GraphicBufferSource(OMXNodeInstance* nodeInstance,
 }
 
 GraphicBufferSource::~GraphicBufferSource() {
-    ALOGV("~GraphicBufferSource");
     if (mBufferQueue != NULL) {
         status_t err = mBufferQueue->consumerDisconnect();
         if (err != NO_ERROR) {
@@ -105,8 +101,6 @@ GraphicBufferSource::~GraphicBufferSource() {
 
 void GraphicBufferSource::omxExecuting() {
     Mutex::Autolock autoLock(mMutex);
-    ALOGV("--> executing; avail=%d, codec vec size=%zd",
-            mNumFramesAvailable, mCodecBuffers.size());
     CHECK(!mExecuting);
     mExecuting = true;
 
@@ -121,13 +115,9 @@ void GraphicBufferSource::omxExecuting() {
     // initial conditions right that will never be useful.)
     while (mNumFramesAvailable) {
         if (!fillCodecBuffer_l()) {
-            ALOGV("stop load with frames available (codecAvail=%d)",
-                    isCodecBufferAvailable_l());
             break;
         }
     }
-
-    ALOGV("done loading initial frames, avail=%d", mNumFramesAvailable);
 
     // If EOS has already been signaled, and there are no more frames to
     // submit, try to send EOS now as well.
@@ -153,8 +143,6 @@ void GraphicBufferSource::omxExecuting() {
 }
 
 void GraphicBufferSource::omxIdle() {
-    ALOGV("omxIdle");
-
     Mutex::Autolock autoLock(mMutex);
 
     if (mExecuting) {
@@ -179,9 +167,6 @@ void GraphicBufferSource::omxLoaded(){
         mLooper.clear();
     }
 
-    ALOGV("--> loaded; avail=%d eos=%d eosSent=%d",
-            mNumFramesAvailable, mEndOfStream, mEndOfStreamSent);
-
     // Codec is no longer executing.  Discard all codec-related state.
     mCodecBuffers.clear();
     // TODO: scan mCodecBuffers to verify that all mGraphicBuffer entries
@@ -200,8 +185,6 @@ void GraphicBufferSource::addCodecBuffer(OMX_BUFFERHEADERTYPE* header) {
         return;
     }
 
-    ALOGV("addCodecBuffer h=%p size=%lu p=%p",
-            header, header->nAllocLen, header->pBuffer);
     CodecBuffer codecBuffer;
     codecBuffer.mHeader = header;
     mCodecBuffers.add(codecBuffer);
@@ -221,9 +204,6 @@ void GraphicBufferSource::codecBufferEmptied(OMX_BUFFERHEADERTYPE* header) {
         return;
     }
 
-    ALOGV("codecBufferEmptied h=%p size=%lu filled=%lu p=%p",
-            header, header->nAllocLen, header->nFilledLen,
-            header->pBuffer);
     CodecBuffer& codecBuffer(mCodecBuffers.editItemAt(cbi));
 
     // header->nFilledLen may not be the original value, so we can't compare
@@ -262,8 +242,6 @@ void GraphicBufferSource::codecBufferEmptied(OMX_BUFFERHEADERTYPE* header) {
     int id = codecBuffer.mBuf;
     if (mBufferSlot[id] != NULL &&
         mBufferSlot[id]->handle == codecBuffer.mGraphicBuffer->handle) {
-        ALOGV("cbi %d matches bq slot %d, handle=%p",
-                cbi, id, mBufferSlot[id]->handle);
 
         if (id == mLatestSubmittedBufferId) {
             CHECK_GT(mLatestSubmittedBufferUseCount--, 0);
@@ -271,9 +249,6 @@ void GraphicBufferSource::codecBufferEmptied(OMX_BUFFERHEADERTYPE* header) {
             mBufferQueue->releaseBuffer(id, codecBuffer.mFrameNumber,
                     EGL_NO_DISPLAY, EGL_NO_SYNC_KHR, Fence::NO_FENCE);
         }
-    } else {
-        ALOGV("codecBufferEmptied: no match for emptied buffer in cbi %d",
-                cbi);
     }
 
     // Mark the codec buffer as available by clearing the GraphicBuffer ref.
@@ -282,21 +257,13 @@ void GraphicBufferSource::codecBufferEmptied(OMX_BUFFERHEADERTYPE* header) {
     if (mNumFramesAvailable) {
         // Fill this codec buffer.
         CHECK(!mEndOfStreamSent);
-        ALOGV("buffer freed, %d frames avail (eos=%d)",
-                mNumFramesAvailable, mEndOfStream);
         fillCodecBuffer_l();
     } else if (mEndOfStream) {
         // No frames available, but EOS is pending, so use this buffer to
         // send that.
-        ALOGV("buffer freed, EOS pending");
         submitEndOfInputStream_l();
     } else if (mRepeatBufferDeferred) {
         bool success = repeatLatestSubmittedBuffer_l();
-        if (success) {
-            ALOGV("deferred repeatLatestSubmittedBuffer_l SUCCESS");
-        } else {
-            ALOGV("deferred repeatLatestSubmittedBuffer_l FAILURE");
-        }
         mRepeatBufferDeferred = false;
     }
 
@@ -310,14 +277,10 @@ void GraphicBufferSource::codecBufferFilled(OMX_BUFFERHEADERTYPE* header) {
             && !(header->nFlags & OMX_BUFFERFLAG_CODECCONFIG)) {
         ssize_t index = mOriginalTimeUs.indexOfKey(header->nTimeStamp);
         if (index >= 0) {
-            ALOGV("OUT timestamp: %lld -> %lld",
-                    header->nTimeStamp, mOriginalTimeUs[index]);
             header->nTimeStamp = mOriginalTimeUs[index];
             mOriginalTimeUs.removeItemsAt(index);
         } else {
             // giving up the effort as encoder doesn't appear to preserve pts
-            ALOGW("giving up limiting timestamp gap (pts = %lld)",
-                    header->nTimeStamp);
             mMaxTimestampGapUs = -1ll;
         }
         if (mOriginalTimeUs.size() > BufferQueue::NUM_BUFFER_SLOTS) {
@@ -360,11 +323,7 @@ void GraphicBufferSource::suspend(bool suspend) {
 
     if (mExecuting && mNumFramesAvailable == 0 && mRepeatBufferDeferred) {
         if (repeatLatestSubmittedBuffer_l()) {
-            ALOGV("suspend/deferred repeatLatestSubmittedBuffer_l SUCCESS");
-
             mRepeatBufferDeferred = false;
-        } else {
-            ALOGV("suspend/deferred repeatLatestSubmittedBuffer_l FAILURE");
         }
     }
 }
@@ -379,13 +338,9 @@ bool GraphicBufferSource::fillCodecBuffer_l() {
     int cbi = findAvailableCodecBuffer_l();
     if (cbi < 0) {
         // No buffers available, bail.
-        ALOGV("fillCodecBuffer_l: no codec buffers, avail now %d",
-                mNumFramesAvailable);
         return false;
     }
 
-    ALOGV("fillCodecBuffer_l: acquiring buffer, avail=%d",
-            mNumFramesAvailable);
     BufferQueue::BufferItem item;
     status_t err = mBufferQueue->acquireBuffer(&item, 0);
     if (err == BufferQueue::NO_BUFFER_AVAILABLE) {
@@ -410,17 +365,14 @@ bool GraphicBufferSource::fillCodecBuffer_l() {
     // If this is the first time we're seeing this buffer, add it to our
     // slot table.
     if (item.mGraphicBuffer != NULL) {
-        ALOGV("fillCodecBuffer_l: setting mBufferSlot %d", item.mBuf);
         mBufferSlot[item.mBuf] = item.mGraphicBuffer;
     }
 
     err = submitBuffer_l(item, cbi);
     if (err != OK) {
-        ALOGV("submitBuffer_l failed, releasing bq buf %d", item.mBuf);
         mBufferQueue->releaseBuffer(item.mBuf, item.mFrameNumber,
                 EGL_NO_DISPLAY, EGL_NO_SYNC_KHR, Fence::NO_FENCE);
     } else {
-        ALOGV("buffer submitted (bq %d, cbi %d)", item.mBuf, cbi);
         setLatestSubmittedBuffer_l(item);
     }
 
@@ -437,9 +389,7 @@ bool GraphicBufferSource::repeatLatestSubmittedBuffer_l() {
         // This can happen if the remote side disconnects, causing
         // onBuffersReleased() to NULL out our copy of the slots.  The
         // buffer is gone, so we have nothing to show.
-        //
         // To be on the safe side we try to release the buffer.
-        ALOGD("repeatLatestSubmittedBuffer_l: slot was NULL");
         mBufferQueue->releaseBuffer(
                 mLatestSubmittedBufferId,
                 mLatestSubmittedBufferFrameNum,
@@ -454,7 +404,6 @@ bool GraphicBufferSource::repeatLatestSubmittedBuffer_l() {
     int cbi = findAvailableCodecBuffer_l();
     if (cbi < 0) {
         // No buffers available, bail.
-        ALOGV("repeatLatestSubmittedBuffer_l: no codec buffers.");
         return false;
     }
 
@@ -490,7 +439,6 @@ bool GraphicBufferSource::repeatLatestSubmittedBuffer_l() {
 
 void GraphicBufferSource::setLatestSubmittedBuffer_l(
         const BufferQueue::BufferItem &item) {
-    ALOGV("setLatestSubmittedBuffer_l");
 
     if (mLatestSubmittedBufferId >= 0) {
         if (mLatestSubmittedBufferUseCount == 0) {
@@ -520,8 +468,6 @@ void GraphicBufferSource::setLatestSubmittedBuffer_l(
 
 status_t GraphicBufferSource::signalEndOfInputStream() {
     Mutex::Autolock autoLock(mMutex);
-    ALOGV("signalEndOfInputStream: exec=%d avail=%d eos=%d",
-            mExecuting, mNumFramesAvailable, mEndOfStream);
 
     if (mEndOfStream) {
         ALOGE("EOS was already signaled");
@@ -550,7 +496,6 @@ int64_t GraphicBufferSource::getTimestamp(const BufferQueue::BufferItem &item) {
 
     if (mMaxTimestampGapUs > 0ll) {
         /* Cap timestamp gap between adjacent frames to specified max
-         *
          * In the scenario of cast mirroring, encoding could be suspended for
          * prolonged periods. Limiting the pts gap to workaround the problem
          * where encoder's rate control logic produces huge frames after a
@@ -562,7 +507,6 @@ int64_t GraphicBufferSource::getTimestamp(const BufferQueue::BufferItem &item) {
             if (originalTimeUs < mPrevOriginalTimeUs) {
                 // Drop the frame if it's going backward in time. Bad timestamp
                 // could disrupt encoder's rate control completely.
-                ALOGW("Dropping frame that's going backward in time");
                 return -1;
             }
             int64_t timestampGapUs = originalTimeUs - mPrevOriginalTimeUs;
@@ -572,7 +516,6 @@ int64_t GraphicBufferSource::getTimestamp(const BufferQueue::BufferItem &item) {
         mPrevOriginalTimeUs = originalTimeUs;
         mPrevModifiedTimeUs = timeUs;
         mOriginalTimeUs.add(timeUs, originalTimeUs);
-        ALOGV("IN  timestamp: %lld -> %lld", originalTimeUs, timeUs);
     }
 
     return timeUs;
@@ -580,7 +523,6 @@ int64_t GraphicBufferSource::getTimestamp(const BufferQueue::BufferItem &item) {
 
 status_t GraphicBufferSource::submitBuffer_l(
         const BufferQueue::BufferItem &item, int cbi) {
-    ALOGV("submitBuffer_l cbi=%d", cbi);
 
     int64_t timeUs = getTimestamp(item);
     if (timeUs < 0ll) {
@@ -609,21 +551,17 @@ status_t GraphicBufferSource::submitBuffer_l(
         return err;
     }
 
-    ALOGV("emptyDirectBuffer succeeded, h=%p p=%p bufhandle=%p",
-            header, header->pBuffer, handle);
     return OK;
 }
 
 void GraphicBufferSource::submitEndOfInputStream_l() {
     CHECK(mEndOfStream);
     if (mEndOfStreamSent) {
-        ALOGV("EOS already sent");
         return;
     }
 
     int cbi = findAvailableCodecBuffer_l();
     if (cbi < 0) {
-        ALOGV("submitEndOfInputStream_l: no codec buffers available");
         return;
     }
 
@@ -649,8 +587,6 @@ void GraphicBufferSource::submitEndOfInputStream_l() {
     if (err != OK) {
         ALOGW("emptyDirectBuffer EOS failed: 0x%x", err);
     } else {
-        ALOGV("submitEndOfInputStream_l: buffer submitted, header=%p cbi=%d",
-                header, cbi);
         mEndOfStreamSent = true;
     }
 }
@@ -680,17 +616,11 @@ int GraphicBufferSource::findMatchingCodecBuffer_l(
 void GraphicBufferSource::onFrameAvailable() {
     Mutex::Autolock autoLock(mMutex);
 
-    ALOGV("onFrameAvailable exec=%d avail=%d",
-            mExecuting, mNumFramesAvailable);
-
     if (mEndOfStream || mSuspended) {
         if (mEndOfStream) {
             // This should only be possible if a new buffer was queued after
             // EOS was signaled, i.e. the app is misbehaving.
-
             ALOGW("onFrameAvailable: EOS is set, ignoring frame");
-        } else {
-            ALOGV("onFrameAvailable: suspended, ignoring frame");
         }
 
         BufferQueue::BufferItem item;
@@ -699,7 +629,6 @@ void GraphicBufferSource::onFrameAvailable() {
             // If this is the first time we're seeing this buffer, add it to our
             // slot table.
             if (item.mGraphicBuffer != NULL) {
-                ALOGV("fillCodecBuffer_l: setting mBufferSlot %d", item.mBuf);
                 mBufferSlot[item.mBuf] = item.mGraphicBuffer;
             }
             mBufferQueue->releaseBuffer(item.mBuf, item.mFrameNumber,
@@ -727,8 +656,6 @@ void GraphicBufferSource::onBuffersReleased() {
         ALOGW("onBuffersReleased: unable to get released buffer set");
         slotMask = 0xffffffff;
     }
-
-    ALOGV("onBuffersReleased: 0x%08x", slotMask);
 
     for (int i = 0; i < BufferQueue::NUM_BUFFER_SLOTS; i++) {
         if ((slotMask & 0x01) != 0) {
@@ -783,9 +710,7 @@ void GraphicBufferSource::onMessageReceived(const sp<AMessage> &msg) {
             bool success = repeatLatestSubmittedBuffer_l();
 
             if (success) {
-                ALOGV("repeatLatestSubmittedBuffer_l SUCCESS");
             } else {
-                ALOGV("repeatLatestSubmittedBuffer_l FAILURE");
                 mRepeatBufferDeferred = true;
             }
             break;

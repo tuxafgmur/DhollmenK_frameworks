@@ -97,10 +97,6 @@ status_t FragmentedMP4Parser::StaticTrackFragment::getSample(SampleInfo *info) {
 
     *info = mSampleInfo;
 
-    ALOGV("returning sample %d at [0x%08llx, 0x%08llx)",
-          mSampleIndex,
-          info->mOffset, info->mOffset + info->mSize);
-
     return OK;
 }
 

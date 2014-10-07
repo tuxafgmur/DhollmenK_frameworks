@@ -173,8 +173,6 @@ bool NuPlayer::RTSPSource::haveSufficientDataOnAllTracks() {
             && (durationUs = mAudioTrack->getBufferedDurationUs(&err))
                     < kMinDurationUs
             && err == OK) {
-        ALOGV("audio track doesn't have enough data yet. (%.2f secs buffered)",
-              durationUs / 1E6);
         return false;
     }
 
@@ -182,8 +180,6 @@ bool NuPlayer::RTSPSource::haveSufficientDataOnAllTracks() {
             && (durationUs = mVideoTrack->getBufferedDurationUs(&err))
                     < kMinDurationUs
             && err == OK) {
-        ALOGV("video track doesn't have enough data yet. (%.2f secs buffered)",
-              durationUs / 1E6);
         return false;
     }
 
@@ -398,7 +394,6 @@ void NuPlayer::RTSPSource::onMessageReceived(const sp<AMessage> &msg) {
             int32_t damaged;
             if (accessUnit->meta()->findInt32("damaged", &damaged)
                     && damaged) {
-                ALOGI("dropping damaged access unit.");
                 break;
             }
 

@@ -71,7 +71,6 @@ AudioSource::AudioSource(
 #else
       mNumClientOwnedBuffers(0) {
 #endif
-    ALOGV("sampleRate: %d, channelCount: %d", sampleRate, channelCount);
 #ifdef QCOM_HARDWARE
     CHECK(channelCount == 1 || channelCount == 2 || channelCount == 6);
 #else
@@ -87,7 +86,6 @@ AudioSource::AudioSource(
     if ( NO_ERROR != AudioSystem::getInputBufferSize(
         sampleRate, mFormat, channelCount, (size_t*)&mMaxBufferSize) ) {
         mMaxBufferSize = kMaxBufferSize;
-        ALOGV("mMaxBufferSize = %d", mMaxBufferSize);
     }
 #endif
     if (status == OK) {
@@ -125,7 +123,6 @@ AudioSource::AudioSource(
                 mAutoRampStartUs = 2*playbackLatencyMs*1000LL;
             }
         }
-        ALOGD("Start autoramp from %lld", mAutoRampStartUs);
     } else {
         mInitCheck = status;
     }
@@ -235,7 +232,6 @@ status_t AudioSource::start(MetaData *params) {
 }
 
 void AudioSource::releaseQueuedFrames_l() {
-    ALOGV("releaseQueuedFrames_l");
     List<MediaBuffer *>::iterator it;
     while (!mBuffersReceived.empty()) {
         it = mBuffersReceived.begin();
@@ -245,7 +241,6 @@ void AudioSource::releaseQueuedFrames_l() {
 }
 
 void AudioSource::waitOutstandingEncodingFrames_l() {
-    ALOGV("waitOutstandingEncodingFrames_l: %lld", mNumClientOwnedBuffers);
     while (mNumClientOwnedBuffers > 0) {
         mFrameEncodingCompletionCondition.wait(mLock);
     }
@@ -387,7 +382,6 @@ status_t AudioSource::read(
 }
 
 void AudioSource::signalBufferReturned(MediaBuffer *buffer) {
-    ALOGV("signalBufferReturned: %p", buffer->data());
     Mutex::Autolock autoLock(mLock);
     --mNumClientOwnedBuffers;
     buffer->setObserver(0);
@@ -399,7 +393,6 @@ void AudioSource::signalBufferReturned(MediaBuffer *buffer) {
 status_t AudioSource::dataCallback(const AudioRecord::Buffer& audioBuffer) {
     int64_t timeUs = systemTime() / 1000ll;
 
-    ALOGV("dataCallbackTimestamp: %lld us", timeUs);
     Mutex::Autolock autoLock(mLock);
     if (!mStarted) {
         ALOGW("Spurious callback from AudioRecord. Drop the audio data.");
@@ -409,7 +402,6 @@ status_t AudioSource::dataCallback(const AudioRecord::Buffer& audioBuffer) {
     // Drop retrieved and previously lost audio data.
     if (mNumFramesReceived == 0 && timeUs < mStartTimeUs) {
         mRecord->getInputFramesLost();
-        ALOGV("Drop audio data at %lld/%lld us", timeUs, mStartTimeUs);
         return OK;
     }
 
@@ -537,7 +529,6 @@ int16_t AudioSource::getMaxAmplitude() {
     }
     int16_t value = mMaxAmplitude;
     mMaxAmplitude = 0;
-    ALOGV("max amplitude since last call: %d", value);
     return value;
 }
 

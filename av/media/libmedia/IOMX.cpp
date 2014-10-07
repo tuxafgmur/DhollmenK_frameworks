@@ -310,7 +310,6 @@ public:
         data.writeInt32(port_index);
         err = remote()->transact(CREATE_INPUT_SURFACE, data, &reply);
         if (err != OK) {
-            ALOGW("binder transaction failed: %d", err);
             return err;
         }
 
@@ -332,7 +331,6 @@ public:
         data.writeIntPtr((intptr_t)node);
         err = remote()->transact(SIGNAL_END_OF_INPUT_STREAM, data, &reply);
         if (err != OK) {
-            ALOGW("binder transaction failed: %d", err);
             return err;
         }
 

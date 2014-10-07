@@ -65,7 +65,6 @@ public:
 
     status_t setCamera(const sp<ICamera>& camera, const sp<ICameraRecordingProxy>& proxy)
     {
-        ALOGV("setCamera(%p,%p)", camera.get(), proxy.get());
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeStrongBinder(camera->asBinder());
@@ -76,7 +75,6 @@ public:
 
     sp<IGraphicBufferProducer> querySurfaceMediaSource()
     {
-        ALOGV("Query SurfaceMediaSource");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(QUERY_SURFACE_MEDIASOURCE, data, &reply);
@@ -89,7 +87,6 @@ public:
 
     status_t setPreviewSurface(const sp<IGraphicBufferProducer>& surface)
     {
-        ALOGV("setPreviewSurface(%p)", surface.get());
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeStrongBinder(surface->asBinder());
@@ -99,7 +96,6 @@ public:
 
     status_t init()
     {
-        ALOGV("init");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(INIT, data, &reply);
@@ -108,7 +104,6 @@ public:
 
     status_t setVideoSource(int vs)
     {
-        ALOGV("setVideoSource(%d)", vs);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeInt32(vs);
@@ -118,7 +113,6 @@ public:
 
     status_t setAudioSource(int as)
     {
-        ALOGV("setAudioSource(%d)", as);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeInt32(as);
@@ -128,7 +122,6 @@ public:
 
     status_t setOutputFormat(int of)
     {
-        ALOGV("setOutputFormat(%d)", of);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeInt32(of);
@@ -138,7 +131,6 @@ public:
 
     status_t setVideoEncoder(int ve)
     {
-        ALOGV("setVideoEncoder(%d)", ve);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeInt32(ve);
@@ -148,7 +140,6 @@ public:
 
     status_t setAudioEncoder(int ae)
     {
-        ALOGV("setAudioEncoder(%d)", ae);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeInt32(ae);
@@ -158,7 +149,6 @@ public:
 
     status_t setOutputFile(const char* path)
     {
-        ALOGV("setOutputFile(%s)", path);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeCString(path);
@@ -167,7 +157,6 @@ public:
     }
 
     status_t setOutputFile(int fd, int64_t offset, int64_t length) {
-        ALOGV("setOutputFile(%d, %lld, %lld)", fd, offset, length);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeFileDescriptor(fd);
@@ -179,7 +168,6 @@ public:
 
     status_t setVideoSize(int width, int height)
     {
-        ALOGV("setVideoSize(%dx%d)", width, height);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeInt32(width);
@@ -190,7 +178,6 @@ public:
 
     status_t setVideoFrameRate(int frames_per_second)
     {
-        ALOGV("setVideoFrameRate(%d)", frames_per_second);
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeInt32(frames_per_second);
@@ -200,7 +187,6 @@ public:
 
     status_t setParameters(const String8& params)
     {
-        ALOGV("setParameter(%s)", params.string());
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeString8(params);
@@ -210,7 +196,6 @@ public:
 
     status_t setListener(const sp<IMediaRecorderClient>& listener)
     {
-        ALOGV("setListener(%p)", listener.get());
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeStrongBinder(listener->asBinder());
@@ -220,7 +205,6 @@ public:
 
     status_t setClientName(const String16& clientName)
     {
-        ALOGV("setClientName(%s)", String8(clientName).string());
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         data.writeString16(clientName);
@@ -230,7 +214,6 @@ public:
 
     status_t prepare()
     {
-        ALOGV("prepare");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(PREPARE, data, &reply);
@@ -239,7 +222,6 @@ public:
 
     status_t getMaxAmplitude(int* max)
     {
-        ALOGV("getMaxAmplitude");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(GET_MAX_AMPLITUDE, data, &reply);
@@ -249,7 +231,6 @@ public:
 
     status_t start()
     {
-        ALOGV("start");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(START, data, &reply);
@@ -258,7 +239,6 @@ public:
 
     status_t stop()
     {
-        ALOGV("stop");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(STOP, data, &reply);
@@ -267,7 +247,6 @@ public:
 
     status_t reset()
     {
-        ALOGV("reset");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(RESET, data, &reply);
@@ -276,7 +255,6 @@ public:
 
     status_t close()
     {
-        ALOGV("close");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(CLOSE, data, &reply);
@@ -285,7 +263,6 @@ public:
 
     status_t release()
     {
-        ALOGV("release");
         Parcel data, reply;
         data.writeInterfaceToken(IMediaRecorder::getInterfaceDescriptor());
         remote()->transact(RELEASE, data, &reply);
@@ -302,49 +279,41 @@ status_t BnMediaRecorder::onTransact(
 {
     switch (code) {
         case RELEASE: {
-            ALOGV("RELEASE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(release());
             return NO_ERROR;
         } break;
         case INIT: {
-            ALOGV("INIT");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(init());
             return NO_ERROR;
         } break;
         case CLOSE: {
-            ALOGV("CLOSE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(close());
             return NO_ERROR;
         } break;
         case RESET: {
-            ALOGV("RESET");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(reset());
             return NO_ERROR;
         } break;
         case STOP: {
-            ALOGV("STOP");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(stop());
             return NO_ERROR;
         } break;
         case START: {
-            ALOGV("START");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(start());
             return NO_ERROR;
         } break;
         case PREPARE: {
-            ALOGV("PREPARE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(prepare());
             return NO_ERROR;
         } break;
         case GET_MAX_AMPLITUDE: {
-            ALOGV("GET_MAX_AMPLITUDE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int max = 0;
             status_t ret = getMaxAmplitude(&max);
@@ -353,35 +322,30 @@ status_t BnMediaRecorder::onTransact(
             return NO_ERROR;
         } break;
         case SET_VIDEO_SOURCE: {
-            ALOGV("SET_VIDEO_SOURCE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int vs = data.readInt32();
             reply->writeInt32(setVideoSource(vs));
             return NO_ERROR;
         } break;
         case SET_AUDIO_SOURCE: {
-            ALOGV("SET_AUDIO_SOURCE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int as = data.readInt32();
             reply->writeInt32(setAudioSource(as));
             return NO_ERROR;
         } break;
         case SET_OUTPUT_FORMAT: {
-            ALOGV("SET_OUTPUT_FORMAT");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int of = data.readInt32();
             reply->writeInt32(setOutputFormat(of));
             return NO_ERROR;
         } break;
         case SET_VIDEO_ENCODER: {
-            ALOGV("SET_VIDEO_ENCODER");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int ve = data.readInt32();
             reply->writeInt32(setVideoEncoder(ve));
             return NO_ERROR;
         } break;
         case SET_AUDIO_ENCODER: {
-            ALOGV("SET_AUDIO_ENCODER");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int ae = data.readInt32();
             reply->writeInt32(setAudioEncoder(ae));
@@ -389,14 +353,12 @@ status_t BnMediaRecorder::onTransact(
 
         } break;
         case SET_OUTPUT_FILE_PATH: {
-            ALOGV("SET_OUTPUT_FILE_PATH");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             const char* path = data.readCString();
             reply->writeInt32(setOutputFile(path));
             return NO_ERROR;
         } break;
         case SET_OUTPUT_FILE_FD: {
-            ALOGV("SET_OUTPUT_FILE_FD");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int fd = dup(data.readFileDescriptor());
             int64_t offset = data.readInt64();
@@ -406,7 +368,6 @@ status_t BnMediaRecorder::onTransact(
             return NO_ERROR;
         } break;
         case SET_VIDEO_SIZE: {
-            ALOGV("SET_VIDEO_SIZE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int width = data.readInt32();
             int height = data.readInt32();
@@ -414,20 +375,17 @@ status_t BnMediaRecorder::onTransact(
             return NO_ERROR;
         } break;
         case SET_VIDEO_FRAMERATE: {
-            ALOGV("SET_VIDEO_FRAMERATE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             int frames_per_second = data.readInt32();
             reply->writeInt32(setVideoFrameRate(frames_per_second));
             return NO_ERROR;
         } break;
         case SET_PARAMETERS: {
-            ALOGV("SET_PARAMETER");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(setParameters(data.readString8()));
             return NO_ERROR;
         } break;
         case SET_LISTENER: {
-            ALOGV("SET_LISTENER");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             sp<IMediaRecorderClient> listener =
                 interface_cast<IMediaRecorderClient>(data.readStrongBinder());
@@ -435,20 +393,17 @@ status_t BnMediaRecorder::onTransact(
             return NO_ERROR;
         } break;
         case SET_CLIENT_NAME: {
-            ALOGV("SET_CLIENT_NAME");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             reply->writeInt32(setClientName(data.readString16()));
             return NO_ERROR;
         }
         case SET_PREVIEW_SURFACE: {
-            ALOGV("SET_PREVIEW_SURFACE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             sp<IGraphicBufferProducer> surface = interface_cast<IGraphicBufferProducer>(data.readStrongBinder());
             reply->writeInt32(setPreviewSurface(surface));
             return NO_ERROR;
         } break;
         case SET_CAMERA: {
-            ALOGV("SET_CAMERA");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             sp<ICamera> camera = interface_cast<ICamera>(data.readStrongBinder());
             sp<ICameraRecordingProxy> proxy =
@@ -457,7 +412,6 @@ status_t BnMediaRecorder::onTransact(
             return NO_ERROR;
         } break;
         case QUERY_SURFACE_MEDIASOURCE: {
-            ALOGV("QUERY_SURFACE_MEDIASOURCE");
             CHECK_INTERFACE(IMediaRecorder, data, reply);
             // call the mediaserver side to create
             // a surfacemediasource

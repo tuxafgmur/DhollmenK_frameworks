@@ -34,14 +34,12 @@ namespace android {
 StagefrightMetadataRetriever::StagefrightMetadataRetriever()
     : mParsedMetaData(false),
       mAlbumArt(NULL) {
-    ALOGV("StagefrightMetadataRetriever()");
 
     DataSource::RegisterDefaultSniffers();
     CHECK_EQ(mClient.connect(), (status_t)OK);
 }
 
 StagefrightMetadataRetriever::~StagefrightMetadataRetriever() {
-    ALOGV("~StagefrightMetadataRetriever()");
 
     delete mAlbumArt;
     mAlbumArt = NULL;
@@ -51,7 +49,6 @@ StagefrightMetadataRetriever::~StagefrightMetadataRetriever() {
 
 status_t StagefrightMetadataRetriever::setDataSource(
         const char *uri, const KeyedVector<String8, String8> *headers) {
-    ALOGV("setDataSource(%s)", uri);
 
     mParsedMetaData = false;
     mMetaData.clear();
@@ -82,8 +79,6 @@ status_t StagefrightMetadataRetriever::setDataSource(
 status_t StagefrightMetadataRetriever::setDataSource(
         int fd, int64_t offset, int64_t length) {
     fd = dup(fd);
-
-    ALOGV("setDataSource(%d, %lld, %lld)", fd, offset, length);
 
     mParsedMetaData = false;
     mMetaData.clear();
@@ -167,7 +162,6 @@ static VideoFrame *extractVideoFrameWithCodecFlags(
 
     if (decoder.get() == NULL) {
         ALOGV("unable to instantiate video decoder.");
-
         return NULL;
     }
 
@@ -216,14 +210,11 @@ static VideoFrame *extractVideoFrameWithCodecFlags(
 
     if (err != OK) {
         CHECK(buffer == NULL);
-
         ALOGV("decoding frame failed.");
         decoder->stop();
 
         return NULL;
     }
-
-    ALOGV("successfully decoded video frame.");
 
     int32_t unreadable;
     if (buffer->meta_data()->findInt32(kKeyIsUnreadable, &unreadable)
@@ -245,9 +236,6 @@ static VideoFrame *extractVideoFrameWithCodecFlags(
         if (timeUs != thumbNailTime) {
             const char *mime;
             CHECK(trackMeta->findCString(kKeyMIMEType, &mime));
-
-            ALOGV("thumbNailTime = %lld us, timeUs = %lld us, mime = %s",
-                 thumbNailTime, timeUs, mime);
         }
     }
 
@@ -329,8 +317,6 @@ static VideoFrame *extractVideoFrameWithCodecFlags(
 VideoFrame *StagefrightMetadataRetriever::getFrameAtTime(
         int64_t timeUs, int option) {
 
-    ALOGV("getFrameAtTime: %lld us option: %d", timeUs, option);
-
     if (mExtractor.get() == NULL) {
         ALOGV("no extractor.");
         return NULL;
@@ -409,8 +395,6 @@ VideoFrame *StagefrightMetadataRetriever::getFrameAtTime(
 }
 
 MediaAlbumArt *StagefrightMetadataRetriever::extractAlbumArt() {
-    ALOGV("extractAlbumArt (extractor: %s)", mExtractor.get() != NULL ? "YES" : "NO");
-
     if (mExtractor == NULL) {
         return NULL;
     }

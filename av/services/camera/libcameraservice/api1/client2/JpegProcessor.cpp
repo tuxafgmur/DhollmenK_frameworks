@@ -207,7 +207,6 @@ status_t JpegProcessor::processNewCapture() {
     {
         Mutex::Autolock l(mInputMutex);
         if (mCaptureStreamId == NO_STREAM) {
-            ALOGW("%s: Camera %d: No stream is available", __FUNCTION__, mId);
             return INVALID_OPERATION;
         }
 
@@ -221,8 +220,6 @@ status_t JpegProcessor::processNewCapture() {
             return res;
         }
 
-        ALOGV("%s: Camera %d: Still capture available", __FUNCTION__,
-                mId);
 
         if (imgBuffer.format != HAL_PIXEL_FORMAT_BLOB) {
             ALOGE("%s: Camera %d: Unexpected format for still image: "

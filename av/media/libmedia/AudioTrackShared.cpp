@@ -102,13 +102,11 @@ status_t ClientProxy::obtainBuffer(Buffer* buffer, const struct timespec *reques
         int32_t flags = android_atomic_and(~CBLK_INTERRUPT, &cblk->mFlags);
         // check for track invalidation by server, or server death detection
         if (flags & CBLK_INVALID) {
-            ALOGV("Track invalidated");
             status = DEAD_OBJECT;
             goto end;
         }
         // check for obtainBuffer interrupted by client
         if (!ignoreInitialPendingInterrupt && (flags & CBLK_INTERRUPT)) {
-            ALOGV("obtainBuffer() interrupted by client");
             status = -EINTR;
             goto end;
         }
@@ -258,11 +256,6 @@ end:
     if (requested == NULL) {
         requested = &kNonBlocking;
     }
-    if (measure) {
-        ALOGV("requested %ld.%03ld elapsed %ld.%03ld",
-              requested->tv_sec, requested->tv_nsec / 1000000,
-              total.tv_sec, total.tv_nsec / 1000000);
-    }
     return status;
 }
 
@@ -378,19 +371,16 @@ status_t AudioTrackClientProxy::waitStreamEndDone(const struct timespec *request
         int32_t flags = android_atomic_and(~(CBLK_INTERRUPT|CBLK_STREAM_END_DONE), &cblk->mFlags);
         // check for track invalidation by server, or server death detection
         if (flags & CBLK_INVALID) {
-            ALOGV("Track invalidated");
             status = DEAD_OBJECT;
             goto end;
         }
         if (flags & CBLK_STREAM_END_DONE) {
-            ALOGV("stream end received");
             status = NO_ERROR;
             goto end;
         }
         // check for obtainBuffer interrupted by client
         // check for obtainBuffer interrupted by client
         if (flags & CBLK_INTERRUPT) {
-            ALOGV("waitStreamEndDone() interrupted by client");
             status = -EINTR;
             goto end;
         }
@@ -630,7 +620,6 @@ void ServerProxy::releaseBuffer(Buffer* buffer)
     }
     // FIXME AudioRecord wakeup needs to be optimized; it currently wakes up client every time
     if (!mIsOut || (mAvailToClient + stepCount >= minimum)) {
-        ALOGV("mAvailToClient=%u stepCount=%u minimum=%u", mAvailToClient, stepCount, minimum);
         int32_t old = android_atomic_or(CBLK_FUTEX_WAKE, &cblk->mFutex);
         if (!(old & CBLK_FUTEX_WAKE)) {
             (void) __futex_syscall3(&cblk->mFutex,

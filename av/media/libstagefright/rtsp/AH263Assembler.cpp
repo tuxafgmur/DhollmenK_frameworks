@@ -78,10 +78,6 @@ ARTPAssembler::AssemblyStatus AH263Assembler::addPacket(
         mNextExpectedSeqNoValid = true;
         mNextExpectedSeqNo = (uint32_t)buffer->int32Data();
     } else if ((uint32_t)buffer->int32Data() != mNextExpectedSeqNo) {
-#if VERBOSE
-        LOG(VERBOSE) << "Not the sequence number I expected";
-#endif
-
         return WRONG_SEQUENCE_NUMBER;
     }
 
@@ -152,10 +148,6 @@ ARTPAssembler::AssemblyStatus AH263Assembler::addPacket(
 void AH263Assembler::submitAccessUnit() {
     CHECK(!mPackets.empty());
 
-#if VERBOSE
-    LOG(VERBOSE) << "Access unit complete (" << mPackets.size() << " packets)";
-#endif
-
     size_t totalSize = 0;
     List<sp<ABuffer> >::iterator it = mPackets.begin();
     while (it != mPackets.end()) {
@@ -180,11 +172,6 @@ void AH263Assembler::submitAccessUnit() {
     }
 
     CopyTimes(accessUnit, *mPackets.begin());
-
-#if 0
-    printf(mAccessUnitDamaged ? "X" : ".");
-    fflush(stdout);
-#endif
 
     if (mAccessUnitDamaged) {
         accessUnit->meta()->setInt32("damaged", true);

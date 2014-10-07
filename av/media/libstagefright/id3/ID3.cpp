@@ -172,7 +172,6 @@ struct id3_header {
     }
 
     if (size > kMaxMetadataSize) {
-        ALOGE("skipping huge ID3 metadata of size %d", size);
         return false;
     }
 
@@ -203,9 +202,6 @@ struct id3_header {
 
             success = removeUnsynchronizationV2_4(true /* iTunesHack */);
 
-            if (success) {
-                ALOGV("Had to apply the iTunes hack to parse this ID3 tag");
-            }
         }
 
         free(copy);
@@ -218,8 +214,6 @@ struct id3_header {
             return false;
         }
     } else if (header.flags & 0x80) {
-        ALOGV("removing unsynchronization");
-
         removeUnsynchronization();
     }
 
@@ -262,9 +256,6 @@ struct id3_header {
                 mSize -= paddingSize;
             }
 
-            if (extendedFlags & 0x8000) {
-                ALOGV("have crc");
-            }
         }
     } else if (header.version_major == 4 && (header.flags & 0x40)) {
         // Version 2.4 has an optional extended header, that's different
@@ -654,8 +645,6 @@ void ID3::Iterator::findFrame() {
             mFrameSize += 6;
 
             if (mOffset + mFrameSize > mParent.mSize) {
-                ALOGV("partial frame at offset %d (size = %d, bytes-remaining = %d)",
-                     mOffset, mFrameSize, mParent.mSize - mOffset - 6);
                 return;
             }
 
@@ -695,8 +684,6 @@ void ID3::Iterator::findFrame() {
             mFrameSize = 10 + baseSize;
 
             if (mOffset + mFrameSize > mParent.mSize) {
-                ALOGV("partial frame at offset %d (size = %d, bytes-remaining = %d)",
-                     mOffset, mFrameSize, mParent.mSize - mOffset - 10);
                 return;
             }
 
@@ -707,9 +694,6 @@ void ID3::Iterator::findFrame() {
                 // Compression or encryption are not supported at this time.
                 // Per-frame unsynchronization and data-length indicator
                 // have already been taken care of.
-
-                ALOGV("Skipping unsupported frame (compression, encryption "
-                     "or per-frame unsynchronization flagged");
 
                 mOffset += mFrameSize;
                 continue;

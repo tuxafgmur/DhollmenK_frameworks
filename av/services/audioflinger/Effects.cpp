@@ -73,7 +73,6 @@ AudioFlinger::EffectModule::EffectModule(ThreadBase *thread,
       mSuspended(false)
 #endif
 {
-    ALOGV("Constructor %p", this);
     int lStatus;
 
     // create effect engine from effect factory
@@ -88,17 +87,14 @@ AudioFlinger::EffectModule::EffectModule(ThreadBase *thread,
         goto Error;
     }
 
-    ALOGV("Constructor success name %s, Interface %p", mDescriptor.name, mEffectInterface);
     return;
 Error:
     EffectRelease(mEffectInterface);
     mEffectInterface = NULL;
-    ALOGV("Constructor Error %d", mStatus);
 }
 
 AudioFlinger::EffectModule::~EffectModule()
 {
-    ALOGV("Destructor %p", this);
     if (mEffectInterface != NULL) {
         remove_effect_from_hal_l();
         // release effect engine
@@ -139,7 +135,6 @@ status_t AudioFlinger::EffectModule::addHandle(EffectHandle *handle)
     } else {
         status = ALREADY_EXISTS;
     }
-    ALOGV("addHandle() %p added handle %p in position %d", this, handle, i);
     mHandles.insertAt(handle, i);
     return status;
 }
@@ -157,7 +152,6 @@ size_t AudioFlinger::EffectModule::removeHandle(EffectHandle *handle)
     if (i == size) {
         return size;
     }
-    ALOGV("removeHandle() %p removed handle %p in position %d", this, handle, i);
 
     mHandles.removeAt(i);
     // if removed from first place, move effect control from this handle to next in line
@@ -194,7 +188,6 @@ AudioFlinger::EffectHandle *AudioFlinger::EffectModule::controlHandle_l()
 
 size_t AudioFlinger::EffectModule::disconnect(EffectHandle *handle, bool unpinIfLast)
 {
-    ALOGV("disconnect() %p handle %p", this, handle);
     // keep a strong reference on this EffectModule to avoid calling the
     // destructor before we exit
     sp<EffectModule> keep(this);
@@ -407,9 +400,6 @@ status_t AudioFlinger::EffectModule::configure()
 #endif
     mConfig.outputCfg.buffer.frameCount = mConfig.inputCfg.buffer.frameCount;
 
-    ALOGV("configure() %p thread %p buffer %p framecount %d",
-            this, thread.get(), mConfig.inputCfg.buffer.raw, mConfig.inputCfg.buffer.frameCount);
-
     size = sizeof(int);
     status = (*mEffectInterface)->command(mEffectInterface,
                                                    EFFECT_CMD_SET_CONFIG,
@@ -566,7 +556,6 @@ status_t AudioFlinger::EffectModule::command(uint32_t cmdCode,
                                              void *pReplyData)
 {
     Mutex::Autolock _l(mLock);
-    ALOGVV("command(), cmdCode: %d, mEffectInterface: %p", cmdCode, mEffectInterface);
 
     if (mState == DESTROYED || mEffectInterface == NULL) {
         return NO_INIT;
@@ -604,7 +593,6 @@ status_t AudioFlinger::EffectModule::setEnabled_l(bool enabled)
 #ifdef QCOM_DIRECTTRACK
     bool effectStateChanged = false;
 #endif
-    ALOGV("setEnabled %p enabled %d", this, enabled);
 
     if (enabled != isEnabled()) {
 #ifdef QCOM_DIRECTTRACK
@@ -860,7 +848,6 @@ status_t AudioFlinger::EffectModule::setOffloaded(bool offloaded, audio_io_handl
         }
         mOffloaded = false;
     }
-    ALOGV("setOffloaded() offloaded %d io %d status %d", offloaded, io, status);
     return status;
 }
 
@@ -970,8 +957,6 @@ AudioFlinger::EffectHandle::EffectHandle(const sp<EffectModule>& effect,
     mEffect(effect), mEffectClient(effectClient), mClient(client), mCblk(NULL),
     mPriority(priority), mHasControl(false), mEnabled(false), mDestroyed(false)
 {
-    ALOGV("constructor %p", this);
-
     if (client == 0) {
         return;
     }
@@ -993,8 +978,6 @@ AudioFlinger::EffectHandle::EffectHandle(const sp<EffectModule>& effect,
 
 AudioFlinger::EffectHandle::~EffectHandle()
 {
-    ALOGV("Destructor %p", this);
-
     if (mEffect == 0) {
         mDestroyed = true;
         return;
@@ -1007,7 +990,6 @@ AudioFlinger::EffectHandle::~EffectHandle()
 
 status_t AudioFlinger::EffectHandle::enable()
 {
-    ALOGV("enable %p", this);
     if (!mHasControl) {
         return INVALID_OPERATION;
     }
@@ -1060,7 +1042,6 @@ status_t AudioFlinger::EffectHandle::enable()
 
 status_t AudioFlinger::EffectHandle::disable()
 {
-    ALOGV("disable %p", this);
     if (!mHasControl) {
         return INVALID_OPERATION;
     }
@@ -1099,7 +1080,6 @@ void AudioFlinger::EffectHandle::disconnect()
 
 void AudioFlinger::EffectHandle::disconnect(bool unpinIfLast)
 {
-    ALOGV("disconnect(%s)", unpinIfLast ? "true" : "false");
     if (mEffect == 0) {
         return;
     }
@@ -1131,9 +1111,6 @@ status_t AudioFlinger::EffectHandle::command(uint32_t cmdCode,
                                              uint32_t *replySize,
                                              void *pReplyData)
 {
-    ALOGVV("command(), cmdCode: %d, mHasControl: %d, mEffect: %p",
-            cmdCode, mHasControl, (mEffect == 0) ? 0 : mEffect.get());
-
     // only get parameter command is permitted for applications not controlling the effect
     if (!mHasControl && cmdCode != EFFECT_CMD_GET_PARAM) {
         return INVALID_OPERATION;
@@ -1210,7 +1187,6 @@ status_t AudioFlinger::EffectHandle::command(uint32_t cmdCode,
         (cmdCode == EFFECT_CMD_SET_VOLUME) || (cmdCode == EFFECT_CMD_SET_AUDIO_MODE)) ) {
         // Notify Direct track for the change in Effect module
         // TODO: check if it is required to send mLPAHandle
-        ALOGV("Notifying Direct Track for the change in effect config %d", cmdCode);
         mClient->audioFlinger()->audioConfigChanged_l(AudioSystem::EFFECT_CONFIG_CHANGED, 0, NULL);
     }
 #endif
@@ -1219,8 +1195,6 @@ status_t AudioFlinger::EffectHandle::command(uint32_t cmdCode,
 
 void AudioFlinger::EffectHandle::setControl(bool hasControl, bool signal, bool enabled)
 {
-    ALOGV("setControl %p control %d", this, hasControl);
-
     mHasControl = hasControl;
     mEnabled = enabled;
 
@@ -1533,8 +1507,6 @@ status_t AudioFlinger::EffectChain::addEffect_l(const sp<EffectModule>& effect)
         }
         mEffects.insertAt(effect, idx_insert);
 
-        ALOGV("addEffect_l() effect %p, added in chain %p at rank %d", effect.get(), this,
-                idx_insert);
     }
     effect->configure();
     return NO_ERROR;
@@ -1565,8 +1537,6 @@ size_t AudioFlinger::EffectChain::removeEffect_l(const sp<EffectModule>& effect)
                 }
             }
             mEffects.removeAt(i);
-            ALOGV("removeEffect_l() effect %p, removed from chain %p at rank %d", effect.get(),
-                    this, i);
             break;
         }
     }
@@ -1712,7 +1682,6 @@ void AudioFlinger::EffectChain::setEffectSuspended_l(
             desc = new SuspendedEffectDesc();
             desc->mType = *type;
             mSuspendedEffects.add(type->timeLow, desc);
-            ALOGV("setEffectSuspended_l() add entry for %08x", type->timeLow);
         }
         if (desc->mRefCount++ == 0) {
             sp<EffectModule> effect = getEffectIfEnabled(type);
@@ -1732,7 +1701,6 @@ void AudioFlinger::EffectChain::setEffectSuspended_l(
             desc->mRefCount = 1;
         }
         if (--desc->mRefCount == 0) {
-            ALOGV("setEffectSuspended_l() remove entry for %08x", mSuspendedEffects.keyAt(index));
             if (desc->mEffect != 0) {
                 sp<EffectModule> effect = desc->mEffect.promote();
                 if (effect != 0) {
@@ -1763,7 +1731,6 @@ void AudioFlinger::EffectChain::setEffectSuspendedAll_l(bool suspend)
         } else {
             desc = new SuspendedEffectDesc();
             mSuspendedEffects.add((int)kKeyForSuspendAll, desc);
-            ALOGV("setEffectSuspendedAll_l() add entry for 0");
         }
         if (desc->mRefCount++ == 0) {
             Vector< sp<EffectModule> > effects;
@@ -1792,8 +1759,6 @@ void AudioFlinger::EffectChain::setEffectSuspendedAll_l(bool suspend)
             for (size_t i = 0; i < types.size(); i++) {
                 setEffectSuspended_l(types[i], false);
             }
-            ALOGV("setEffectSuspendedAll_l() remove entry for %08x",
-                    mSuspendedEffects.keyAt(index));
             mSuspendedEffects.removeItem((int)kKeyForSuspendAll);
         }
     }
@@ -1858,8 +1823,6 @@ void AudioFlinger::EffectChain::checkSuspendOnEffectEnabled(const sp<EffectModul
                 return;
             }
         }
-        ALOGV("checkSuspendOnEffectEnabled() enable suspending fx %08x",
-            effect->desc().type.timeLow);
         sp<SuspendedEffectDesc> desc = mSuspendedEffects.valueAt(index);
         // if effect is requested to suspended but was not yet enabled, supend it now.
         if (desc->mEffect == 0) {
@@ -1871,8 +1834,6 @@ void AudioFlinger::EffectChain::checkSuspendOnEffectEnabled(const sp<EffectModul
         if (index < 0) {
             return;
         }
-        ALOGV("checkSuspendOnEffectEnabled() disable restoring fx %08x",
-            effect->desc().type.timeLow);
         sp<SuspendedEffectDesc> desc = mSuspendedEffects.valueAt(index);
         desc->mEffect.clear();
         effect->setSuspended(false);
@@ -1897,7 +1858,6 @@ bool AudioFlinger::EffectChain::isNonOffloadableEnabled()
 bool AudioFlinger::applyEffectsOn(void *token, int16_t *inBuffer,
                             int16_t *outBuffer, int size, bool force)
 {
-    ALOGV("applyEffectsOn: inBuf %p outBuf %p size %d token %p", inBuffer, outBuffer, size, token);
     // This might be the first buffer to apply effects after effect config change
     // should not skip effects processing
     mIsEffectConfigChanged = false;
@@ -1917,7 +1877,6 @@ bool AudioFlinger::applyEffectsOn(void *token, int16_t *inBuffer,
 
         while(frameCount > 0) {
             if(mLPAEffectChain == NULL) {
-                ALOGV("LPA Effect Chain is removed - No effects processing !!");
                 numEffects = 0;
                 break;
             }
@@ -1925,7 +1884,6 @@ bool AudioFlinger::applyEffectsOn(void *token, int16_t *inBuffer,
 
             numEffects = mLPAEffectChain->getNumEffects();
             if(!numEffects) {
-                ALOGV("applyEffectsOn: All the effects are removed - nothing to process");
                 mLPAEffectChain->unlock();
                 break;
             }
@@ -1936,7 +1894,6 @@ bool AudioFlinger::applyEffectsOn(void *token, int16_t *inBuffer,
                 // If effect configuration is changed while applying effects do not process further
                 if(mIsEffectConfigChanged && !force) {
                     mLPAEffectChain->unlock();
-                    ALOGV("applyEffectsOn: mIsEffectConfigChanged is set - no further processing %d",frameCount);
                     return false;
                 }
                 sp<EffectModule> effect = mLPAEffectChain->getEffectFromIndex_l(i);
@@ -1979,7 +1936,6 @@ bool AudioFlinger::applyEffectsOn(void *token, int16_t *inBuffer,
     }
 
     if (!numEffects && !force) {
-        ALOGV("applyEffectsOn: There are no effects to be applied");
         if(inBuffer != outBuffer) {
             // No effect applied so just copy input buffer to output buffer
             memcpy(outBuffer, inBuffer, size);
@@ -2008,7 +1964,6 @@ void AudioFlinger::DirectAudioTrack::EffectsThreadEntry() {
             if (mFlag & AUDIO_OUTPUT_FLAG_LPA) {
                 for ( List<BufferInfo>::iterator it = mEffectsPool.begin();
                       it != mEffectsPool.end(); it++) {
-                    ALOGV("ete: calling applyEffectsOn buff %x",it->localBuf);
                     bool isEffectsApplied = mAudioFlinger->applyEffectsOn(
                                     static_cast<void *>(this),
                                     (int16_t *)it->localBuf,
@@ -2016,11 +1971,8 @@ void AudioFlinger::DirectAudioTrack::EffectsThreadEntry() {
                                     it->bytesToWrite,
                                     false);
                     if (isEffectsApplied == true){
-                        ALOGV("ete:dsp updated for local buf %x",it->localBuf);
                         memcpy(it->dspBuf, mEffectsThreadScratchBuffer, it->bytesToWrite);
                     }
-                    else
-                        ALOGV("ete:dsp updated for local buf %x SKIPPED",it->localBuf);
 
                     if (mEffectConfigChanged) {
                         ALOGE("ete:effects changed, abort effects application");
@@ -2031,7 +1983,6 @@ void AudioFlinger::DirectAudioTrack::EffectsThreadEntry() {
         }
         mEffectLock.unlock();
     }
-    ALOGV("Effects thread is dead");
     mEffectsThreadAlive = false;
 }
 
@@ -2041,7 +1992,6 @@ void AudioFlinger::DirectAudioTrack::requestAndWaitForEffectsThreadExit() {
     mKillEffectsThread = true;
     mEffectCv.signal();
     pthread_join(mEffectsThread,NULL);
-    ALOGV("effects thread killed");
 }
 
 void AudioFlinger::DirectAudioTrack::createEffectThread() {
@@ -2050,7 +2000,6 @@ void AudioFlinger::DirectAudioTrack::createEffectThread() {
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
     mEffectsThreadAlive = true;
-    ALOGV("Creating Effects Thread");
     pthread_create(&mEffectsThread, &attr, EffectsThreadWrapper, this);
 }
 #endif

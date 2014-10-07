@@ -121,23 +121,19 @@ status_t ExtendedCodec::convertMetaDataToMessage(
     for (i = 0; i < numMetaKeys; ++i) {
         if (MetaKeyTable[i].KeyType == INT32 &&
             meta->findInt32(MetaKeyTable[i].MetaKey, &int32_val)) {
-            ALOGV("found metakey %s of type int32", MetaKeyTable[i].MsgKey);
             format->get()->setInt32(MetaKeyTable[i].MsgKey, int32_val);
         }
         else if (MetaKeyTable[i].KeyType == INT64 &&
                  meta->findInt64(MetaKeyTable[i].MetaKey, &int64_val)) {
-            ALOGV("found metakey %s of type int64", MetaKeyTable[i].MsgKey);
             format->get()->setInt64(MetaKeyTable[i].MsgKey, int64_val);
         }
         else if (MetaKeyTable[i].KeyType == STRING &&
                  meta->findCString(MetaKeyTable[i].MetaKey, &str_val)) {
-            ALOGV("found metakey %s of type string", MetaKeyTable[i].MsgKey);
             format->get()->setString(MetaKeyTable[i].MsgKey, str_val);
         }
         else if ( (MetaKeyTable[i].KeyType == DATA ||
                    MetaKeyTable[i].KeyType == CSD) &&
                    meta->findData(MetaKeyTable[i].MetaKey, &data_type, &data, &size)) {
-            ALOGV("found metakey %s of type data", MetaKeyTable[i].MsgKey);
             sp<ABuffer> buffer = new ABuffer(size);
             memcpy(buffer->data(), data, size);
             if (MetaKeyTable[i].KeyType == CSD) {
@@ -214,13 +210,11 @@ status_t ExtendedCodec::setDIVXFormat(
     if (!strcasecmp(MEDIA_MIMETYPE_VIDEO_DIVX, mime) ||
         !strcasecmp(MEDIA_MIMETYPE_VIDEO_DIVX4, mime) ||
         !strcasecmp(MEDIA_MIMETYPE_VIDEO_DIVX311, mime)) {
-        ALOGV("Setting the QOMX_VIDEO_PARAM_DIVXTYPE params ");
         QOMX_VIDEO_PARAM_DIVXTYPE paramDivX;
         InitOMXParams(&paramDivX);
         paramDivX.nPortIndex = port_index;
         int32_t DivxVersion = 0;
         CHECK(msg->findInt32(getMsgKey(kKeyDivXVersion),&DivxVersion));
-        ALOGV("Divx Version Type %d\n",DivxVersion);
 
         if(DivxVersion == kTypeDivXVer_4) {
             paramDivX.eFormat = QOMX_VIDEO_DIVXFormat4;
@@ -247,16 +241,12 @@ void ExtendedCodec::getRawCodecSpecificData(
         const sp<MetaData> &meta, const void* &data, size_t &size) {
     uint32_t type = 0;
     size = 0;
-    if (meta->findData(kKeyRawCodecSpecificData, &type, &data, &size)) {
-        ALOGV("OMXCodec::configureCodec found kKeyRawCodecSpecificData of size %d\n", size);
-    }
 }
 
 sp<ABuffer> ExtendedCodec::getRawCodecSpecificData(
         const sp<AMessage> &msg) {
     sp<ABuffer> buffer;
     if (msg->findBuffer(getMsgKey(kKeyRawCodecSpecificData), &buffer)) {
-        ALOGV("ACodec found kKeyRawCodecSpecificData of size %d\n", buffer->size());
         return buffer;
     }
     return NULL;
@@ -266,16 +256,12 @@ void ExtendedCodec::getAacCodecSpecificData(
         const sp<MetaData> &meta, const void* &data, size_t &size) {
     uint32_t type = 0;
     size = 0;
-    if (meta->findData(kKeyAacCodecSpecificData, &type, &data, &size)) {
-        ALOGV("OMXCodec::configureCodec found kKeyAacCodecSpecificData of size %d\n", size);
-    }
 }
 
 sp<ABuffer> ExtendedCodec::getAacCodecSpecificData(
         const sp<AMessage> &msg) {
     sp<ABuffer> buffer;
     if (msg->findBuffer(getMsgKey(kKeyAacCodecSpecificData), &buffer)) {
-        ALOGV("ACodec found kKeyAacCodecSpecificData of size %d\n", buffer->size());
         return buffer;
     }
     return NULL;
@@ -293,7 +279,6 @@ status_t ExtendedCodec::setAudioFormat(
 status_t ExtendedCodec::setAudioFormat(
         const sp<AMessage> &msg, const char* mime, sp<IOMX> OMXhandle,
         IOMX::node_id nodeID, bool isEncoder ) {
-    ALOGV("setAudioFormat called");
     status_t err = OK;
 
     if ((!strcasecmp(MEDIA_MIMETYPE_AUDIO_AC3, mime)) ||
@@ -364,7 +349,6 @@ status_t ExtendedCodec::setVideoOutputFormat(
 status_t ExtendedCodec::setSupportedRole(
         const sp<IOMX> &omx, IOMX::node_id node,
         bool isEncoder, const char *mime){
-    ALOGV("setSupportedRole Called %s", mime);
     struct MimeToRole {
         const char *mime;
         const char *decoderRole;
@@ -460,7 +444,6 @@ status_t ExtendedCodec::getSupportedAudioFormatInfo(
 }
 
 status_t ExtendedCodec::handleSupportedAudioFormats(int format, AString* mime) {
-    ALOGV("checkQCFormats called");
     status_t retVal = OK;
     if (format == OMX_AUDIO_CodingQCELP13 ) {
         *mime = MEDIA_MIMETYPE_AUDIO_QCELP;
@@ -488,17 +471,11 @@ void ExtendedCodec::configureFramePackingFormat(
     }
 
     if (useFrameByFrameMode) {
-        ALOGI("Enable frame by frame mode");
         OMX_QCOM_PARAM_PORTDEFINITIONTYPE portFmt;
         portFmt.nPortIndex = kPortIndexInput;
         portFmt.nFramePackingFormat = OMX_QCOM_FramePacking_OnlyOneCompleteFrame;
         status_t err = OMXhandle->setParameter(
         nodeID, (OMX_INDEXTYPE)OMX_QcomIndexPortDefn, (void *)&portFmt, sizeof(portFmt));
-        if(err != OK) {
-            ALOGW("Failed to set frame packing format on component");
-        }
-    } else {
-        ALOGI("Decoder should be in arbitrary mode");
     }
 }
 
@@ -531,7 +508,6 @@ void ExtendedCodec::configureVideoDecoder(
     if (!strcmp(componentName, "OMX.qcom.video.decoder.vc1") ||
         !strcmp(componentName, "OMX.qcom.video.decoder.mpeg4") ||
         (fileFormatCStr!= NULL && !strncmp(fileFormatCStr, "video/avi", 9))) {
-        ALOGI("Enabling timestamp reordering");
         QOMX_INDEXTIMESTAMPREORDER reorder;
         InitOMXParams(&reorder);
         reorder.nPortIndex = kPortIndexOutput;
@@ -547,7 +523,6 @@ void ExtendedCodec::configureVideoDecoder(
 
     // Enable Sync-frame decode mode for thumbnails
     if (flags & OMXCodec::kClientNeedsFramebuffer) {
-        ALOGV("Enabling thumbnail mode.");
         QOMX_ENABLETYPE enableType;
         OMX_INDEXTYPE indexType;
 
@@ -566,7 +541,6 @@ void ExtendedCodec::configureVideoDecoder(
             ALOGW("Failed to get extension for SYNCFRAMEDECODINGMODE");
             return;
         }
-        ALOGI("Thumbnail mode enabled.");
     }
 
 }
@@ -602,7 +576,6 @@ void ExtendedCodec::enableSmoothStreaming(
         return;
     }
     *isEnabled = true;
-    ALOGI("Smoothstreaming Enabled");
     return;
 }
 
@@ -610,7 +583,6 @@ void ExtendedCodec::enableSmoothStreaming(
 void ExtendedCodec::setEVRCFormat(
         int32_t numChannels, int32_t sampleRate, sp<IOMX> OMXhandle,
         IOMX::node_id nodeID, bool isEncoder ) {
-    ALOGV("setEVRCFormat called");
 
     if (isEncoder) {
         CHECK(numChannels == 1);
@@ -655,9 +627,6 @@ void ExtendedCodec::setEVRCFormat(
         profile.nChannels = numChannels;
         CHECK_EQ(OMXhandle->setParameter(nodeID, OMX_IndexParamAudioEvrc,
                 &profile, sizeof(profile)), (status_t)OK);
-    }
-    else{
-      ALOGI("EVRC decoder \n");
     }
 }
 
@@ -709,9 +678,6 @@ void ExtendedCodec::setQCELPFormat(
         CHECK_EQ(OMXhandle->setParameter(nodeID, OMX_IndexParamAudioQcelp13,
                 &profile, sizeof(profile)), (status_t)OK);
     }
-    else {
-        ALOGI("QCELP decoder \n");
-    }
 }
 
 status_t ExtendedCodec::setWMAFormat(
@@ -726,7 +692,6 @@ status_t ExtendedCodec::setWMAFormat(
 status_t ExtendedCodec::setWMAFormat(
         const sp<AMessage> &msg, sp<IOMX> OMXhandle,
         IOMX::node_id nodeID, bool isEncoder ) {
-    ALOGV("setWMAFormat Called");
 
     if (isEncoder) {
         ALOGE("WMA encoding not supported");
@@ -765,19 +730,10 @@ status_t ExtendedCodec::setWMAFormat(
         CHECK(msg->findInt32(getMsgKey(kKeyBitRate), &bitRate));
         CHECK(msg->findInt32(getMsgKey(kKeyWMAEncodeOpt), &encodeOptions));
         CHECK(msg->findInt32(getMsgKey(kKeyWMABlockAlign), &blockAlign));
-        ALOGV("Channels: %d, SampleRate: %d, BitRate; %d"
-                   "EncodeOptions: %d, blockAlign: %d", numChannels,
-                   sampleRate, bitRate, encodeOptions, blockAlign);
         if(sampleRate>48000 || numChannels>2)
         {
             ALOGE("Unsupported samplerate/channels");
             return ERROR_UNSUPPORTED;
-        }
-        if(version==kTypeWMAPro || version==kTypeWMALossLess)
-        {
-            ALOGV("Bitspersample: %d, wmaformattag: %d,"
-                       "advencopt1: %d, advencopt2: %d VirtualPktSize %d", bitspersample,
-                       formattag, advencopt1, advencopt2, VirtualPktSize);
         }
         status_t err = OK;
         OMX_INDEXTYPE index;
@@ -832,7 +788,6 @@ void ExtendedCodec::setAC3Format(
     OMX_PARAM_PORTDEFINITIONTYPE portParam;
 
     //configure input port
-    ALOGV("setAC3Format samplerate %d, numChannels %d", sampleRate, numChannels);
     InitOMXParams(&portParam);
     portParam.nPortIndex = 0;
     status_t err = OMXhandle->getParameter(
@@ -861,8 +816,6 @@ void ExtendedCodec::setAC3Format(
     profileAC3.nSamplingRate  =  sampleRate;
     profileAC3.nChannels      =  2;
     profileAC3.eChannelConfig =  OMX_AUDIO_AC3_CHANNEL_CONFIG_2_0;
-
-    ALOGV("numChannels = %d, profileAC3.nChannels = %d", numChannels, profileAC3.nChannels);
 
     err = OMXhandle->setParameter(nodeID, indexTypeAC3, &profileAC3, sizeof(profileAC3));
     CHECK_EQ(err,(status_t)OK);
@@ -909,7 +862,6 @@ bool ExtendedCodec::useHWAACDecoder(const char *mime) {
     aaccodectype = property_get("media.aaccodectype", value, NULL);
     if (aaccodectype && !strncmp("0", value, 1) &&
         !strncmp(mime, MEDIA_MIMETYPE_AUDIO_AAC,sizeof(MEDIA_MIMETYPE_AUDIO_AAC))) {
-        ALOGI("Using Hardware AAC Decoder");
         return true;
     }
     return false;
