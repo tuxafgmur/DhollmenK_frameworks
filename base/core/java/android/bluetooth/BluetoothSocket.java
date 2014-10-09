@@ -86,7 +86,7 @@ import java.nio.ByteBuffer;
  */
 public final class BluetoothSocket implements Closeable {
     private static final String TAG = "BluetoothSocket";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     /** @hide */
@@ -389,7 +389,6 @@ public final class BluetoothSocket implements Closeable {
         BluetoothSocket acceptedSocket;
         if (mSocketState != SocketState.LISTENING) throw new IOException("bt socket is not in listen state");
         if(timeout > 0) {
-            Log.d(TAG, "accept() set timeout (ms):" + timeout);
            mSocket.setSoTimeout(timeout);
         }
         String RemoteAddr = waitSocketSignal(mSocketIS);
@@ -507,9 +506,6 @@ public final class BluetoothSocket implements Closeable {
             if(ret <= 0)
                  throw new IOException("read failed, socket might closed or timeout, read ret: " + ret);
             left -= ret;
-            if(left != 0)
-                Log.w(TAG, "readAll() looping, read partial size: " + (b.length - left) +
-                            ", expect size: " + b.length);
         }
         return b.length;
     }

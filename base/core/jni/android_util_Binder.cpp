@@ -156,8 +156,6 @@ static void incRefsCreated(JNIEnv* env)
         android_atomic_and(0, &gNumRefsCreated);
         env->CallStaticVoidMethod(gBinderInternalOffsets.mClass,
                 gBinderInternalOffsets.mForceGc);
-    } else {
-        ALOGV("Now have %d binder ops", old);
     }
 }
 
@@ -228,7 +226,6 @@ public:
     JavaBBinder(JNIEnv* env, jobject object)
         : mVM(jnienv_to_javavm(env)), mObject(env->NewGlobalRef(object))
     {
-        ALOGV("Creating JavaBBinder %p\n", this);
         android_atomic_inc(&gNumLocalRefs);
         incRefsCreated(env);
     }
@@ -246,7 +243,6 @@ public:
 protected:
     virtual ~JavaBBinder()
     {
-        ALOGV("Destroying JavaBBinder %p\n", this);
         android_atomic_dec(&gNumLocalRefs);
         JNIEnv* env = javavm_to_jnienv(mVM);
         env->DeleteGlobalRef(mObject);
@@ -256,8 +252,6 @@ protected:
         uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags = 0)
     {
         JNIEnv* env = javavm_to_jnienv(mVM);
-
-        ALOGV("onTransact() on %p calling object %p in env %p vm %p\n", this, mObject, env, mVM);
 
         IPCThreadState* thread_state = IPCThreadState::self();
         const int strict_policy_before = thread_state->getStrictModePolicy();
@@ -334,8 +328,6 @@ public:
         if (b == NULL) {
             b = new JavaBBinder(env, obj);
             mBinder = b;
-            ALOGV("Creating JavaBinder %p (refs %p) for Object %p, weakCount=%d\n",
-                 b.get(), b->getWeakRefs(), obj, b->getWeakRefs()->getWeakCount());
         }
 
         return b;
@@ -461,7 +453,6 @@ public:
 protected:
     virtual ~JavaDeathRecipient()
     {
-        //ALOGI("Removing death ref: recipient=%p\n", mObject);
         android_atomic_dec(&gNumDeathRefs);
         JNIEnv* env = javavm_to_jnienv(mVM);
         if (mObject != NULL) {
@@ -564,7 +555,6 @@ jobject javaObjectForIBinder(JNIEnv* env, const sp<IBinder>& val)
     if (object != NULL) {
         jobject res = jniGetReferent(env, object);
         if (res != NULL) {
-            ALOGV("objectForBinder %p: found existing %p!\n", val.get(), res);
             return res;
         }
         LOGDEATH("Proxy object %p of IBinder %p no longer in working set!!!", object, val.get());
@@ -615,7 +605,6 @@ sp<IBinder> ibinderForJavaObject(JNIEnv* env, jobject obj)
             env->GetIntField(obj, gBinderProxyOffsets.mObject);
     }
 
-    ALOGW("ibinderForJavaObject: %p is not a Binder object", obj);
     return NULL;
 }
 
@@ -681,7 +670,6 @@ void signalExceptionForError(JNIEnv* env, jobject obj, status_t err,
             jniThrowException(env, "java/lang/RuntimeException", "Unknown transaction code");
             break;
         case FAILED_TRANSACTION:
-            ALOGE("!!! FAILED BINDER TRANSACTION !!!");
             // TransactionTooLargeException is a checked exception, only throw from certain methods.
             // FIXME: Transaction too large is the most common reason for FAILED_TRANSACTION
             //        but it is not the only one.  The Binder driver can return BR_FAILED_REPLY
@@ -762,7 +750,6 @@ static void android_os_Binder_init(JNIEnv* env, jobject obj)
         jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
         return;
     }
-    ALOGV("Java Binder %p: acquiring first ref on holder %p", obj, jbh);
     jbh->incStrong((void*)android_os_Binder_init);
     env->SetIntField(obj, gBinderOffsets.mObject, (int)jbh);
 }
@@ -773,16 +760,7 @@ static void android_os_Binder_destroy(JNIEnv* env, jobject obj)
         env->GetIntField(obj, gBinderOffsets.mObject);
     if (jbh != NULL) {
         env->SetIntField(obj, gBinderOffsets.mObject, 0);
-        ALOGV("Java Binder %p: removing ref on holder %p", obj, jbh);
         jbh->decStrong((void*)android_os_Binder_init);
-    } else {
-        // Encountering an uninitialized binder is harmless.  All it means is that
-        // the Binder was only partially initialized when its finalizer ran and called
-        // destroy().  The Binder could be partially initialized for several reasons.
-        // For example, a Binder subclass constructor might have thrown an exception before
-        // it could delegate to its superclass's constructor.  Consequently init() would
-        // not have been called and the holder pointer would remain NULL.
-        ALOGV("Java Binder %p: ignoring uninitialized binder", obj);
     }
 }
 
@@ -871,7 +849,6 @@ static void android_os_BinderInternal_disableBackgroundScheduling(JNIEnv* env,
 
 static void android_os_BinderInternal_handleGc(JNIEnv* env, jobject clazz)
 {
-    ALOGV("Gc has executed, clearing binder ops");
     android_atomic_and(0, &gNumRefsCreated);
 }
 
@@ -1067,9 +1044,6 @@ static jboolean android_os_BinderProxy_transact(JNIEnv* env, jobject obj,
         jniThrowException(env, "java/lang/IllegalStateException", "Binder has been finalized!");
         return JNI_FALSE;
     }
-
-    ALOGV("Java code calling transact on %p in Java object %p with code %d\n",
-            target, obj, code);
 
 #if ENABLE_BINDER_SAMPLE
     // Only log the binder call duration for things on the Java-level main thread.

@@ -38,7 +38,7 @@ import java.util.ArrayList;
  */
 public final class GeofenceHardwareImpl {
     private static final String TAG = "GeofenceHardwareImpl";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final boolean DEBUG = false;
 
     private final Context mContext;
     private static GeofenceHardwareImpl sInstance;

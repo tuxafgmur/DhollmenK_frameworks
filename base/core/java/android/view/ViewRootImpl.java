@@ -99,16 +99,16 @@ public final class ViewRootImpl implements ViewParent,
     private static final boolean DBG = false;
     private static final boolean LOCAL_LOGV = false;
     /** @noinspection PointlessBooleanExpression*/
-    private static final boolean DEBUG_DRAW = false || LOCAL_LOGV;
-    private static final boolean DEBUG_LAYOUT = false || LOCAL_LOGV;
-    private static final boolean DEBUG_DIALOG = false || LOCAL_LOGV;
-    private static final boolean DEBUG_INPUT_RESIZE = false || LOCAL_LOGV;
-    private static final boolean DEBUG_ORIENTATION = false || LOCAL_LOGV;
-    private static final boolean DEBUG_TRACKBALL = false || LOCAL_LOGV;
-    private static final boolean DEBUG_IMF = false || LOCAL_LOGV;
-    private static final boolean DEBUG_CONFIGURATION = false || LOCAL_LOGV;
+    private static final boolean DEBUG_DRAW = false;
+    private static final boolean DEBUG_LAYOUT = false;
+    private static final boolean DEBUG_DIALOG = false;
+    private static final boolean DEBUG_INPUT_RESIZE = false;
+    private static final boolean DEBUG_ORIENTATION = false;
+    private static final boolean DEBUG_TRACKBALL = false;
+    private static final boolean DEBUG_IMF = false;
+    private static final boolean DEBUG_CONFIGURATION = false;
     private static final boolean DEBUG_FPS = false;
-    private static final boolean DEBUG_INPUT_PROCESSING = false || LOCAL_LOGV;
+    private static final boolean DEBUG_INPUT_PROCESSING = false;
 
     /**
      * Set this system property to true to force the view hierarchy to render
@@ -705,8 +705,6 @@ public final class ViewRootImpl implements ViewParent,
                 // Don't enable hardware acceleration when we're not on the main thread
                 if (!HardwareRenderer.sSystemRendererDisabled &&
                         Looper.getMainLooper() != Looper.myLooper()) {
-                    Log.w(HardwareRenderer.LOG_TAG, "Attempting to initialize hardware "
-                            + "acceleration outside of the main thread, aborting");
                     return;
                 }
 
@@ -1020,7 +1018,6 @@ public final class ViewRootImpl implements ViewParent,
     private boolean collectViewAttributes() {
         final View.AttachInfo attachInfo = mAttachInfo;
         if (attachInfo.mRecomputeGlobalAttributes) {
-            //Log.i(TAG, "Computing view hierarchy attributes!");
             attachInfo.mRecomputeGlobalAttributes = false;
             boolean oldScreenOn = attachInfo.mKeepScreenOn;
             attachInfo.mKeepScreenOn = false;
@@ -1060,10 +1057,6 @@ public final class ViewRootImpl implements ViewParent,
         int childWidthMeasureSpec;
         int childHeightMeasureSpec;
         boolean windowSizeMayChange = false;
-
-        if (DEBUG_ORIENTATION || DEBUG_LAYOUT) Log.v(TAG,
-                "Measuring " + host + " in display " + desiredWindowWidth
-                + "x" + desiredWindowHeight + "...");
 
         boolean goodMeasure = false;
         if (lp.width == ViewGroup.LayoutParams.WRAP_CONTENT) {
@@ -1214,7 +1207,6 @@ public final class ViewRootImpl implements ViewParent,
             attachInfo.mTreeObserver.dispatchOnWindowAttachedChange(true);
             mFitSystemWindowsInsets.set(mAttachInfo.mContentInsets);
             host.fitSystemWindows(mFitSystemWindowsInsets);
-            //Log.i(TAG, "Screen on initialized: " + attachInfo.mKeepScreenOn);
 
         } else {
             desiredWindowWidth = frame.width();
@@ -1894,11 +1886,9 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void handleOutOfResourcesException(Surface.OutOfResourcesException e) {
-        Log.e(TAG, "OutOfResourcesException initializing HW surface", e);
         try {
             if (!mWindowSession.outOfMemory(mWindow) &&
                     Process.myUid() != Process.SYSTEM_UID) {
-                Slog.w(TAG, "No processes killed for memory; killing self");
                 Process.killProcess(Process.myPid());
             }
         } catch (RemoteException ex) {
@@ -2001,8 +1991,6 @@ public final class ViewRootImpl implements ViewParent,
                     int numValidRequests = validLayoutRequesters.size();
                     for (int i = 0; i < numValidRequests; ++i) {
                         final View view = validLayoutRequesters.get(i);
-                        Log.w("View", "requestLayout() improperly called by " + view +
-                                " during layout: running second layout pass");
                         view.requestLayout();
                     }
                     measureHierarchy(host, lp, mView.getContext().getResources(),
@@ -2024,8 +2012,6 @@ public final class ViewRootImpl implements ViewParent,
                                 int numValidRequests = finalRequesters.size();
                                 for (int i = 0; i < numValidRequests; ++i) {
                                     final View view = finalRequesters.get(i);
-                                    Log.w("View", "requestLayout() improperly called by " + view +
-                                            " during second layout pass: posting in next frame");
                                     view.requestLayout();
                                 }
                             }
@@ -2224,11 +2210,9 @@ public final class ViewRootImpl implements ViewParent,
             String thisHash = Integer.toHexString(System.identityHashCode(this));
             long frameTime = nowTime - mFpsPrevTime;
             long totalTime = nowTime - mFpsStartTime;
-            Log.v(TAG, "0x" + thisHash + "\tFrame time:\t" + frameTime);
             mFpsPrevTime = nowTime;
             if (totalTime > 1000) {
                 float fps = (float) mFpsNumFrames * 1000 / totalTime;
-                Log.v(TAG, "0x" + thisHash + "\tFPS:\t" + fps);
                 mFpsStartTime = nowTime;
                 mFpsNumFrames = 0;
             }
@@ -2431,7 +2415,6 @@ public final class ViewRootImpl implements ViewParent,
             canvas = mSurface.lockCanvas(dirty);
 
             // The dirty rectangle can be modified by Surface.lockCanvas()
-            //noinspection ConstantConditions
             if (left != dirty.left || top != dirty.top || right != dirty.right ||
                     bottom != dirty.bottom) {
                 attachInfo.mIgnoreDirtyState = true;
@@ -2443,10 +2426,6 @@ public final class ViewRootImpl implements ViewParent,
             handleOutOfResourcesException(e);
             return false;
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "Could not lock surface", e);
-            // Don't assume this is due to out of memory, it could be
-            // something else, and if it is something else then we could
-            // kill stuff (or ourself) for no reason.
             mLayoutRequested = true;    // ask wm for a new surface next time.
             return false;
         }
@@ -2909,7 +2888,7 @@ public final class ViewRootImpl implements ViewParent,
             }
         }
     }
-    
+
     /**
      * Return true if child is an ancestor of parent, (or equal to the parent).
      */
@@ -3108,7 +3087,6 @@ public final class ViewRootImpl implements ViewParent,
                                 Log.e(TAG, "OutOfResourcesException locking surface", e);
                                 try {
                                     if (!mWindowSession.outOfMemory(mWindow)) {
-                                        Slog.w(TAG, "No processes killed for memory; killing self");
                                         Process.killProcess(Process.myPid());
                                     }
                                 } catch (RemoteException ex) {
@@ -3447,7 +3425,6 @@ public final class ViewRootImpl implements ViewParent,
 
         protected boolean shouldDropInputEvent(QueuedInputEvent q) {
             if (mView == null || !mAdded) {
-                Slog.w(TAG, "Dropping event due to root view being removed: " + q.mEvent);
                 return true;
             } else if (!mAttachInfo.mHasWindowFocus &&
                   !q.mEvent.isFromSource(InputDevice.SOURCE_CLASS_POINTER) &&
@@ -3455,7 +3432,6 @@ public final class ViewRootImpl implements ViewParent,
                 // If this is a focused event and the window doesn't currently have input focus,
                 // then drop this event.  This could be an event that came back from the previous
                 // stage but the window has lost focus in the meantime.
-                Slog.w(TAG, "Dropping event due to no window focus: " + q.mEvent);
                 return true;
             }
             return false;
@@ -4973,7 +4949,6 @@ public final class ViewRootImpl implements ViewParent,
                 if (what == DragEvent.ACTION_DROP) {
                     mDragDescription = null;
                     try {
-                        Log.i(TAG, "Reporting drop result: " + result);
                         mWindowSession.reportDropResult(mWindow, result);
                     } catch (RemoteException e) {
                         Log.e(TAG, "Unable to report drop result");
@@ -5067,12 +5042,9 @@ public final class ViewRootImpl implements ViewParent,
             if (DBG) Log.d(TAG, "WindowLayout in layoutWindow:" + params);
         }
         mPendingConfiguration.seq = 0;
-        //Log.d(TAG, ">>>>>> CALLING relayout");
         if (params != null && mOrigWindowType != params.type) {
             // For compatibility with old apps, don't crash here.
             if (mTargetSdkVersion < android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                Slog.w(TAG, "Window type can not be changed after "
-                        + "the window is added; ignoring change of " + mView);
                 params.type = mOrigWindowType;
             }
         }
@@ -5083,7 +5055,6 @@ public final class ViewRootImpl implements ViewParent,
                 viewVisibility, insetsPending ? WindowManagerGlobal.RELAYOUT_INSETS_PENDING : 0,
                 mWinFrame, mPendingOverscanInsets, mPendingContentInsets, mPendingVisibleInsets,
                 mPendingConfiguration, mSurface);
-        //Log.d(TAG, "<<<<<< BACK FROM relayout");
         if (restore) {
             params.restore();
         }
@@ -6054,7 +6025,6 @@ public final class ViewRootImpl implements ViewParent,
 
     void changeCanvasOpacity(boolean opaque) {
         // TODO(romainguy): recreate Canvas (software or hardware) to reflect the opacity change.
-        Log.d(TAG, "changeCanvasOpacity: opaque=" + opaque);
     }
 
     class TakenSurfaceHolder extends BaseSurfaceHolder {

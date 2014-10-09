@@ -33,7 +33,7 @@ import java.util.Set;
 /** @hide */
 public class LinkSocket extends Socket {
     private final static String TAG = "LinkSocket";
-    private final static boolean DBG = true;
+    private final static boolean DBG = false;
 
     /**
      * Default constructor

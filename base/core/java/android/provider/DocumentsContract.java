@@ -63,13 +63,6 @@ import java.util.List;
 public final class DocumentsContract {
     private static final String TAG = "Documents";
 
-    // content://com.example/root/
-    // content://com.example/root/sdcard/
-    // content://com.example/root/sdcard/recent/
-    // content://com.example/root/sdcard/search/?query=pony
-    // content://com.example/document/12/
-    // content://com.example/document/12/children/
-
     private DocumentsContract() {
     }
 

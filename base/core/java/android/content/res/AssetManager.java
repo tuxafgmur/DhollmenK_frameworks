@@ -58,7 +58,7 @@ public final class AssetManager {
     public static final int ACCESS_BUFFER = 3;
 
     private static final String TAG = "AssetManager";
-    private static final boolean localLOGV = false || false;
+    private static final boolean localLOGV = false;
     
     private static final boolean DEBUG_REFS = false;
     

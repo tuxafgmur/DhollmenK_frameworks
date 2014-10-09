@@ -160,7 +160,7 @@ public class LayoutTransition {
     /**
      * The default duration used by all animations.
      */
-    private static long DEFAULT_DURATION = 300;
+    private static long DEFAULT_DURATION = 250;
 
     /**
      * The durations of the different animations

@@ -58,8 +58,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class BluetoothTetheringDataTracker extends BaseNetworkStateTracker {
     private static final String NETWORKTYPE = "BLUETOOTH_TETHER";
     private static final String TAG = "BluetoothTethering";
-    private static final boolean DBG = true;
-    private static final boolean VDBG = true;
+    private static final boolean DBG = false;
+    private static final boolean VDBG = false;
 
     private AtomicBoolean mTeardownRequested = new AtomicBoolean(false);
     private AtomicBoolean mPrivateDnsRouteSet = new AtomicBoolean(false);

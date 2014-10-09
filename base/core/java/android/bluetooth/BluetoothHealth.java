@@ -57,7 +57,7 @@ import java.util.List;
  */
 public final class BluetoothHealth implements BluetoothProfile {
     private static final String TAG = "BluetoothHealth";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     /**
@@ -184,9 +184,6 @@ public final class BluetoothHealth implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return result;
     }
@@ -208,9 +205,6 @@ public final class BluetoothHealth implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
 
         return result;
@@ -237,9 +231,6 @@ public final class BluetoothHealth implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -266,9 +257,6 @@ public final class BluetoothHealth implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -295,9 +283,6 @@ public final class BluetoothHealth implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -324,9 +309,6 @@ public final class BluetoothHealth implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return null;
     }
@@ -354,9 +336,6 @@ public final class BluetoothHealth implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return STATE_DISCONNECTED;
     }
@@ -384,7 +363,6 @@ public final class BluetoothHealth implements BluetoothProfile {
                 return new ArrayList<BluetoothDevice>();
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return new ArrayList<BluetoothDevice>();
     }
 
@@ -416,7 +394,6 @@ public final class BluetoothHealth implements BluetoothProfile {
                 return new ArrayList<BluetoothDevice>();
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return new ArrayList<BluetoothDevice>();
     }
 

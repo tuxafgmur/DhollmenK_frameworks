@@ -140,14 +140,9 @@ public abstract class InputEventReceiver {
         if (event == null) {
             throw new IllegalArgumentException("event must not be null");
         }
-        if (mReceiverPtr == 0) {
-            Log.w(TAG, "Attempted to finish an input event but the input event "
-                    + "receiver has already been disposed.");
-        } else {
+        if (mReceiverPtr != 0) {
             int index = mSeqMap.indexOfKey(event.getSequenceNumber());
-            if (index < 0) {
-                Log.w(TAG, "Attempted to finish an input event that is not in progress.");
-            } else {
+            if (index >= 0) {
                 int seq = mSeqMap.valueAt(index);
                 mSeqMap.removeAt(index);
                 nativeFinishInputEvent(mReceiverPtr, seq, handled);
@@ -169,10 +164,7 @@ public abstract class InputEventReceiver {
      * @return Whether a batch was consumed
      */
     public final boolean consumeBatchedInputEvents(long frameTimeNanos) {
-        if (mReceiverPtr == 0) {
-            Log.w(TAG, "Attempted to consume batched input events but the input event "
-                    + "receiver has already been disposed.");
-        } else {
+        if (mReceiverPtr != 0) {
             return nativeConsumeBatchedInputEvents(mReceiverPtr, frameTimeNanos);
         }
         return false;

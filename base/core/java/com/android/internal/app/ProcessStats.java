@@ -1098,7 +1098,6 @@ public final class ProcessStats implements Parcelable {
         for (int i=0; i<num; i++) {
             long val = array[i];
             if (val < 0) {
-                Slog.w(TAG, "Time val negative: " + val);
                 val = 0;
             }
             if (val <= Integer.MAX_VALUE) {
@@ -2592,7 +2591,6 @@ public final class ProcessStats implements Parcelable {
         void setState(int state, long now) {
             ensureNotDead();
             if (mCurState != state) {
-                //Slog.i(TAG, "Setting state in " + mName + "/" + mPackage + ": " + state);
                 commitStateTime(now);
                 mCurState = state;
             }
@@ -2643,8 +2641,6 @@ public final class ProcessStats implements Parcelable {
             if (false) {
                 RuntimeException here = new RuntimeException("here");
                 here.fillInStackTrace();
-                Slog.d(TAG, "incStartedServices: " + this + " service=" + serviceName
-                        + " to " + (mNumStartedServices+1), here);
             }
             if (mCommonProcess != this) {
                 mCommonProcess.incStartedServices(memFactor, now, serviceName);
@@ -2659,8 +2655,6 @@ public final class ProcessStats implements Parcelable {
             if (false) {
                 RuntimeException here = new RuntimeException("here");
                 here.fillInStackTrace();
-                Slog.d(TAG, "decActiveServices: " + this + " service=" + serviceName
-                        + " to " + (mNumStartedServices-1), here);
             }
             if (mCommonProcess != this) {
                 mCommonProcess.decStartedServices(memFactor, now, serviceName);
@@ -2669,8 +2663,6 @@ public final class ProcessStats implements Parcelable {
             if (mNumStartedServices == 0 && (mCurState%STATE_COUNT) == STATE_SERVICE_RESTARTING) {
                 setState(STATE_NOTHING, now);
             } else if (mNumStartedServices < 0) {
-                Slog.wtfStack(TAG, "Proc started services underrun: pkg="
-                        + mPackage + " uid=" + mUid + " name=" + mName);
                 mNumStartedServices = 0;
             }
         }
@@ -2990,27 +2982,12 @@ public final class ProcessStats implements Parcelable {
                 if (mStarted || mBoundState != STATE_NOTHING || mExecState != STATE_NOTHING) {
                     long now = SystemClock.uptimeMillis();
                     if (mStarted) {
-                        if (!silently) {
-                            Slog.wtfStack(TAG, "Service owner " + owner
-                                    + " cleared while started: pkg=" + mPackage + " service="
-                                    + mName + " proc=" + mProc);
-                        }
                         setStarted(false, 0, now);
                     }
                     if (mBoundState != STATE_NOTHING) {
-                        if (!silently) {
-                            Slog.wtfStack(TAG, "Service owner " + owner
-                                    + " cleared while bound: pkg=" + mPackage + " service="
-                                    + mName + " proc=" + mProc);
-                        }
                         setBound(false, 0, now);
                     }
                     if (mExecState != STATE_NOTHING) {
-                        if (!silently) {
-                            Slog.wtfStack(TAG, "Service owner " + owner
-                                    + " cleared while exec: pkg=" + mPackage + " service="
-                                    + mName + " proc=" + mProc);
-                        }
                         setExecuting(false, 0, now);
                     }
                 }

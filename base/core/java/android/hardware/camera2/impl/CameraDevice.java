@@ -136,7 +136,7 @@ public class CameraDevice implements android.hardware.camera2.CameraDevice {
         mDeviceListener = listener;
         mDeviceHandler = handler;
         TAG = String.format("CameraDevice-%s-JV", mCameraId);
-        DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+        DEBUG = false;
     }
 
     public CameraDeviceCallbacks getCallbacks() {

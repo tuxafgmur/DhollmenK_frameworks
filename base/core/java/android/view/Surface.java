@@ -259,11 +259,6 @@ public class Surface implements Parcelable {
 
         synchronized (mLock) {
             checkNotReleasedLocked();
-            if (mNativeObject != mLockedObject) {
-                Log.w(TAG, "WARNING: Surface's mNativeObject (0x" +
-                        Integer.toHexString(mNativeObject) + ") != mLockedObject (0x" +
-                        Integer.toHexString(mLockedObject) +")");
-            }
             if (mLockedObject == 0) {
                 throw new IllegalStateException("Surface was not locked");
             }

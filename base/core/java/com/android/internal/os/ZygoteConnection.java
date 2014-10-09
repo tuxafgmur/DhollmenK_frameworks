@@ -1022,13 +1022,8 @@ class ZygoteConnection {
                     parentPid = Process.getParentPid(parentPid);
                 }
                 if (parentPid > 0) {
-                    Log.i(TAG, "Wrapped process has pid " + innerPid);
                     pid = innerPid;
                     usingWrapper = true;
-                } else {
-                    Log.w(TAG, "Wrapped process reported a pid that is not a child of "
-                            + "the process that we forked: childPid=" + pid
-                            + " innerPid=" + innerPid);
                 }
             }
         }
@@ -1053,8 +1048,6 @@ class ZygoteConnection {
             // the peer is not in our session
             // TODO get rid of this log message in the case where
             // getsid(0) != getsid(peer.getPid())
-            Log.i(TAG, "Zygote: setpgid failed. This is "
-                + "normal if peer is not in our session");
         }
     }
 

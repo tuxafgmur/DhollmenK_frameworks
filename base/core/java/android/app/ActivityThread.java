@@ -1504,13 +1504,10 @@ public final class ActivityThread {
 
     public static IPackageManager getPackageManager() {
         if (sPackageManager != null) {
-            //Slog.v("PackageManager", "returning cur default = " + sPackageManager);
             return sPackageManager;
         }
         IBinder b = ServiceManager.getService("package");
-        //Slog.v("PackageManager", "default service binder = " + b);
         sPackageManager = IPackageManager.Stub.asInterface(b);
-        //Slog.v("PackageManager", "default service = " + sPackageManager);
         return sPackageManager;
     }
 
@@ -1557,9 +1554,7 @@ public final class ActivityThread {
                 ref = mResourcePackages.get(packageName);
             }
             LoadedApk packageInfo = ref != null ? ref.get() : null;
-            //Slog.i(TAG, "getPackageInfo " + packageName + ": " + packageInfo);
-            //if (packageInfo != null) Slog.i(TAG, "isUptoDate " + packageInfo.mResDir
-            //        + ": " + packageInfo.mResources.getAssets().isUpToDate());
+
             if (packageInfo != null && (packageInfo.mResources == null
                     || packageInfo.mResources.getAssets().isUpToDate())) {
                 if (packageInfo.isSecurityViolation()
@@ -1742,10 +1737,7 @@ public final class ActivityThread {
     void doGcIfNeeded() {
         mGcIdlerScheduled = false;
         final long now = SystemClock.uptimeMillis();
-        //Slog.i(TAG, "**** WE MIGHT WANT TO GC: then=" + Binder.getLastGcTime()
-        //        + "m now=" + now);
         if ((BinderInternal.getLastGcTime()+MIN_TIME_BETWEEN_GCS) < now) {
-            //Slog.i(TAG, "**** WE DO, WE DO WANT TO GC!");
             BinderInternal.forceGc("bg");
         }
     }
@@ -2020,9 +2012,6 @@ public final class ActivityThread {
             } else {
                 name = "(Intent " + intent + ").getComponent() returned null";
             }
-            Slog.v(TAG, "Performing launch: action=" + intent.getAction()
-                    + ", comp=" + name
-                    + ", token=" + token);
         }
         return performLaunchActivity(r, null);
     }
@@ -2452,13 +2441,10 @@ public final class ActivityThread {
         LoadedApk packageInfo = getPackageInfoNoCheck(data.appInfo, data.compatInfo);
         String packageName = packageInfo.mPackageName;
         if (packageName == null) {
-            Slog.d(TAG, "Asked to create backup agent for nonexistent package");
             return;
         }
 
         if (mBackupAgents.get(packageName) != null) {
-            Slog.d(TAG, "BackupAgent " + "  for " + packageName
-                    + " already exists");
             return;
         }
 
@@ -2741,7 +2727,6 @@ public final class ActivityThread {
                 }
             }
         }
-        //Slog.i(TAG, "Running services: " + mServices);
     }
 
     public final ActivityClientRecord performResumeActivity(IBinder token,
@@ -2975,7 +2960,6 @@ public final class ActivityThread {
             boolean userLeaving, int configChanges) {
         ActivityClientRecord r = mActivities.get(token);
         if (r != null) {
-            //Slog.v(TAG, "userLeaving=" + userLeaving + " handling pause of " + r);
             if (userLeaving) {
                 performUserLeavingActivity(r);
             }
@@ -3270,8 +3254,6 @@ public final class ActivityThread {
             r.stopped = false;
         }
         if (r.activity.mDecor != null) {
-            if (false) Slog.v(
-                TAG, "Handle window " + r + " visibility: " + show);
             updateVisibility(r, show);
         }
     }
@@ -3989,7 +3971,6 @@ public final class ActivityThread {
         boolean hasPkgInfo = false;
         if (packages != null) {
             for (int i=packages.length-1; i>=0; i--) {
-                //Slog.i(TAG, "Cleaning old package: " + packages[i]);
                 if (!hasPkgInfo) {
                     WeakReference<LoadedApk> ref;
                     ref = mPackages.get(packages[i]);
@@ -4377,8 +4358,6 @@ public final class ActivityThread {
                 && mProfiler.profileFd == null) {
             Debug.stopMethodTracing();
         }
-        //Slog.i(TAG, "am: " + ActivityManagerNative.getDefault()
-        //      + ", app thr: " + mAppThread);
         try {
             am.finishInstrumentation(mAppThread, resultCode, results);
         } catch (RemoteException ex) {
@@ -4690,7 +4669,6 @@ public final class ActivityThread {
             for (int i=mProviderMap.size()-1; i>=0; i--) {
                 ProviderClientRecord pr = mProviderMap.valueAt(i);
                 if (pr != null && pr.mProvider.asBinder() == provider) {
-                    Slog.i(TAG, "Removing dead content provider:" + pr.mProvider.toString());
                     mProviderMap.removeAt(i);
                 }
             }

@@ -351,7 +351,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 return false;
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -392,7 +391,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
               return false;
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -409,7 +407,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 return new ArrayList<BluetoothDevice>();
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return new ArrayList<BluetoothDevice>();
     }
 
@@ -426,7 +423,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 return new ArrayList<BluetoothDevice>();
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return new ArrayList<BluetoothDevice>();
     }
 
@@ -444,7 +440,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 return BluetoothProfile.STATE_DISCONNECTED;
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return BluetoothProfile.STATE_DISCONNECTED;
     }
 
@@ -478,7 +473,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 return false;
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -506,7 +500,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 return PRIORITY_OFF;
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return PRIORITY_OFF;
     }
 
@@ -541,7 +534,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 Log.e(TAG,  Log.getStackTraceString(new Throwable()));
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -565,7 +557,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 Log.e(TAG,  Log.getStackTraceString(new Throwable()));
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -588,7 +579,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
               Log.e(TAG,  Log.getStackTraceString(new Throwable()));
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -616,7 +606,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 Log.e(TAG,  Log.getStackTraceString(new Throwable()));
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return -1;
     }
 
@@ -644,7 +633,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
                 return mService.acceptIncomingConnect(device);
             } catch (RemoteException e) {Log.e(TAG, e.toString());}
         } else {
-            Log.w(TAG, "Proxy not attached to service");
             if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
@@ -660,9 +648,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             try {
                 return mService.rejectIncomingConnect(device);
             } catch (RemoteException e) {Log.e(TAG, e.toString());}
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -679,9 +664,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             try {
                 return mService.getAudioState(device);
             } catch (RemoteException e) {Log.e(TAG, e.toString());}
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return BluetoothHeadset.STATE_AUDIO_DISCONNECTED;
     }
@@ -704,7 +686,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
               Log.e(TAG,  Log.getStackTraceString(new Throwable()));
             }
         }
-        if (mService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
 
     }
@@ -725,9 +706,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -748,9 +726,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -774,9 +749,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -797,9 +769,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
         return false;
     }
@@ -820,9 +789,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
     }
 
@@ -839,9 +805,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, e.toString());
             }
-        } else {
-            Log.w(TAG, "Proxy not attached to service");
-            if (DBG) Log.d(TAG, Log.getStackTraceString(new Throwable()));
         }
     }
 
@@ -878,9 +841,6 @@ public final class BluetoothHeadset implements BluetoothProfile {
             } catch (RemoteException e) {
                 Log.e(TAG, Log.getStackTraceString(new Throwable()));
             }
-        }
-        if (mService == null) {
-            Log.w(TAG, "Proxy not attached to service");
         }
         return false;
     }

@@ -982,10 +982,6 @@ public class InputMethodService extends AbstractInputMethodService {
             boolean isCandidatesOnly) {
         final int currentHeight = mWindow.getWindow().getAttributes().height;
         final int newHeight = isFullscreen ? MATCH_PARENT : WRAP_CONTENT;
-        if (mIsInputViewShown && currentHeight != newHeight) {
-            Log.w(TAG, "Window size has been changed. This may cause jankiness of resizing window: "
-                    + currentHeight + " -> " + newHeight);
-        }
         mWindow.getWindow().setLayout(MATCH_PARENT, newHeight);
     }
     

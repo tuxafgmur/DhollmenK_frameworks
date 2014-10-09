@@ -17,7 +17,6 @@
 package android.animation;
 
 import android.os.Looper;
-import android.os.Trace;
 import android.util.AndroidRuntimeException;
 import android.view.Choreographer;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -178,8 +177,8 @@ public class ValueAnimator extends Animator {
     //
 
     // How long the animation should last in ms
-    private long mDuration = (long)(300 * sDurationScale);
-    private long mUnscaledDuration = 300;
+    private long mDuration = (long)(250 * sDurationScale);
+    private long mUnscaledDuration = 250;
 
     // The amount of time in ms to delay starting the animation after start() is called
     private long mStartDelay = 0;
@@ -474,9 +473,8 @@ public class ValueAnimator extends Animator {
         }
     }
 
-
     /**
-     * Sets the length of the animation. The default duration is 300 milliseconds.
+     * Sets the length of the animation. The default duration is 250 milliseconds.
      *
      * @param duration The length of the animation, in milliseconds. This value cannot
      * be negative.
@@ -486,8 +484,7 @@ public class ValueAnimator extends Animator {
      */
     public ValueAnimator setDuration(long duration) {
         if (duration < 0) {
-            throw new IllegalArgumentException("Animators cannot have negative duration: " +
-                    duration);
+            duration = 0;
         }
         mUnscaledDuration = duration;
         mDuration = (long)(duration * sDurationScale);
@@ -495,7 +492,7 @@ public class ValueAnimator extends Animator {
     }
 
     /**
-     * Gets the length of the animation. The default duration is 300 milliseconds.
+     * Gets the length of the animation. The default duration is 250 milliseconds.
      *
      * @return The length of the animation, in milliseconds.
      */
@@ -1060,10 +1057,6 @@ public class ValueAnimator extends Animator {
         mStarted = false;
         mStartListenersCalled = false;
         mPlayingBackwards = false;
-        if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
-            Trace.asyncTraceEnd(Trace.TRACE_TAG_VIEW, getNameForTrace(),
-                    System.identityHashCode(this));
-        }
     }
 
     /**
@@ -1071,10 +1064,6 @@ public class ValueAnimator extends Animator {
      * called on the UI thread.
      */
     private void startAnimation(AnimationHandler handler) {
-        if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
-            Trace.asyncTraceBegin(Trace.TRACE_TAG_VIEW, getNameForTrace(),
-                    System.identityHashCode(this));
-        }
         initAnimation();
         handler.mAnimations.add(this);
         if (mStartDelay > 0 && mListeners != null) {

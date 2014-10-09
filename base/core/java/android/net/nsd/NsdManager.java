@@ -316,7 +316,6 @@ public final class NsdManager {
             }
             Object listener = getListener(message.arg2);
             if (listener == null) {
-                Log.d(TAG, "Stale key " + message.arg2);
                 return;
             }
             boolean listenerRemove = true;

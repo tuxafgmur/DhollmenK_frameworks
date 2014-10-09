@@ -1517,12 +1517,6 @@ public class Resources {
     public void updateConfiguration(Configuration config,
             DisplayMetrics metrics, CompatibilityInfo compat) {
         synchronized (mAccessLock) {
-            if (false) {
-                Slog.i(TAG, "**** Updating config of " + this + ": old config is "
-                        + mConfiguration + " old compat is " + mCompatibilityInfo);
-                Slog.i(TAG, "**** Updating config of " + this + ": new config is "
-                        + config + " new compat is " + compat);
-            }
             if (compat != null) {
                 mCompatibilityInfo = compat;
             }
@@ -1678,8 +1672,6 @@ public class Resources {
             CompatibilityInfo compat) {
         if (mSystem != null) {
             mSystem.updateConfiguration(config, metrics, compat);
-            //Log.i(TAG, "Updated system resources " + mSystem
-            //        + ": " + mSystem.getConfiguration());
         }
     }
 
@@ -2019,9 +2011,6 @@ public class Resources {
             } catch (NotFoundException e) {
                 resName = "?";
             }
-            Log.w(TAG, "Preloaded " + name + " resource #0x"
-                    + Integer.toHexString(resourceId)
-                    + " (" + resName + ") that varies with configuration!!");
             return false;
         }
         if (TRACE_FOR_PRELOAD) {
@@ -2031,9 +2020,6 @@ public class Resources {
             } catch (NotFoundException e) {
                 resName = "?";
             }
-            Log.w(TAG, "Preloading " + name + " resource #0x"
-                    + Integer.toHexString(resourceId)
-                    + " (" + resName + ")");
         }
         return true;
     }
@@ -2175,9 +2161,6 @@ public class Resources {
                     }
                 } else {
                     synchronized (mAccessLock) {
-                        //Log.i(TAG, "Saving cached drawable @ #" +
-                        //        Integer.toHexString(key.intValue())
-                        //        + " in " + this + ": " + cs);
                         if (isColorDrawable) {
                             mColorDrawableCache.put(key, new WeakReference<Drawable.ConstantState>(cs));
                         } else {
@@ -2199,9 +2182,6 @@ public class Resources {
             if (wr != null) {   // we have the key
                 Drawable.ConstantState entry = wr.get();
                 if (entry != null) {
-                    //Log.i(TAG, "Returning cached drawable @ #" +
-                    //        Integer.toHexString(((Integer)key).intValue())
-                    //        + " in " + this + ": " + entry);
                     return entry.newDrawable(this);
                 }
                 else {  // our entry has been purged
@@ -2292,9 +2272,6 @@ public class Resources {
                 }
             } else {
                 synchronized (mAccessLock) {
-                    //Log.i(TAG, "Saving cached color state list @ #" +
-                    //        Integer.toHexString(key.intValue())
-                    //        + " in " + this + ": " + csl);
                     mColorStateListCache.put(key, new WeakReference<ColorStateList>(csl));
                 }
             }
@@ -2309,9 +2286,6 @@ public class Resources {
             if (wr != null) {   // we have the key
                 ColorStateList entry = wr.get();
                 if (entry != null) {
-                    //Log.i(TAG, "Returning cached color state list @ #" +
-                    //        Integer.toHexString(((Integer)key).intValue())
-                    //        + " in " + this + ": " + entry);
                     return entry;
                 } else {  // our entry has been purged
                     mColorStateListCache.delete(key);

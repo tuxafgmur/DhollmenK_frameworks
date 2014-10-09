@@ -352,7 +352,7 @@ public class PropertyValuesHolder implements Cloneable {
      * {@link ObjectAnimator}, and with a getter function
      * derived automatically from <code>propertyName</code>, since otherwise PropertyValuesHolder has
      * no way of determining what the value should be.
-     * 
+     *
      * @param values One or more values that the animation will animate between.
      */
     public void setObjectValues(Object... values) {
@@ -497,8 +497,6 @@ public class PropertyValuesHolder implements Cloneable {
                 }
                 return;
             } catch (ClassCastException e) {
-                Log.w("PropertyValuesHolder","No such property (" + mProperty.getName() +
-                        ") on target object " + target + ". Trying reflection instead");
                 mProperty = null;
             }
         }

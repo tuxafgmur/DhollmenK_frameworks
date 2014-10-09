@@ -99,11 +99,8 @@ public class TypedArray {
 
         TypedValue v = mValue;
         if (getValueAt(index, v)) {
-            Log.w(Resources.TAG, "Converting to string: " + v);
             return v.coerceToString();
         }
-        Log.w(Resources.TAG, "getString of bad type: 0x"
-              + Integer.toHexString(type));
         return null;
     }
 
@@ -127,12 +124,9 @@ public class TypedArray {
 
         TypedValue v = mValue;
         if (getValueAt(index, v)) {
-            Log.w(Resources.TAG, "Converting to string: " + v);
             CharSequence cs = v.coerceToString();
             return cs != null ? cs.toString() : null;
         }
-        Log.w(Resources.TAG, "getString of bad type: 0x"
-              + Integer.toHexString(type));
         return null;
     }
 
@@ -191,12 +185,9 @@ public class TypedArray {
 
         TypedValue v = mValue;
         if (getValueAt(index, v)) {
-            Log.w(Resources.TAG, "Converting to string: " + v);
             CharSequence cs = v.coerceToString();
             return cs != null ? cs.toString() : null;
         }
-        Log.w(Resources.TAG, "getString of bad type: 0x"
-              + Integer.toHexString(type));
         return null;
     }
 
@@ -221,12 +212,9 @@ public class TypedArray {
 
         TypedValue v = mValue;
         if (getValueAt(index, v)) {
-            Log.w(Resources.TAG, "Converting to boolean: " + v);
             return XmlUtils.convertValueToBoolean(
                 v.coerceToString(), defValue);
         }
-        Log.w(Resources.TAG, "getBoolean of bad type: 0x"
-              + Integer.toHexString(type));
         return defValue;
     }
 
@@ -251,12 +239,9 @@ public class TypedArray {
 
         TypedValue v = mValue;
         if (getValueAt(index, v)) {
-            Log.w(Resources.TAG, "Converting to int: " + v);
             return XmlUtils.convertValueToInt(
                 v.coerceToString(), defValue);
         }
-        Log.w(Resources.TAG, "getInt of bad type: 0x"
-              + Integer.toHexString(type));
         return defValue;
     }
 
@@ -282,14 +267,11 @@ public class TypedArray {
 
         TypedValue v = mValue;
         if (getValueAt(index, v)) {
-            Log.w(Resources.TAG, "Converting to float: " + v);
             CharSequence str = v.coerceToString();
             if (str != null) {
                 return Float.parseFloat(str.toString());
             }
         }
-        Log.w(Resources.TAG, "getFloat of bad type: 0x"
-              + Integer.toHexString(type));
         return defValue;
     }
     

@@ -928,7 +928,6 @@ public abstract class HardwareRenderer {
                 mProfileEnabled = value;
 
                 if (mProfileEnabled) {
-                    Log.d(LOG_TAG, "Profiling hardware renderer");
 
                     int maxProfileFrames = SystemProperties.getInt(PROFILE_MAXFRAMES_PROPERTY,
                             PROFILE_MAX_FRAMES);
@@ -952,9 +951,6 @@ public abstract class HardwareRenderer {
                 changed = true;
                 mDebugDirtyRegions = value;
 
-                if (mDebugDirtyRegions) {
-                    Log.d(LOG_TAG, "Debugging dirty regions");
-                }
             }
 
             String overdraw = SystemProperties.get(HardwareRenderer.DEBUG_OVERDRAW_PROPERTY);
@@ -1046,8 +1042,6 @@ public abstract class HardwareRenderer {
             if (fallback) {
                 // we'll try again if it was context lost
                 setRequested(false);
-                Log.w(LOG_TAG, "Mountain View, we've had a problem here. "
-                        + "Switching back to software rendering.");
             }
         }
 

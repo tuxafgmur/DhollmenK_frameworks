@@ -43,7 +43,7 @@ import java.util.List;
  */
 public final class BluetoothPan implements BluetoothProfile {
     private static final String TAG = "BluetoothPan";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     /**
@@ -188,7 +188,6 @@ public final class BluetoothPan implements BluetoothProfile {
         public void onBluetoothStateChange(boolean on) throws RemoteException {
             //Handle enable request to bind again.
             if (on) {
-                Log.d(TAG, "onBluetoothStateChange(on) call bindService");
                 doBind();
                 if (VDBG) Log.d(TAG, "BluetoothPan(), bindService called");
             } else {
@@ -234,7 +233,6 @@ public final class BluetoothPan implements BluetoothProfile {
                 return false;
             }
         }
-        if (mPanService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -275,7 +273,6 @@ public final class BluetoothPan implements BluetoothProfile {
                 return false;
             }
         }
-        if (mPanService == null) Log.w(TAG, "Proxy not attached to service");
         return false;
     }
 
@@ -292,7 +289,6 @@ public final class BluetoothPan implements BluetoothProfile {
                 return new ArrayList<BluetoothDevice>();
             }
         }
-        if (mPanService == null) Log.w(TAG, "Proxy not attached to service");
         return new ArrayList<BluetoothDevice>();
     }
 
@@ -309,7 +305,6 @@ public final class BluetoothPan implements BluetoothProfile {
                 return new ArrayList<BluetoothDevice>();
             }
         }
-        if (mPanService == null) Log.w(TAG, "Proxy not attached to service");
         return new ArrayList<BluetoothDevice>();
     }
 
@@ -327,7 +322,6 @@ public final class BluetoothPan implements BluetoothProfile {
                 return BluetoothProfile.STATE_DISCONNECTED;
             }
         }
-        if (mPanService == null) Log.w(TAG, "Proxy not attached to service");
         return BluetoothProfile.STATE_DISCONNECTED;
     }
 

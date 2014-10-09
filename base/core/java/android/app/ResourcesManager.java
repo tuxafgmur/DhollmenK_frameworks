@@ -39,7 +39,7 @@ import java.util.Locale;
 public class ResourcesManager {
     static final String TAG = "ResourcesManager";
     static final boolean DEBUG_CACHE = false;
-    static final boolean DEBUG_STATS = true;
+    static final boolean DEBUG_STATS = false;
 
     private static ResourcesManager sResourcesManager;
     final ArrayMap<ResourcesKey, WeakReference<Resources> > mActiveResources

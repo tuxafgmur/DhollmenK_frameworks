@@ -169,9 +169,6 @@ public class InputMethodUtils {
             } catch (Resources.NotFoundException ex) {
             }
         }
-        if (imi.getSubtypeCount() == 0) {
-            Slog.w(TAG, "Found no subtypes in a system IME: " + imi.getPackageName());
-        }
         return false;
     }
 
@@ -592,7 +589,6 @@ public class InputMethodUtils {
                 final int N = mMethodList.size();
                 for (int i = 0; i < N; i++) {
                     InputMethodInfo imi = mMethodList.get(i);
-                    Slog.i(TAG, "Adding: " + imi.getId());
                     if (i > 0) sb.append(':');
                     sb.append(imi.getId());
                 }

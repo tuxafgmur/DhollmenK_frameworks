@@ -52,5 +52,5 @@ public final class Config {
      * @deprecated Always true.
      */
     @Deprecated
-    public static final boolean LOGD = true;
+    public static final boolean LOGD = false;
 }

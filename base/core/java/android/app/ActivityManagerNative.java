@@ -2077,13 +2077,7 @@ public abstract class ActivityManagerNative extends Binder implements IActivityM
     private static final Singleton<IActivityManager> gDefault = new Singleton<IActivityManager>() {
         protected IActivityManager create() {
             IBinder b = ServiceManager.getService("activity");
-            if (false) {
-                Log.v("ActivityManager", "default service binder = " + b);
-            }
             IActivityManager am = asInterface(b);
-            if (false) {
-                Log.v("ActivityManager", "default service = " + am);
-            }
             return am;
         }
     };
@@ -2109,12 +2103,6 @@ class ActivityManagerProxy implements IActivityManager
             ParcelFileDescriptor profileFd, Bundle options) throws RemoteException {
         Parcel data = Parcel.obtain();
         Parcel reply = Parcel.obtain();
-
-        if (intent.getComponent() != null) {
-            Log.i(TAG_TIMELINE, "Timeline: Activity_launch_request id:"
-                    + intent.getComponent().getPackageName() + " time:"
-                    + SystemClock.uptimeMillis());
-        }
 
         data.writeInterfaceToken(IActivityManager.descriptor);
         data.writeStrongBinder(caller != null ? caller.asBinder() : null);
@@ -2465,8 +2453,6 @@ class ActivityManagerProxy implements IActivityManager
     public void activityIdle(IBinder token, Configuration config, boolean stopProfiling)
             throws RemoteException
     {
-        Log.i(TAG_TIMELINE, "Timeline: Activity_idle id: " + token + " time:"
-                + SystemClock.uptimeMillis());
         Parcel data = Parcel.obtain();
         Parcel reply = Parcel.obtain();
         data.writeInterfaceToken(IActivityManager.descriptor);

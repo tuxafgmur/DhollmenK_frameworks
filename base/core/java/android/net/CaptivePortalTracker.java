@@ -58,7 +58,7 @@ import java.util.List;
  * @hide
  */
 public class CaptivePortalTracker extends StateMachine {
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final String TAG = "CaptivePortalTracker";
 
     private static final String DEFAULT_SERVER = "clients3.google.com";

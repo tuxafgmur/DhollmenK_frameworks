@@ -270,9 +270,6 @@ public class ZygoteInit {
         if (is == null) {
             Log.e(TAG, "Couldn't find " + PRELOADED_CLASSES + ".");
         } else {
-            Log.i(TAG, "Preloading classes...");
-            long startTime = SystemClock.uptimeMillis();
-
             // Drop root perms while running static initializers.
             setEffectiveGroup(UNPRIVILEGED_GID);
             setEffectiveUser(UNPRIVILEGED_UID);
@@ -281,11 +278,6 @@ public class ZygoteInit {
             // is not likely to have any effect.
             float defaultUtilization = runtime.getTargetHeapUtilization();
             runtime.setTargetHeapUtilization(0.8f);
-
-            // Start with a clean slate.
-            System.gc();
-            runtime.runFinalizationSync();
-            Debug.startAllocCounting();
 
             try {
                 BufferedReader br
@@ -301,19 +293,7 @@ public class ZygoteInit {
                     }
 
                     try {
-                        if (false) {
-                            Log.v(TAG, "Preloading " + line + "...");
-                        }
                         Class.forName(line);
-                        if (Debug.getGlobalAllocSize() > PRELOAD_GC_THRESHOLD) {
-                            if (false) {
-                                Log.v(TAG,
-                                    " GC at " + Debug.getGlobalAllocSize());
-                            }
-                            System.gc();
-                            runtime.runFinalizationSync();
-                            Debug.resetGlobalAllocSize();
-                        }
                         count++;
                     } catch (ClassNotFoundException e) {
                         Log.w(TAG, "Class not found for preloading: " + line);
@@ -331,8 +311,6 @@ public class ZygoteInit {
                     }
                 }
 
-                Log.i(TAG, "...preloaded " + count + " classes in "
-                        + (SystemClock.uptimeMillis()-startTime) + "ms.");
             } catch (IOException e) {
                 Log.e(TAG, "Error reading " + PRELOADED_CLASSES + ".", e);
             } finally {
@@ -342,8 +320,6 @@ public class ZygoteInit {
 
                 // Fill in dex caches with classes, fields, and methods brought in by preloading.
                 runtime.preloadDexCaches();
-
-                Debug.stopAllocCounting();
 
                 // Bring back root. We'll need it later.
                 setEffectiveUser(ROOT_UID);
@@ -362,54 +338,30 @@ public class ZygoteInit {
     private static void preloadResources() {
         final VMRuntime runtime = VMRuntime.getRuntime();
 
-        Debug.startAllocCounting();
         try {
-            System.gc();
-            runtime.runFinalizationSync();
             mResources = Resources.getSystem();
             mResources.startPreloading();
             if (PRELOAD_RESOURCES) {
-                Log.i(TAG, "Preloading resources...");
-
-                long startTime = SystemClock.uptimeMillis();
                 TypedArray ar = mResources.obtainTypedArray(
                         com.android.internal.R.array.preloaded_drawables);
                 int N = preloadDrawables(runtime, ar);
                 ar.recycle();
-                Log.i(TAG, "...preloaded " + N + " resources in "
-                        + (SystemClock.uptimeMillis()-startTime) + "ms.");
 
-                startTime = SystemClock.uptimeMillis();
                 ar = mResources.obtainTypedArray(
                         com.android.internal.R.array.preloaded_color_state_lists);
                 N = preloadColorStateLists(runtime, ar);
                 ar.recycle();
-                Log.i(TAG, "...preloaded " + N + " resources in "
-                        + (SystemClock.uptimeMillis()-startTime) + "ms.");
             }
             mResources.finishPreloading();
         } catch (RuntimeException e) {
             Log.w(TAG, "Failure preloading resources", e);
-        } finally {
-            Debug.stopAllocCounting();
         }
     }
 
     private static int preloadColorStateLists(VMRuntime runtime, TypedArray ar) {
         int N = ar.length();
         for (int i=0; i<N; i++) {
-            if (Debug.getGlobalAllocSize() > PRELOAD_GC_THRESHOLD) {
-                if (false) {
-                    Log.v(TAG, " GC at " + Debug.getGlobalAllocSize());
-                }
-                System.gc();
-                runtime.runFinalizationSync();
-                Debug.resetGlobalAllocSize();
-            }
             int id = ar.getResourceId(i, 0);
-            if (false) {
-                Log.v(TAG, "Preloading resource #" + Integer.toHexString(id));
-            }
             if (id != 0) {
                 if (mResources.getColorStateList(id) == null) {
                     throw new IllegalArgumentException(
@@ -426,18 +378,7 @@ public class ZygoteInit {
     private static int preloadDrawables(VMRuntime runtime, TypedArray ar) {
         int N = ar.length();
         for (int i=0; i<N; i++) {
-            if (Debug.getGlobalAllocSize() > PRELOAD_GC_THRESHOLD) {
-                if (false) {
-                    Log.v(TAG, " GC at " + Debug.getGlobalAllocSize());
-                }
-                System.gc();
-                runtime.runFinalizationSync();
-                Debug.resetGlobalAllocSize();
-            }
             int id = ar.getResourceId(i, 0);
-            if (false) {
-                Log.v(TAG, "Preloading resource #" + Integer.toHexString(id));
-            }
             if (id != 0) {
                 if (mResources.getDrawable(id) == null) {
                     throw new IllegalArgumentException(
@@ -601,8 +542,6 @@ public class ZygoteInit {
             } else if (!argv[1].equals("")) {
                 throw new RuntimeException(argv[0] + USAGE_STRING);
             }
-
-            Log.i(TAG, "Accepting command socket connections");
 
             runSelectLoop();
 

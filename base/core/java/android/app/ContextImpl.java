@@ -1025,7 +1025,6 @@ class ContextImpl extends Context {
 
     @Override
     public void startActivity(Intent intent) {
-        warnIfCallingFromSystemProcess();
         startActivity(intent, null);
     }
 
@@ -1037,7 +1036,6 @@ class ContextImpl extends Context {
 
     @Override
     public void startActivity(Intent intent, Bundle options) {
-        warnIfCallingFromSystemProcess();
         if ((intent.getFlags()&Intent.FLAG_ACTIVITY_NEW_TASK) == 0) {
             throw new AndroidRuntimeException(
                     "Calling startActivity() from outside of an Activity "
@@ -1064,7 +1062,6 @@ class ContextImpl extends Context {
 
     @Override
     public void startActivities(Intent[] intents) {
-        warnIfCallingFromSystemProcess();
         startActivities(intents, null);
     }
 
@@ -1084,7 +1081,6 @@ class ContextImpl extends Context {
 
     @Override
     public void startActivities(Intent[] intents, Bundle options) {
-        warnIfCallingFromSystemProcess();
         if ((intents[0].getFlags()&Intent.FLAG_ACTIVITY_NEW_TASK) == 0) {
             throw new AndroidRuntimeException(
                     "Calling startActivities() from outside of an Activity "
@@ -1128,7 +1124,6 @@ class ContextImpl extends Context {
 
     @Override
     public void sendBroadcast(Intent intent) {
-        warnIfCallingFromSystemProcess();
         String resolvedType = intent.resolveTypeIfNeeded(getContentResolver());
         try {
             intent.prepareToLeaveProcess();
@@ -1142,7 +1137,6 @@ class ContextImpl extends Context {
 
     @Override
     public void sendBroadcast(Intent intent, String receiverPermission) {
-        warnIfCallingFromSystemProcess();
         String resolvedType = intent.resolveTypeIfNeeded(getContentResolver());
         try {
             intent.prepareToLeaveProcess();
@@ -1156,7 +1150,6 @@ class ContextImpl extends Context {
 
     @Override
     public void sendBroadcast(Intent intent, String receiverPermission, int appOp) {
-        warnIfCallingFromSystemProcess();
         String resolvedType = intent.resolveTypeIfNeeded(getContentResolver());
         try {
             intent.prepareToLeaveProcess();
@@ -1171,7 +1164,6 @@ class ContextImpl extends Context {
     @Override
     public void sendOrderedBroadcast(Intent intent,
             String receiverPermission) {
-        warnIfCallingFromSystemProcess();
         String resolvedType = intent.resolveTypeIfNeeded(getContentResolver());
         try {
             intent.prepareToLeaveProcess();
@@ -1197,7 +1189,6 @@ class ContextImpl extends Context {
             String receiverPermission, int appOp, BroadcastReceiver resultReceiver,
             Handler scheduler, int initialCode, String initialData,
             Bundle initialExtras) {
-        warnIfCallingFromSystemProcess();
         IIntentReceiver rd = null;
         if (resultReceiver != null) {
             if (mPackageInfo != null) {
@@ -1286,7 +1277,6 @@ class ContextImpl extends Context {
 
     @Override
     public void sendStickyBroadcast(Intent intent) {
-        warnIfCallingFromSystemProcess();
         String resolvedType = intent.resolveTypeIfNeeded(getContentResolver());
         try {
             intent.prepareToLeaveProcess();
@@ -1303,7 +1293,6 @@ class ContextImpl extends Context {
             BroadcastReceiver resultReceiver,
             Handler scheduler, int initialCode, String initialData,
             Bundle initialExtras) {
-        warnIfCallingFromSystemProcess();
         IIntentReceiver rd = null;
         if (resultReceiver != null) {
             if (mPackageInfo != null) {
@@ -1484,13 +1473,11 @@ class ContextImpl extends Context {
 
     @Override
     public ComponentName startService(Intent service) {
-        warnIfCallingFromSystemProcess();
         return startServiceCommon(service, mUser);
     }
 
     @Override
     public boolean stopService(Intent service) {
-        warnIfCallingFromSystemProcess();
         return stopServiceCommon(service, mUser);
     }
 
@@ -1548,7 +1535,6 @@ class ContextImpl extends Context {
     @Override
     public boolean bindService(Intent service, ServiceConnection conn,
             int flags) {
-        warnIfCallingFromSystemProcess();
         return bindServiceCommon(service, conn, flags, Process.myUserHandle());
     }
 
@@ -1873,18 +1859,6 @@ class ContextImpl extends Context {
                       uid,
                       uri,
                       message);
-    }
-
-    /**
-     * Logs a warning if the system process directly called a method such as
-     * {@link #startService(Intent)} instead of {@link #startServiceAsUser(Intent, UserHandle)}.
-     * The "AsUser" variants allow us to properly enforce the user's restrictions.
-     */
-    private void warnIfCallingFromSystemProcess() {
-        if (Process.myUid() == Process.SYSTEM_UID) {
-            Slog.w(TAG, "Calling a method in the system process without a qualified user: "
-                    + Debug.getCallers(5));
-        }
     }
 
     @Override

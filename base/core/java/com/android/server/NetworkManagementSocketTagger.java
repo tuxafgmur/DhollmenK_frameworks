@@ -78,11 +78,6 @@ public final class NetworkManagementSocketTagger extends SocketTagger {
 
         if (SystemProperties.getBoolean(PROP_QTAGUID_ENABLED, false)) {
             final int errno = native_tagSocketFd(fd, tag, uid);
-            if (errno < 0) {
-                Log.i(TAG, "tagSocketFd(" + fd.getInt$() + ", "
-                      + tag + ", " +
-                      + uid + ") failed with errno" + errno);
-            }
         }
     }
 
@@ -100,9 +95,6 @@ public final class NetworkManagementSocketTagger extends SocketTagger {
 
         if (SystemProperties.getBoolean(PROP_QTAGUID_ENABLED, false)) {
             final int errno = native_untagSocketFd(fd);
-            if (errno < 0) {
-                Log.w(TAG, "untagSocket(" + fd.getInt$() + ") failed with errno " + errno);
-            }
         }
     }
 

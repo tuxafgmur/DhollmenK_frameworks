@@ -87,16 +87,13 @@ public class InputConnectionWrapper implements InputConnection {
                 }
             }
         }
-        
+
         public void setTextBeforeCursor(CharSequence textBeforeCursor, int seq) {
             synchronized (this) {
                 if (seq == mSeq) {
                     mTextBeforeCursor = textBeforeCursor;
                     mHaveValue = true;
                     notifyAll();
-                } else {
-                    Log.i(TAG, "Got out-of-sequence callback " + seq + " (expected " + mSeq
-                            + ") in setTextBeforeCursor, ignoring.");
                 }
             }
         }
@@ -107,9 +104,6 @@ public class InputConnectionWrapper implements InputConnection {
                     mTextAfterCursor = textAfterCursor;
                     mHaveValue = true;
                     notifyAll();
-                } else {
-                    Log.i(TAG, "Got out-of-sequence callback " + seq + " (expected " + mSeq
-                            + ") in setTextAfterCursor, ignoring.");
                 }
             }
         }
@@ -120,9 +114,6 @@ public class InputConnectionWrapper implements InputConnection {
                     mSelectedText = selectedText;
                     mHaveValue = true;
                     notifyAll();
-                } else {
-                    Log.i(TAG, "Got out-of-sequence callback " + seq + " (expected " + mSeq
-                            + ") in setSelectedText, ignoring.");
                 }
             }
         }
@@ -130,12 +121,9 @@ public class InputConnectionWrapper implements InputConnection {
         public void setCursorCapsMode(int capsMode, int seq) {
             synchronized (this) {
                 if (seq == mSeq) {
-                    mCursorCapsMode = capsMode; 
-                    mHaveValue = true;  
+                    mCursorCapsMode = capsMode;
+                    mHaveValue = true;
                     notifyAll();
-                } else {
-                    Log.i(TAG, "Got out-of-sequence callback " + seq + " (expected " + mSeq
-                            + ") in setCursorCapsMode, ignoring.");
                 }
             }
         }
@@ -146,16 +134,12 @@ public class InputConnectionWrapper implements InputConnection {
                     mExtractedText = extractedText;
                     mHaveValue = true;
                     notifyAll();
-                } else {
-                    Log.i(TAG, "Got out-of-sequence callback " + seq + " (expected " + mSeq
-                            + ") in setExtractedText, ignoring.");
                 }
             }
         }
-        
+
         /**
          * Waits for a result for up to {@link #MAX_WAIT_TIME_MILLIS} milliseconds.
-         * 
          * <p>The caller must be synchronized on this callback object.
          */
         void waitForResultLocked() {
@@ -165,7 +149,6 @@ public class InputConnectionWrapper implements InputConnection {
             while (!mHaveValue) {
                 long remainingTime = endTime - SystemClock.uptimeMillis();
                 if (remainingTime <= 0) {
-                    Log.w(TAG, "Timed out waiting on IInputContextCallback");
                     return;
                 }
                 try {

@@ -434,7 +434,7 @@ public final class AnimatorSet extends Animator {
     @Override
     public AnimatorSet setDuration(long duration) {
         if (duration < 0) {
-            throw new IllegalArgumentException("duration must be a value of zero or greater");
+	    duration = 0;
         }
         // Just record the value for now - it will be used later when the AnimatorSet starts
         mDuration = duration;

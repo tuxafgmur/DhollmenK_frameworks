@@ -84,9 +84,6 @@ class KeyframeSet {
                 }
             }
         }
-        if (badValue) {
-            Log.w("Animator", "Bad value (NaN) in float animator");
-        }
         return new FloatKeyframeSet(keyframes);
     }
 

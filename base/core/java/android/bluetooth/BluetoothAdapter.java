@@ -82,7 +82,7 @@ import java.util.UUID;
  */
 public final class BluetoothAdapter {
     private static final String TAG = "BluetoothAdapter";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     /**
@@ -1315,26 +1315,6 @@ public final class BluetoothAdapter {
      */
     public Pair<byte[], byte[]> readOutOfBandData() {
         if (getState() != STATE_ON) return null;
-        //TODO(BT
-        /*
-        try {
-            byte[] hash;
-            byte[] randomizer;
-
-            byte[] ret = mService.readOutOfBandData();
-
-            if (ret  == null || ret.length != 32) return null;
-
-            hash = Arrays.copyOfRange(ret, 0, 16);
-            randomizer = Arrays.copyOfRange(ret, 16, 32);
-
-            if (DBG) {
-                Log.d(TAG, "readOutOfBandData:" + Arrays.toString(hash) +
-                  ":" + Arrays.toString(randomizer));
-            }
-            return new Pair<byte[], byte[]>(hash, randomizer);
-
-        } catch (RemoteException e) {Log.e(TAG, "", e);}*/
         return null;
     }
 
@@ -1440,8 +1420,6 @@ public final class BluetoothAdapter {
                         try {
                             if (cb != null) {
                                 cb.onBluetoothServiceUp(bluetoothService);
-                            } else {
-                                Log.d(TAG, "onBluetoothServiceUp: cb is null!!!");
                             }
                         } catch (Exception e)  { Log.e(TAG,"",e);}
                     }
@@ -1458,8 +1436,6 @@ public final class BluetoothAdapter {
                         try {
                             if (cb != null) {
                                 cb.onBluetoothServiceDown();
-                            } else {
-                                Log.d(TAG, "onBluetoothServiceDown: cb is null!!!");
                             }
                         } catch (Exception e)  { Log.e(TAG,"",e);}
                     }
@@ -1906,7 +1882,6 @@ public final class BluetoothAdapter {
             try {
                 BluetoothAdapter adapter = mBluetoothAdapter.get();
                 if (adapter == null) {
-                    Log.d(TAG, "onScanResult, BluetoothAdapter null");
                     return;
                 }
                 mLeScanCb.onLeScan(adapter.getRemoteDevice(address), rssi, advData);

@@ -766,7 +766,7 @@ public class ActionBarImpl extends ActionBar {
             }
             anim.setInterpolator(AnimationUtils.loadInterpolator(mContext,
                     com.android.internal.R.interpolator.accelerate_cubic));
-            anim.setDuration(250);
+            anim.setDuration(50);
             anim.addListener(mHideListener);
             mCurrentShowAnim = anim;
             anim.start();

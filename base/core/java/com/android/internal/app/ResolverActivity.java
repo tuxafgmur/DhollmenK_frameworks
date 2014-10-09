@@ -404,7 +404,6 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
                                 PackageManager.MATCH_DEFAULT_ONLY,
                                 filter, bestMatch, intent.getComponent());
                     } catch (RemoteException re) {
-                        Log.d(TAG, "Error calling setLastChosenActivity\n" + re);
                     }
                 }
             }
@@ -485,7 +484,6 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
                         mIntent, mIntent.resolveTypeIfNeeded(getContentResolver()),
                         PackageManager.MATCH_DEFAULT_ONLY);
             } catch (RemoteException re) {
-                Log.d(TAG, "Error calling setLastChosenActivity\n" + re);
             }
 
             mList.clear();

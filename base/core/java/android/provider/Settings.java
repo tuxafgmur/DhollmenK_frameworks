@@ -1144,13 +1144,9 @@ public final class Settings {
         public static String getStringForUser(ContentResolver resolver, String name,
                 int userHandle) {
             if (MOVED_TO_SECURE.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
-                        + " to android.provider.Settings.Secure, returning read-only value.");
                 return Secure.getStringForUser(resolver, name, userHandle);
             }
             if (MOVED_TO_GLOBAL.contains(name) || MOVED_TO_SECURE_THEN_GLOBAL.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
-                        + " to android.provider.Settings.Global, returning read-only value.");
                 return Global.getStringForUser(resolver, name, userHandle);
             }
             return sNameValueCache.getStringForUser(resolver, name, userHandle);
@@ -1171,13 +1167,9 @@ public final class Settings {
         public static boolean putStringForUser(ContentResolver resolver, String name, String value,
                 int userHandle) {
             if (MOVED_TO_SECURE.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
-                        + " to android.provider.Settings.Secure, value is unchanged.");
                 return false;
             }
             if (MOVED_TO_GLOBAL.contains(name) || MOVED_TO_SECURE_THEN_GLOBAL.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
-                        + " to android.provider.Settings.Global, value is unchanged.");
                 return false;
             }
             return sNameValueCache.putStringForUser(resolver, name, value, userHandle);
@@ -1191,13 +1183,9 @@ public final class Settings {
          */
         public static Uri getUriFor(String name) {
             if (MOVED_TO_SECURE.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
-                    + " to android.provider.Settings.Secure, returning Secure URI.");
                 return Secure.getUriFor(Secure.CONTENT_URI, name);
             }
             if (MOVED_TO_GLOBAL.contains(name) || MOVED_TO_SECURE_THEN_GLOBAL.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
-                        + " to android.provider.Settings.Global, returning read-only global URI.");
                 return Global.getUriFor(Global.CONTENT_URI, name);
             }
             return getUriFor(CONTENT_URI, name);
@@ -4540,8 +4528,6 @@ public final class Settings {
         public static String getStringForUser(ContentResolver resolver, String name,
                 int userHandle) {
             if (MOVED_TO_GLOBAL.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.Secure"
-                        + " to android.provider.Settings.Global.");
                 return Global.getStringForUser(resolver, name, userHandle);
             }
 
@@ -4580,8 +4566,6 @@ public final class Settings {
         public static boolean putStringForUser(ContentResolver resolver, String name, String value,
                 int userHandle) {
             if (MOVED_TO_GLOBAL.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.System"
-                        + " to android.provider.Settings.Global");
                 return Global.putStringForUser(resolver, name, value, userHandle);
             }
             return sNameValueCache.putStringForUser(resolver, name, value, userHandle);
@@ -4595,8 +4579,6 @@ public final class Settings {
          */
         public static Uri getUriFor(String name) {
             if (MOVED_TO_GLOBAL.contains(name)) {
-                Log.w(TAG, "Setting " + name + " has moved from android.provider.Settings.Secure"
-                        + " to android.provider.Settings.Global, returning global URI.");
                 return Global.getUriFor(Global.CONTENT_URI, name);
             }
             return getUriFor(CONTENT_URI, name);
