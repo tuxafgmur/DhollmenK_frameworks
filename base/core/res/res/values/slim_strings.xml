@@ -33,7 +33,7 @@
     <string name="reboot_system" product="default">Reboot phone</string>
     <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
 
-    <!-- label for item that screenshots in phone options dialog -->
+    <!-- label for item that screenshots in device options dialog -->
     <string name="global_action_screenshot">Screenshot</string>
 
     <!-- Button to reboot the phone, within the Reboot Options dialog -->
@@ -51,10 +51,11 @@
     <!-- Button to restarts zygote (Android only), within the Reboot Options dialog -->
     <string name="reboot_soft">Android</string>
 
-    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
+    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the device. -->
     <string name="reboot_progress">Rebooting\u2026</string>
-    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the phone, there will be a confirmation dialog.  This is the message. -->
-    <string name="reboot_confirm">Your phone will reboot.</string>
+    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the device, there will be a confirmation dialog.  This is the message. -->
+    <string name="reboot_confirm" product="tablet">Your tablet will reboot.</string>
+    <string name="reboot_confirm" product="default">Your phone will reboot.</string>
 
     <!-- label for item that reboots the phone in phone options dialog -->
     <string name="global_action_reboot">Reboot</string>

@@ -94,23 +94,23 @@
     <bool name="config_sendAudioBecomingNoisy">true</bool>
 
     <!-- The duration (in milliseconds) of a short animation. -->
-    <integer name="config_shortAnimTime">200</integer>
+    <integer name="config_shortAnimTime">40</integer>
 
     <!-- The duration (in milliseconds) of a medium-length animation. -->
-    <integer name="config_mediumAnimTime">400</integer>
+    <integer name="config_mediumAnimTime">80</integer>
 
     <!-- The duration (in milliseconds) of a long animation. -->
-    <integer name="config_longAnimTime">500</integer>
+    <integer name="config_longAnimTime">100</integer>
 
     <!-- The duration (in milliseconds) of the activity open/close and fragment open/close animations. -->
-    <integer name="config_activityShortDur">150</integer>
-    <integer name="config_activityDefaultDur">220</integer>
+    <integer name="config_activityShortDur">60</integer>
+    <integer name="config_activityDefaultDur">80</integer>
 
     <!-- The duration (in milliseconds) of recent app screen animation. -->
-    <integer name="config_recentDefaultDur">300</integer>
+    <integer name="config_recentDefaultDur">100</integer>
 
     <!-- The duration (in milliseconds) of recent app screen exit animation. -->
-    <integer name="config_recentExitDur">450</integer>
+    <integer name="config_recentExitDur">150</integer>
 
     <!-- Duration for the dim animation behind a dialog.  This may be either
          a percentage, which is relative to the duration of the enter/open
@@ -346,19 +346,18 @@
     <bool translatable="false" name="config_wifi_background_scan_support">false</bool>
 
     <!-- Integer indicating wpa_supplicant scan interval in milliseconds -->
-    <integer translatable="false" name="config_wifi_supplicant_scan_interval">15000</integer>
+    <integer translatable="false" name="config_wifi_supplicant_scan_interval">18000</integer>
 
     <!-- Integer indicating wpa_supplicant scan interval when p2p is connected in milliseconds -->
-    <integer translatable="false" name="config_wifi_scan_interval_p2p_connected">60000</integer>
+    <integer translatable="false" name="config_wifi_scan_interval_p2p_connected">90000</integer>
 
     <!-- Integer indicating the framework scan interval in milliseconds. This is used in the scenario
          where the chipset does not support background scanning (config_wifi_background_scan_suport
          is false) to set up a periodic wake up scan so that the device can connect to a new access
          point on the move. A value of 0 means no periodic scans will be used in the framework. -->
-    <integer translatable="false" name="config_wifi_framework_scan_interval">300000</integer>
+    <integer translatable="false" name="config_wifi_framework_scan_interval">360000</integer>
 
-    <!-- Wifi driver stop delay, in milliseconds.
-         Default value is 2 minutes. -->
+    <!-- Wifi driver stop delay, in milliseconds. Default value is 2 minutes. -->
     <integer translatable="false" name="config_wifi_driver_stop_delay">120000</integer>
 
     <!-- Wifi driver supports batched scan -->

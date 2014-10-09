@@ -24,13 +24,13 @@
             android:fillEnabled="true" android:fillBefore="true" android:fillAfter="true"
             android:interpolator="@interpolator/decelerate_quad"
             android:startOffset="300"
-            android:duration="400"/>
+            android:duration="40"/>
 
     <translate android:fromYDelta="120%" android:toYDelta="0"
             android:fillEnabled="true" android:fillBefore="true" android:fillAfter="true"
             android:interpolator="@interpolator/decelerate_quint"
             android:startOffset="300"
-            android:duration="400" />
+            android:duration="40" />
 
     <scale android:fromXScale=".5" android:toXScale="1.0"
             android:fromYScale=".5" android:toYScale="1.0"
@@ -38,5 +38,5 @@
             android:fillEnabled="true" android:fillBefore="true" android:fillAfter="true"
             android:interpolator="@interpolator/decelerate_quad"
             android:startOffset="300"
-            android:duration="400" />
+            android:duration="40" />
 </set>

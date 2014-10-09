@@ -24,12 +24,12 @@
             android:interpolator="@interpolator/decelerate_cubic"
             android:fillEnabled="true"
             android:fillBefore="false" android:fillAfter="true"
-            android:duration="300"/>
+            android:duration="30"/>
     <scale android:fromXScale=".8" android:toXScale="1.0"
             android:fromYScale=".8" android:toYScale="1.0"
             android:pivotX="50%p" android:pivotY="50%p"
             android:interpolator="@interpolator/decelerate_cubic"
             android:fillEnabled="true"
             android:fillBefore="false" android:fillAfter="true"
-            android:duration="300"/>
+            android:duration="30"/>
 </set>
