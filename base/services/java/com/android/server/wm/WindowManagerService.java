@@ -199,7 +199,7 @@ public class WindowManagerService extends IWindowManager.Stub
     static final boolean PROFILE_ORIENTATION = false;
     static final boolean localLOGV = false;
 
-    static boolean 		TbFirst = true;
+    static boolean 	TbFirst = true;
     static int 		TbsmallestScreenWidthDp = 0;
     static int 		TbscreenLayout = 0;
 
@@ -257,7 +257,7 @@ public class WindowManagerService extends IWindowManager.Stub
     /** Amount of time (in milliseconds) to animate the fade-in-out transition for
      * compatible windows.
      */
-    static final int DEFAULT_FADE_IN_OUT_DURATION = 130;
+    static final int DEFAULT_FADE_IN_OUT_DURATION = 40;
 
     /** Amount of time (in milliseconds) to delay before declaring a window freeze timeout. */
     static final int WINDOW_FREEZE_TIMEOUT_DURATION = 2000;
@@ -551,9 +551,9 @@ public class WindowManagerService extends IWindowManager.Stub
 
     PowerManagerService mPowerManager;
 
-    float mWindowAnimationScale = 0.75f;
-    float mTransitionAnimationScale = 0.75f;
-    float mAnimatorDurationScale = 0.75f;
+    float mWindowAnimationScale = 0.50f;
+    float mTransitionAnimationScale = 0.50f;
+    float mAnimatorDurationScale = 0.50f;
 
     final InputManagerService mInputManager;
     final DisplayManagerService mDisplayManagerService;
