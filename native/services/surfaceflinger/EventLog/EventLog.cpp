@@ -56,11 +56,6 @@ EventLog::TagBuffer::TagBuffer(int32_t tag)
 }
 
 void EventLog::TagBuffer::log() {
-    if (mOverflow) {
-        ALOGW("couldn't log to binary event log: overflow.");
-    } else if (android_bWriteLog(mTag, mStorage, mPos) < 0) {
-        ALOGE("couldn't log to EventLog: %s", strerror(errno));
-    }
     // purge the buffer
     mPos = 0;
     mOverflow = false;

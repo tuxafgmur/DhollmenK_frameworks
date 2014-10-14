@@ -2311,7 +2311,6 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
          || objectTypeIndication  == 0x69) {
         // Our software MP3 audio decoder may not be able to handle
          mLastTrack->meta->setCString(kKeyMIMEType, MEDIA_MIMETYPE_AUDIO_MPEG);
-         ALOGD("objectTypeIndication:0x%x, set mimetype to mpeg ",objectTypeIndication);
          return OK;
     }
 #else
@@ -2319,7 +2318,6 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
         // The media subtype is MP3 audio
         // Our software MP3 audio decoder may not be able to handle
         // packetized MP3 audio; for now, lets just return ERROR_UNSUPPORTED
-        ALOGE("MP3 track in MP4/3GPP file is not supported");
         return ERROR_UNSUPPORTED;
     }
 #endif
@@ -2358,10 +2356,6 @@ status_t MPEG4Extractor::updateAudioTrackInfoFromESDS_MPEG4Audio(
 
     if (objectType == 31) {  // AAC-ELD => additional 6 bits
         objectType = 32 + br.getBits(6);
-    }
-
-    if(objectType == 1) { //AAC Main profile
-        ALOGD("\n >>> Found AAC mainprofile in MPEG4 Extractor... \n");
     }
 
     mLastTrack->meta->setInt32(kKeyAACProfile, objectType);

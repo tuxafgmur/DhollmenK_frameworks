@@ -81,8 +81,6 @@ static bool Resync(
 
             *inout_pos += len;
 
-            ALOGV("skipped ID3 tag, new starting offset is %lld (0x%016llx)",
-                 *inout_pos, *inout_pos);
         }
 
         if (post_id3_pos != NULL) {
@@ -105,7 +103,6 @@ static bool Resync(
     do {
         if (pos >= *inout_pos + kMaxBytesChecked) {
             // Don't scan forever.
-            ALOGV("giving up at offset %lld", pos);
             break;
         }
 
@@ -155,8 +152,6 @@ static bool Resync(
             continue;
         }
 
-        ALOGV("found possible 1st frame at %lld (header = 0x%08x)", pos, header);
-
         // We found what looks like a valid frame,
         // now find its successors.
 
@@ -172,8 +167,6 @@ static bool Resync(
 
             uint32_t test_header = U32_AT(tmp);
 
-            ALOGV("subsequent header is %08x", test_header);
-
             if ((test_header & kMask) != (header & kMask)) {
                 valid = false;
                 break;
@@ -186,8 +179,6 @@ static bool Resync(
                 break;
             }
 
-            ALOGV("found subsequent frame #%d at %lld", j + 2, test_pos);
-
             test_pos += test_frame_size;
         }
 
@@ -197,8 +188,6 @@ static bool Resync(
             if (out_header != NULL) {
                 *out_header = header;
             }
-        } else {
-            ALOGV("no dice, no valid sequence of frames found.");
         }
 
         ++pos;
@@ -537,12 +526,8 @@ status_t MP3Source::read(
             break;
         }
 
-        // Lost sync.
-        ALOGV("lost sync! header = 0x%08x, old header = 0x%08x\n", header, mFixedHeader);
-
         off64_t pos = mCurrentPos;
         if (!Resync(mDataSource, mFixedHeader, &pos, NULL, NULL)) {
-            ALOGE("Unable to resync. Signalling end of stream.");
 
             buffer->release();
             buffer = NULL;

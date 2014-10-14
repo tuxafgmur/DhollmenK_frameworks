@@ -402,12 +402,6 @@ public final class LoadedApk {
             }
             warned = true;
             Thread.currentThread().setContextClassLoader(getParent());
-            Slog.w(ActivityThread.TAG, "ClassLoader." + methodName + ": " +
-                  "The class loader returned by " +
-                  "Thread.getContextClassLoader() may fail for processes " +
-                  "that host multiple applications. You should explicitly " +
-                  "specify a context class loader. For example: " +
-                  "Thread.setContextClassLoader(getClass().getClassLoader());");
         }
 
         @Override public URL getResource(String resName) {
@@ -554,7 +548,6 @@ public final class LoadedApk {
             }
         }
         mUnregisteredReceivers.remove(context);
-        //Slog.i(TAG, "Receiver registrations: " + mReceivers);
         ArrayMap<ServiceConnection, LoadedApk.ServiceDispatcher> smap =
             mServices.remove(context);
         if (smap != null) {
@@ -578,7 +571,6 @@ public final class LoadedApk {
             }
         }
         mUnboundServices.remove(context);
-        //Slog.i(TAG, "Service registrations: " + mServices);
     }
 
     public IIntentReceiver getReceiverDispatcher(BroadcastReceiver r,
@@ -676,8 +668,6 @@ public final class LoadedApk {
                 LoadedApk.ReceiverDispatcher rd = mDispatcher.get();
                 if (ActivityThread.DEBUG_BROADCAST) {
                     int seq = intent.getIntExtra("seq", -1);
-                    Slog.i(ActivityThread.TAG, "Receiving broadcast " + intent.getAction() + " seq=" + seq
-                            + " to " + (rd != null ? rd.mReceiver : null));
                 }
                 if (rd != null) {
                     rd.performReceive(intent, resultCode, data, extras,

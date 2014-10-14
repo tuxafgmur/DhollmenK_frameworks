@@ -1366,9 +1366,6 @@ public class PackageParser {
                 pkg.requestedPermissionsRequired.add(Boolean.TRUE);
             }
         }
-        if (implicitPerms != null) {
-            Slog.i(TAG, implicitPerms.toString());
-        }
 
         final int NS = PackageParser.SPLIT_PERMISSIONS.length;
         for (int is=0; is<NS; is++) {
@@ -2465,11 +2462,7 @@ public class PackageParser {
                 if (!parseIntent(res, parser, attrs, true, intent, outError)) {
                     return null;
                 }
-                if (intent.countActions() == 0) {
-                    Slog.w(TAG, "No actions in intent filter at "
-                            + mArchiveSourcePath + " "
-                            + parser.getPositionDescription());
-                } else {
+                if (intent.countActions() != 0) {
                     a.intents.add(intent);
                 }
             } else if (!receiver && parser.getName().equals("preferred")) {
@@ -2477,11 +2470,7 @@ public class PackageParser {
                 if (!parseIntent(res, parser, attrs, false, intent, outError)) {
                     return null;
                 }
-                if (intent.countActions() == 0) {
-                    Slog.w(TAG, "No actions in preferred at "
-                            + mArchiveSourcePath + " "
-                            + parser.getPositionDescription());
-                } else {
+                if (intent.countActions() != 0) {
                     if (owner.preferredActivityFilters == null) {
                         owner.preferredActivityFilters = new ArrayList<ActivityIntentInfo>();
                     }
@@ -3172,12 +3161,10 @@ public class PackageParser {
         TypedValue v = sa.peekValue(
                 com.android.internal.R.styleable.AndroidManifestMetaData_resource);
         if (v != null && v.resourceId != 0) {
-            //Slog.i(TAG, "Meta data ref " + name + ": " + v);
             data.putInt(name, v.resourceId);
         } else {
             v = sa.peekValue(
                     com.android.internal.R.styleable.AndroidManifestMetaData_value);
-            //Slog.i(TAG, "Meta data " + name + ": " + v);
             if (v != null) {
                 if (v.type == TypedValue.TYPE_STRING) {
                     CharSequence cs = v.coerceToString();

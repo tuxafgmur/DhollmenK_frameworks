@@ -956,8 +956,6 @@ public final class ActiveServices {
                 ServiceInfo sInfo =
                     rInfo != null ? rInfo.serviceInfo : null;
                 if (sInfo == null) {
-                    Slog.w(TAG, "Unable to start service " + service + " U=" + userId +
-                          ": not found");
                     return null;
                 }
                 ComponentName name = new ComponentName(

@@ -695,8 +695,6 @@ class MountService extends IMountService.Stub
         }
 
         if (state.equals(oldState)) {
-            Slog.w(TAG, String.format("Duplicate state transition (%s -> %s) for %s",
-                    state, state, path));
             return;
         }
 
@@ -821,7 +819,6 @@ class MountService extends IMountService.Stub
                     builder.append(" " + str);
                 }
             }
-            Slog.i(TAG, builder.toString());
         }
         if (code == VoldResponseCode.VolumeStateChange) {
             /*
@@ -990,7 +987,6 @@ class MountService extends IMountService.Stub
             action = Intent.ACTION_MEDIA_SHARED;
             if (LOCAL_LOGD) Slog.d(TAG, "Sending ACTION_MEDIA_SHARED intent");
         } else if (newState == VolumeState.SharedMnt) {
-            Slog.e(TAG, "Live shared mounts not supported yet!");
             return;
         } else {
             Slog.e(TAG, "Unhandled VolumeState {" + newState + "}");
@@ -1265,13 +1261,6 @@ class MountService extends IMountService.Stub
                             com.android.internal.R.styleable.Storage_maxFileSize, 0) * 1024L * 1024L;
                     boolean externalApps = a.getBoolean(
                             com.android.internal.R.styleable.Storage_externalApps, false);
-
-                    Slog.d(TAG, "got storage path: " + path + " description: " + description +
-                            " primary: " + primary + " removable: " + removable +
-                            " emulated: " + emulated +  " mtpReserve: " + mtpReserve +
-                            " allowMassStorage: " + allowMassStorage +
-                            " maxFileSize: " + maxFileSize +
-                            " externalApps: " + externalApps);
 
                     if (emulated) {
                         // For devices with emulated storage, we create separate

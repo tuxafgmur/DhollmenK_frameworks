@@ -57,7 +57,6 @@ Caches::Caches(): Singleton<Caches>(),
     initExtensions();
 
     mDebugLevel = readDebugLevel();
-    ALOGD("Enabling debug mode %d", mDebugLevel);
 }
 
 bool Caches::init() {

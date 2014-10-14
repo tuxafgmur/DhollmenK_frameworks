@@ -708,9 +708,6 @@ public class MediaPlayer implements SubtitleController.Listener
      * the media.
      */
     public void setSurface(Surface surface) {
-        if (mScreenOnWhilePlaying && surface != null) {
-            Log.w(TAG, "setScreenOnWhilePlaying(true) is ineffective for Surface");
-        }
         mSurfaceHolder = null;
         _setVideoSurface(surface);
         updateSurfaceScreenOn();
@@ -915,8 +912,6 @@ public class MediaPlayer implements SubtitleController.Listener
                 fd.close();
             }
         }
-
-        Log.d(TAG, "Couldn't open file on client side, trying server side");
 
         setDataSource(uri.toString(), headers);
 
@@ -1139,9 +1134,6 @@ public class MediaPlayer implements SubtitleController.Listener
      */
     public void setScreenOnWhilePlaying(boolean screenOn) {
         if (mScreenOnWhilePlaying != screenOn) {
-            if (screenOn && mSurfaceHolder == null) {
-                Log.w(TAG, "setScreenOnWhilePlaying(true) is ineffective without a SurfaceHolder");
-            }
             mScreenOnWhilePlaying = screenOn;
             updateSurfaceScreenOn();
         }
@@ -1776,7 +1768,6 @@ public class MediaPlayer implements SubtitleController.Listener
         }
         for (int i = 0; i < mInbandSubtitleTracks.length; i++) {
             if (mInbandSubtitleTracks[i] == track) {
-                Log.v(TAG, "Selecting subtitle track " + i);
                 mSelectedSubtitleTrackIndex = i;
                 try {
                     selectOrDeselectInbandTrack(mSelectedSubtitleTrackIndex, true);
@@ -1843,7 +1834,6 @@ public class MediaPlayer implements SubtitleController.Listener
 
     private void scanInternalSubtitleTracks() {
         if (mSubtitleController == null) {
-            Log.e(TAG, "Should have subtitle controller already set");
             return;
         }
 
@@ -2067,8 +2057,6 @@ public class MediaPlayer implements SubtitleController.Listener
                 mSubtitleController.selectTrack(track);
             } else if (mSubtitleController.getSelectedTrack() == track) {
                 mSubtitleController.selectTrack(null);
-            } else {
-                Log.w(TAG, "trying to deselect track that was not selected");
             }
             return;
         }
@@ -2255,7 +2243,6 @@ public class MediaPlayer implements SubtitleController.Listener
             case MEDIA_INFO:
                 switch (msg.arg1) {
                 case MEDIA_INFO_VIDEO_TRACK_LAGGING:
-                    Log.i(TAG, "Info (" + msg.arg1 + "," + msg.arg2 + ")");
                     break;
                 case MEDIA_INFO_METADATA_UPDATE:
                     scanInternalSubtitleTracks();

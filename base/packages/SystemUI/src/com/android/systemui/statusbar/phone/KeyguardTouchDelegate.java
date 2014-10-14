@@ -51,14 +51,12 @@ public class KeyguardTouchDelegate {
     private final ServiceConnection mKeyguardConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Slog.v(TAG, "Connected to keyguard");
             mService = IKeyguardService.Stub.asInterface(service);
 
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Slog.v(TAG, "Disconnected from keyguard");
             mService = null;
             sInstance = null; // force reconnection if this goes away
         }
@@ -92,8 +90,6 @@ public class KeyguardTouchDelegate {
             } catch (RemoteException e) {
                 Slog.e(TAG, "RemoteException calling keyguard.isSecure()!", e);
             }
-        } else {
-            Slog.w(TAG, "isSecure(): NO SERVICE!");
         }
         return false;
     }
@@ -108,8 +104,6 @@ public class KeyguardTouchDelegate {
                 // What to do?
                 Slog.e(TAG, "RemoteException sending event to keyguard!", e);
             }
-        } else {
-            Slog.w(TAG, "dispatch(event): NO SERVICE!");
         }
         return false;
     }
@@ -122,8 +116,6 @@ public class KeyguardTouchDelegate {
             } catch (RemoteException e) {
                 Slog.w(TAG , "Remote Exception", e);
             }
-        } else {
-            Slog.w(TAG, "isInputRestricted(): NO SERVICE!");
         }
         return false;
     }
@@ -136,8 +128,6 @@ public class KeyguardTouchDelegate {
             } catch (RemoteException e) {
                 Slog.w(TAG , "Remote Exception", e);
             }
-        } else {
-            Slog.w(TAG, "isShowingAndNotHidden(): NO SERVICE!");
         }
         return false;
     }
@@ -151,8 +141,6 @@ public class KeyguardTouchDelegate {
                 // What to do?
                 Slog.e(TAG, "RemoteException launching assistant!", e);
             }
-        } else {
-            Slog.w(TAG, "showAssistant(event): NO SERVICE!");
         }
     }
 
@@ -165,8 +153,6 @@ public class KeyguardTouchDelegate {
                 // What to do?
                 Slog.e(TAG, "RemoteException launching camera!", e);
             }
-        } else {
-            Slog.w(TAG, "launchCamera(): NO SERVICE!");
         }
     }
 
@@ -179,8 +165,6 @@ public class KeyguardTouchDelegate {
                 // What to do?
                 Slog.e(TAG, "RemoteException dismissing keyguard!", e);
             }
-        } else {
-            Slog.w(TAG, "dismiss(): NO SERVICE!");
         }
     }
 

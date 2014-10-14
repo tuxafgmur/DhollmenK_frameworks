@@ -1789,8 +1789,6 @@ void MediaPlayerService::AudioOutput::CallbackWrapper(
                     me->mCallbackCookie, CB_EVENT_TEAR_DOWN);
             break;
 
-        default:
-            ALOGE("received unknown event type: %d inside CallbackWrapper !", event);
         }
 
         data->unlock();
