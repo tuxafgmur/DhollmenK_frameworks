@@ -61,11 +61,11 @@ import java.util.zip.GZIPOutputStream;
 public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
     private static final String TAG = "DropBoxManagerService";
     private static final int DEFAULT_AGE_SECONDS = 3 * 86400;
-    private static final int DEFAULT_MAX_FILES = 1000;
+    private static final int DEFAULT_MAX_FILES = 50;
     private static final int DEFAULT_QUOTA_KB = 5 * 1024;
     private static final int DEFAULT_QUOTA_PERCENT = 10;
     private static final int DEFAULT_RESERVE_PERCENT = 10;
-    private static final int QUOTA_RESCAN_MILLIS = 150000;
+    private static final int QUOTA_RESCAN_MILLIS = 3600000;
 
     // mHandler 'what' value.
     private static final int MSG_SEND_BROADCAST = 1;
@@ -361,7 +361,6 @@ public final class DropBoxManagerService extends IDropBoxManagerService.Stub {
             if (!match) continue;
 
             numFound++;
-            if (doPrint) out.append("========================================\n");
             out.append(date).append(" ").append(entry.tag == null ? "(no tag)" : entry.tag);
             if (entry.file == null) {
                 out.append(" (no file)\n");

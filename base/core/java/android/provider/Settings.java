@@ -927,11 +927,6 @@ public final class Settings {
                 // Our own user's settings data uses a client-side cache
                 synchronized (this) {
                     if (mValuesVersion != newValuesVersion) {
-                        if (LOCAL_LOGV || false) {
-                            Log.v(TAG, "invalidate [" + mUri.getLastPathSegment() + "]: current "
-                                    + newValuesVersion + " != cached " + mValuesVersion);
-                        }
-
                         mValues.clear();
                         mValuesVersion = newValuesVersion;
                     }

@@ -1071,12 +1071,6 @@ public final class ActivityThread {
             synchronized (this) {
                 if (mLastProcessState != processState) {
                     mLastProcessState = processState;
-
-                    // Update Dalvik state here based on ActivityManager.PROCESS_STATE_* constants.
-                    if (false) {
-                        Slog.i(TAG, "******************* PROCESS STATE CHANGED TO: " + processState
-                                + (fromIpc ? " (from ipc": ""));
-                    }
                 }
             }
         }
@@ -4079,30 +4073,15 @@ public final class ActivityThread {
         if( !str.equals("") ){
             float heapUtil = Float.valueOf(str.trim()).floatValue();
             VMRuntime.getRuntime().setTargetHeapUtilization(heapUtil);
-            Log.d(TAG, "setTargetHeapUtilization:" + str );
         }
         int heapMinFree  = SystemProperties.getInt("dalvik.vm.heapMinFree", 0 );
         if( heapMinFree > 0 ){
             VMRuntime.getRuntime().setTargetHeapMinFree(heapMinFree);
-            Log.d(TAG, "setTargetHeapMinFree:" + heapMinFree );
         }
         int heapConcurrentStart  = SystemProperties.getInt("dalvik.vm.heapconcurrentstart", 0 );
         if( heapConcurrentStart > 0 ){
             VMRuntime.getRuntime().setTargetHeapConcurrentStart(heapConcurrentStart);
-            Log.d(TAG, "setTargetHeapConcurrentStart:" + heapConcurrentStart );
         }
-
-        ////
-        ////If want to set application specific GC paramters, can use
-        ////the following check
-        ////
-        //if( data.processName.equals("com.android.gallery3d")) {
-        //    VMRuntime.getRuntime().setTargetHeapUtilization(0.25f);
-        //    VMRuntime.getRuntime().setTargetHeapMinFree(12*1024*1024);
-        //    VMRuntime.getRuntime().setTargetHeapConcurrentStart(4*1024*1024);
-        //}
-
-
 
         android.ddm.DdmHandleAppName.setAppName(data.processName,
                                                 UserHandle.myUserId());
@@ -4506,8 +4485,6 @@ public final class ActivityThread {
             if (!jBinder.isBinderAlive()) {
                 // The hosting process of the provider has died; we can't
                 // use this one.
-                Log.i(TAG, "Acquiring provider " + auth + " for user " + userId
-                        + ": existing object's process dead");
                 handleUnstableProviderDiedLocked(jBinder, true);
                 return null;
             }

@@ -115,7 +115,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class StrictMode {
     private static final String TAG = "StrictMode";
-    private static final boolean LOG_V = Log.isLoggable(TAG, Log.VERBOSE);
+    private static final boolean LOG_V = false;
 
     private static final boolean IS_USER_BUILD = "user".equals(Build.TYPE);
     private static final boolean IS_ENG_BUILD = "eng".equals(Build.TYPE);
@@ -136,7 +136,7 @@ public final class StrictMode {
     public static final String VISUAL_PROPERTY = "persist.sys.strictmode.visual";
 
     // Only log a duplicate stack trace to the logs every second.
-    private static final long MIN_LOG_INTERVAL_MS = 1000;
+    private static final long MIN_LOG_INTERVAL_MS = 2000;
 
     // Only show an annoying dialog at most every 30 seconds
     private static final long MIN_DIALOG_INTERVAL_MS = 30000;
@@ -146,7 +146,7 @@ public final class StrictMode {
 
     // How many offending stacks to keep track of (and time) per loop
     // of the Looper.
-    private static final int MAX_OFFENSES_PER_LOOP = 10;
+    private static final int MAX_OFFENSES_PER_LOOP = 5;
 
     // Thread-policy:
 
@@ -939,7 +939,11 @@ public final class StrictMode {
     public static boolean conditionallyEnableDebugLogging() {
         boolean doFlashes = SystemProperties.getBoolean(VISUAL_PROPERTY, false)
                 && !amTheSystemServerProcess();
-        final boolean suppress = SystemProperties.getBoolean(DISABLE_PROPERTY, false);
+
+	// * Mod to NOT enable Debug Loging - Tuxafgmur
+	// final boolean suppress = SystemProperties.getBoolean(DISABLE_PROPERTY, false);
+        final boolean suppress = true;
+        // * End mod
 
         // For debug builds, log event loop stalls to dropbox for analysis.
         // Similar logic also appears in ActivityThread.java for system apps.
@@ -1303,16 +1307,6 @@ public final class StrictMode {
             mLastViolationTime.put(crashFingerprint, now);
             long timeSinceLastViolationMillis = lastViolationTime == 0 ?
                     Long.MAX_VALUE : (now - lastViolationTime);
-
-            if ((info.policy & PENALTY_LOG) != 0 &&
-                timeSinceLastViolationMillis > MIN_LOG_INTERVAL_MS) {
-                if (info.durationMillis != -1) {
-                    Log.d(TAG, "StrictMode policy violation; ~duration=" +
-                          info.durationMillis + " ms: " + info.crashInfo.stackTrace);
-                } else {
-                    Log.d(TAG, "StrictMode policy violation: " + info.crashInfo.stackTrace);
-                }
-            }
 
             // The violationMaskSubset, passed to ActivityManager, is a
             // subset of the original StrictMode policy bitmask, with
