@@ -34,7 +34,7 @@ import java.net.UnknownHostException;
  * This is RIL_Data_Call_Response_v5 from ril.h
  */
 public class DataCallResponse {
-    private final boolean DBG = true;
+    private final boolean DBG = false;
     private final String LOG_TAG = "DataCallResponse";
 
     public int version = 0;

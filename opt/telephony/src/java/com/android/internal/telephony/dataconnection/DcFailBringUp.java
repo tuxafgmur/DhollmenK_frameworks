@@ -26,7 +26,7 @@ import android.telephony.Rlog;
  */
 class DcFailBringUp {
     private static final String LOG_TAG = "DcFailBringUp";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     static final String INTENT_BASE = DataConnection.class.getPackage().getName();
 

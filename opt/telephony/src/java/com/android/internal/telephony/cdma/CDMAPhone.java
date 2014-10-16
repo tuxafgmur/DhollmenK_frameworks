@@ -84,7 +84,7 @@ import static com.android.internal.telephony.TelephonyProperties.PROPERTY_ICC_OP
  */
 public class CDMAPhone extends PhoneBase {
     static final String LOG_TAG = "CDMAPhone";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false; /* STOP SHIP if true */
 
     // Default Emergency Callback Mode exit timer

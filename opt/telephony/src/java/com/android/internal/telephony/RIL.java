@@ -494,20 +494,6 @@ public class RIL extends BaseCommands implements CommandsInterface {
                         //ignore failure to close after failure to connect
                     }
 
-                    // don't print an error message after the the first time
-                    // or after the 8th time
-
-                    if (retryCount == 8) {
-                        Rlog.e (RILJ_LOG_TAG,
-                            "Couldn't find '" + SOCKET_NAME_RIL
-                            + "' socket after " + retryCount
-                            + " times, continuing to retry silently");
-                    } else if (retryCount > 0 && retryCount < 8) {
-                        Rlog.i (RILJ_LOG_TAG,
-                            "Couldn't find '" + SOCKET_NAME_RIL
-                            + "' socket; retrying after timeout");
-                    }
-
                     try {
                         Thread.sleep(SOCKET_OPEN_RETRY_MILLIS);
                     } catch (InterruptedException er) {
@@ -520,7 +506,6 @@ public class RIL extends BaseCommands implements CommandsInterface {
                 retryCount = 0;
 
                 mSocket = s;
-                Rlog.i(RILJ_LOG_TAG, "Connected to '" + SOCKET_NAME_RIL + "' socket");
 
                 /* Compatibility with qcom's DSDS (Dual SIM) stack */
                 if (needsOldRilFeature("qcomdsds")) {
@@ -528,7 +513,6 @@ public class RIL extends BaseCommands implements CommandsInterface {
                     byte[] data = str.getBytes();
                     try {
                         mSocket.getOutputStream().write(data);
-                        Rlog.i(LOG_TAG, "Data sent!!");
                     } catch (IOException ex) {
                             Rlog.e(LOG_TAG, "IOException", ex);
                     } catch (RuntimeException exc) {
@@ -560,15 +544,10 @@ public class RIL extends BaseCommands implements CommandsInterface {
                         p.recycle();
                     }
                 } catch (java.io.IOException ex) {
-                    Rlog.i(RILJ_LOG_TAG, "'" + SOCKET_NAME_RIL + "' socket closed",
-                          ex);
                 } catch (Throwable tr) {
                     Rlog.e(RILJ_LOG_TAG, "Uncaught exception read length=" + length +
                         "Exception:" + tr.toString());
                 }
-
-                Rlog.i(RILJ_LOG_TAG, "Disconnected from '" + SOCKET_NAME_RIL
-                      + "' socket");
 
                 setRadioState (RadioState.RADIO_UNAVAILABLE);
 

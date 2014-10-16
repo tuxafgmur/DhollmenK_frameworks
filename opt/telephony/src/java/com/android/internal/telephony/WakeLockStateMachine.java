@@ -35,7 +35,7 @@ import com.android.internal.util.StateMachine;
  * {@link #quit}.
  */
 public abstract class WakeLockStateMachine extends StateMachine {
-    protected static final boolean DBG = true;    // TODO: change to false
+    protected static final boolean DBG = false;
 
     private final PowerManager.WakeLock mWakeLock;
 
@@ -114,7 +114,6 @@ public abstract class WakeLockStateMachine extends StateMachine {
             switch (msg.what) {
                 case EVENT_UPDATE_PHONE_OBJECT: {
                     mPhone = (PhoneBase) msg.obj;
-                    log("updatePhoneObject: phone=" + mPhone.getClass().getSimpleName());
                     break;
                 }
                 default: {
@@ -184,12 +183,10 @@ public abstract class WakeLockStateMachine extends StateMachine {
         public boolean processMessage(Message msg) {
             switch (msg.what) {
                 case EVENT_NEW_SMS_MESSAGE:
-                    log("deferring message until return to idle");
                     deferMessage(msg);
                     return HANDLED;
 
                 case EVENT_BROADCAST_COMPLETE:
-                    log("broadcast complete, returning to idle");
                     transitionTo(mIdleState);
                     return HANDLED;
 

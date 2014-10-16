@@ -39,7 +39,7 @@ import com.android.internal.telephony.PhoneBase;
  */
 public class DcTesterFailBringUpAll {
     private static final String LOG_TAG = "DcTesterFailBrinupAll";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     private PhoneBase mPhone;
 

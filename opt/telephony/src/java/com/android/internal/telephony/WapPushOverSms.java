@@ -37,7 +37,7 @@ import com.android.internal.telephony.uicc.IccUtils;
  */
 public class WapPushOverSms implements ServiceConnection {
     private static final String TAG = "WAP PUSH";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     private final Context mContext;
 

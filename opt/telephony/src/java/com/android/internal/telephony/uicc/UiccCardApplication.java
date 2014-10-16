@@ -38,7 +38,7 @@ import java.io.PrintWriter;
  */
 public class UiccCardApplication {
     private static final String LOG_TAG = "UiccCardApplication";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     private static final int EVENT_PIN1_PUK1_DONE = 1;
     private static final int EVENT_CHANGE_PIN1_DONE = 2;

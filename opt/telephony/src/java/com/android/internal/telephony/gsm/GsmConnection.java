@@ -38,7 +38,7 @@ import com.android.internal.telephony.uicc.IccCardApplicationStatus.AppState;
  */
 public class GsmConnection extends Connection {
     private static final String LOG_TAG = "GsmConnection";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     //***** Instance Variables
 

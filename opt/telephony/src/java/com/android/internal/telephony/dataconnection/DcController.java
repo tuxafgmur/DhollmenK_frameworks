@@ -41,7 +41,7 @@ import java.util.HashMap;
  * and then demultiplexing them to the appropriate DC.
  */
 class DcController extends StateMachine {
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     private PhoneBase mPhone;

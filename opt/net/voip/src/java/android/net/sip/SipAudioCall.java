@@ -55,7 +55,7 @@ import java.net.UnknownHostException;
  */
 public class SipAudioCall {
     private static final String LOG_TAG = SipAudioCall.class.getSimpleName();
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean RELEASE_SOCKET = true;
     private static final boolean DONT_RELEASE_SOCKET = false;
     private static final int SESSION_TIMEOUT = 5; // in seconds

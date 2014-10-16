@@ -28,7 +28,7 @@ import android.telephony.PhoneNumberUtils;
 
 abstract class SipConnectionBase extends Connection {
     private static final String LOG_TAG = "SipConnBase";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false; // STOPSHIP if true
 
     private String mPostDialString;      // outgoing calls only

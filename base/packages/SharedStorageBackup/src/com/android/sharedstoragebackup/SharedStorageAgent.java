@@ -16,7 +16,7 @@ import java.util.HashSet;
 
 public class SharedStorageAgent extends FullBackupAgent {
     static final String TAG = "SharedStorageAgent";
-    static final boolean DEBUG = true;
+    static final boolean DEBUG = false;
 
     StorageVolume[] mVolumes;
 

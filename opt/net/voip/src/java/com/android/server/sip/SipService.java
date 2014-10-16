@@ -60,7 +60,7 @@ import javax.sip.SipException;
  */
 public final class SipService extends ISipService.Stub {
     static final String TAG = "SipService";
-    static final boolean DBG = true;
+    static final boolean DBG = false;
     private static final int EXPIRY_TIME = 3600;
     private static final int SHORT_EXPIRY_TIME = 10;
     private static final int MIN_EXPIRY_TIME = 60;
@@ -451,7 +451,7 @@ public final class SipService extends ISipService.Stub {
 
     private class SipSessionGroupExt extends SipSessionAdapter {
         private static final String SSGE_TAG = "SipSessionGroupExt";
-        private static final boolean SSGE_DBG = true;
+        private static final boolean SSGE_DBG = false;
         private SipSessionGroup mSipGroup;
         private PendingIntent mIncomingCallPendingIntent;
         private boolean mOpenedToReceiveCalls;
@@ -603,7 +603,7 @@ public final class SipService extends ISipService.Stub {
     private class SipKeepAliveProcessCallback implements Runnable,
             SipSessionGroup.KeepAliveProcessCallback {
         private static final String SKAI_TAG = "SipKeepAliveProcessCallback";
-        private static final boolean SKAI_DBG = true;
+        private static final boolean SKAI_DBG = false;
         private static final int MIN_INTERVAL = 5; // in seconds
         private static final int PASS_THRESHOLD = 10;
         private static final int NAT_MEASUREMENT_RETRY_INTERVAL = 120; // in seconds
@@ -773,7 +773,7 @@ public final class SipService extends ISipService.Stub {
     private class SipAutoReg extends SipSessionAdapter
             implements Runnable, SipSessionGroup.KeepAliveProcessCallback {
         private String SAR_TAG;
-        private static final boolean SAR_DBG = true;
+        private static final boolean SAR_DBG = false;
         private static final int MIN_KEEPALIVE_SUCCESS_COUNT = 10;
 
         private SipSessionGroup.SipSessionImpl mSession;

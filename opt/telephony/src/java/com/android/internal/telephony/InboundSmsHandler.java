@@ -69,7 +69,7 @@ import static android.telephony.TelephonyManager.PHONE_TYPE_CDMA;
  * after all messages are processed. Then the wakelock is released and we wait for the next SMS.
  */
 public abstract class InboundSmsHandler extends StateMachine {
-    protected static final boolean DBG = true;
+    protected static final boolean DBG = false;
     private static final boolean VDBG = false;  // STOPSHIP if true, logs user data
 
     /** Query projection for checking for duplicate message segments. */

@@ -71,8 +71,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * as the coordinator has members which are used without synchronization.
  */
 public final class DataConnection extends StateMachine {
-    private static final boolean DBG = true;
-    private static final boolean VDBG = true;
+    private static final boolean DBG = false;
+    private static final boolean VDBG = false;
 
     /** Retry configuration: A doubling of retry times from 5secs to 30minutes */
     private static final String DEFAULT_DATA_RETRY_CONFIG = "default_randomization=2000,"

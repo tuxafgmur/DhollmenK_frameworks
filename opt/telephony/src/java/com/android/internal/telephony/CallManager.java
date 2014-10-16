@@ -55,7 +55,7 @@ import java.util.List;
 public final class CallManager {
 
     private static final String LOG_TAG ="CallManager";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     private static final int EVENT_DISCONNECT = 100;

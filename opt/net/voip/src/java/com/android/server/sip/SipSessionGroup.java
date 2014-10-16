@@ -436,7 +436,7 @@ class SipSessionGroup implements SipListener {
 
     private class SipSessionCallReceiverImpl extends SipSessionImpl {
         private static final String SSCRI_TAG = "SipSessionCallReceiverImpl";
-        private static final boolean SSCRI_DBG = true;
+        private static final boolean SSCRI_DBG = false;
 
         public SipSessionCallReceiverImpl(ISipSessionListener listener) {
             super(listener);
@@ -532,7 +532,7 @@ class SipSessionGroup implements SipListener {
 
     class SipSessionImpl extends ISipSession.Stub {
         private static final String SSI_TAG = "SipSessionImpl";
-        private static final boolean SSI_DBG = true;
+        private static final boolean SSI_DBG = false;
 
         SipProfile mPeerProfile;
         SipSessionListenerProxy mProxy = new SipSessionListenerProxy();
@@ -1524,7 +1524,7 @@ class SipSessionGroup implements SipListener {
 
         class SipKeepAlive extends SipSessionAdapter implements Runnable {
             private static final String SKA_TAG = "SipKeepAlive";
-            private static final boolean SKA_DBG = true;
+            private static final boolean SKA_DBG = false;
 
             private boolean mRunning = false;
             private KeepAliveProcessCallback mCallback;

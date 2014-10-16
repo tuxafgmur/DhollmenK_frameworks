@@ -33,7 +33,7 @@ import com.android.internal.telephony.PhoneBase;
  */
 public class TelephonyTester {
     private static final String LOG_TAG = "TelephonyTester";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     private PhoneBase mPhone;
 

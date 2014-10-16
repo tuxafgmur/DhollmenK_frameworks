@@ -57,7 +57,7 @@ import java.io.PrintWriter;
  */
 public class UiccCard {
     protected static final String LOG_TAG = "UiccCard";
-    protected static final boolean DBG = true;
+    protected static final boolean DBG = false;
 
     private final Object mLock = new Object();
     private CardState mCardState;

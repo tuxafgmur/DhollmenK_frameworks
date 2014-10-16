@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  */
 public class SipPhone extends SipPhoneBase {
     private static final String LOG_TAG = "SipPhone";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false; // STOPSHIP if true
     private static final int TIMEOUT_MAKE_CALL = 15; // in seconds
     private static final int TIMEOUT_ANSWER_CALL = 8; // in seconds
@@ -427,7 +427,7 @@ public class SipPhone extends SipPhoneBase {
 
     private class SipCall extends SipCallBase {
         private static final String SC_TAG = "SipCall";
-        private static final boolean SC_DBG = true;
+        private static final boolean SC_DBG = false;
         private static final boolean SC_VDBG = false; // STOPSHIP if true
 
         void reset() {
@@ -718,7 +718,7 @@ public class SipPhone extends SipPhoneBase {
 
     private class SipConnection extends SipConnectionBase {
         private static final String SCN_TAG = "SipConnection";
-        private static final boolean SCN_DBG = true;
+        private static final boolean SCN_DBG = false;
 
         private SipCall mOwner;
         private SipAudioCall mSipAudioCall;
@@ -987,7 +987,7 @@ public class SipPhone extends SipPhoneBase {
 
     private abstract class SipAudioCallAdapter extends SipAudioCall.Listener {
         private static final String SACA_TAG = "SipAudioCallAdapter";
-        private static final boolean SACA_DBG = true;
+        private static final boolean SACA_DBG = false;
         protected abstract void onCallEnded(Connection.DisconnectCause cause);
         protected abstract void onError(Connection.DisconnectCause cause);
 

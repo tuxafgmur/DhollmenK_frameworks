@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * access ADN-like SIM records.
  */
 public abstract class IccPhoneBookInterfaceManager extends IIccPhoneBook.Stub {
-    protected static final boolean DBG = true;
+    protected static final boolean DBG = false;
 
     protected PhoneBase mPhone;
     protected AdnRecordCache mAdnCache;

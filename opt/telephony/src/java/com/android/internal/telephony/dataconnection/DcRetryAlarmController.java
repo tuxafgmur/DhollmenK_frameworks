@@ -34,7 +34,7 @@ import com.android.internal.telephony.RILConstants;
  */
 public class DcRetryAlarmController {
     private String mLogTag = "DcRac";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     private PhoneBase mPhone;
     private DataConnection mDc;

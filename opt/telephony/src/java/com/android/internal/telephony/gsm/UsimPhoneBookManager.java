@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class UsimPhoneBookManager extends Handler implements IccConstants {
     private static final String LOG_TAG = "UsimPhoneBookManager";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private PbrFile mPbrFile;
     private Boolean mIsPbrPresent;
     private IccFileHandler mFh;

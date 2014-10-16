@@ -84,7 +84,7 @@ public final class EriManager {
     }
 
     private static final String LOG_TAG = "CDMA";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     static final int ERI_FROM_XML          = 0;

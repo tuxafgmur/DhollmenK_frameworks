@@ -96,7 +96,7 @@ public class EditStyledText extends EditText {
     /**
      * DBG should be false at checking in.
      */
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     /**
      * Modes of editing actions.
@@ -2785,7 +2785,7 @@ public class EditStyledText extends EditText {
     public class EditModeActions {
 
         private static final String TAG = "EditModeActions";
-        private static final boolean DBG = true;
+        private static final boolean DBG = false;
         private EditStyledText mEST;
         private EditorManager mManager;
         private StyledTextDialog mDialog;

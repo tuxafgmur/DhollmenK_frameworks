@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * {@hide}
  */
 public abstract class IccRecords extends Handler implements IccConstants {
-    protected static final boolean DBG = true;
+    protected static final boolean DBG = false;
 
     // ***** Instance Variables
     protected AtomicBoolean mDestroyed = new AtomicBoolean(false);

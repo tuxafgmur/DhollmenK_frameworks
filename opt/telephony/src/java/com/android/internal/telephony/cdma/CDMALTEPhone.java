@@ -48,7 +48,7 @@ import java.io.PrintWriter;
 
 public class CDMALTEPhone extends CDMAPhone {
     static final String LOG_LTE_TAG = "CDMALTEPhone";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     /** CdmaLtePhone in addition to RuimRecords available from
      * PhoneBase needs access to SIMRecords and IsimUiccRecords

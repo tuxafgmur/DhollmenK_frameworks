@@ -70,7 +70,7 @@ import static com.android.internal.telephony.TelephonyProperties.PROPERTY_SIM_ST
  */
 
 public class IccCardProxy extends Handler implements IccCard {
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final String LOG_TAG = "IccCardProxy";
 
     private static final int EVENT_RADIO_OFF_OR_UNAVAILABLE = 1;

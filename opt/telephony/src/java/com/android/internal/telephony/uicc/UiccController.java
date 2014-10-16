@@ -72,7 +72,7 @@ import java.io.PrintWriter;
  * and {@link com.android.internal.telephony.uicc.IccCardProxy}
  */
 public class UiccController extends Handler {
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final String LOG_TAG = "UiccController";
 
     public static final int APP_FAM_UNKNOWN =  -1;

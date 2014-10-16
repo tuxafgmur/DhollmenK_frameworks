@@ -49,7 +49,7 @@ import static android.telephony.SmsManager.STATUS_ON_ICC_UNREAD;
  */
 public class IccSmsInterfaceManager extends ISms.Stub {
     static final String LOG_TAG = "IccSmsInterfaceManager";
-    static final boolean DBG = true;
+    static final boolean DBG = false;
 
     protected final Object mLock = new Object();
     protected boolean mSuccess;
