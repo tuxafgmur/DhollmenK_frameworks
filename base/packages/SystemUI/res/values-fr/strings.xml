@@ -23,7 +23,6 @@
     <string name="status_bar_clear_all_button" msgid="7774721344716731603">"Effacer"</string>
     <string name="status_bar_recent_remove_item_title" msgid="6026395868129852968">"Supprimer de la liste"</string>
     <string name="status_bar_recent_inspect_item_title" msgid="7793624864528818569">"Informations sur l\'application"</string>
-    <string name="status_bar_recent_add_to_split_view">En affichage fractionné</string>
     <string name="status_bar_no_recent_apps" msgid="6576392951053994640">"Aucune application récente."</string>
     <string name="status_bar_accessibility_dismiss_recents" msgid="4576076075226540105">"Masquer les applications récentes"</string>
   <plurals name="status_bar_accessibility_recent_apps">
