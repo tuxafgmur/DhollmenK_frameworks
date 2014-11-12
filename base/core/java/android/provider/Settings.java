@@ -2044,6 +2044,13 @@ public final class Settings {
         public static final String PROXIMITY_AUTO_SPEAKER = "proximity_auto_speaker";
 
         /**
+         * Whether the proximity sensor will adjust call to speaker,
+         * only while in call (not while ringing on outgoing call)
+         * @hide
+         */
+        public static final String PROXIMITY_AUTO_SPEAKER_INCALL_ONLY = "proximity_auto_speaker_incall_only";
+
+        /**
          * Whether the torch will pulse on incoming call
          * @hide
          */
@@ -2121,6 +2128,12 @@ public final class Settings {
          * @hide
          */
         public static final String INCREASING_RING_INTERVAL = "increasing_ring_interval";
+
+        /**
+         * Timeout for volume panel
+         * @hide
+         */
+        public static final String VOLUME_PANEL_TIMEOUT = "volume_panel_timeout";
 
         /**
          * Volume Adjust Sounds Enable, This is the noise made when using volume hard buttons

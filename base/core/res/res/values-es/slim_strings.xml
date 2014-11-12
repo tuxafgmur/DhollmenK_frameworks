@@ -49,7 +49,7 @@
   <string name="disable_navigation_pie_error">No puedes deshabilitar la barra de navegación. No hay otro método de navegación disponible. Habilita los controles PIE para desactivar la barra de navegación</string>
   <string name="accessibility_target_direction">Desliza para activar un acceso directo</string>
   <string name="stylus_app_not_installed">%s no está instalado</string>
-  <string name="theme_auto_switch_mode_error">El cambio automático de condiciones de luz está activado. El cambio manual no se puede usar.</string>
+  <string name="theme_auto_switch_mode_error">Cambio automático de condiciones de luz activado. No se puede utilizar el cambio manual.</string>
   <string name="permlab_preventpower">Prevenir pulsación del botón de encendido</string>
   <string name="permdesc_preventpower">Permite a una aplicación utilizar el botón de encendido</string>
   <string name="permlab_changeHeadsUpState">Habilitar o deshabilitar mensajes de aviso</string>
