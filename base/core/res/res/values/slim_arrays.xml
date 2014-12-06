@@ -26,7 +26,8 @@
         <item>com.google.android.gsf|com.google.android.talk</item>
     </string-array>
 
-    <!-- Defines the shutdown options shown in the reboot dialog. -->
+    <!-- Defines the shutdown options shown in the reboot dialog.
+         Soft-reboot added for Dhollmen Rom. -->
     <array name="shutdown_reboot_options" translatable="false">
         <item>@string/reboot_reboot</item>
 	<item>@string/reboot_soft</item>
