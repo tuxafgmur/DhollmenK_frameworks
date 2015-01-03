@@ -334,7 +334,6 @@ void HWComposer::loadHwcModule()
     hw_module_t const* module;
 
     if (hw_get_module(HWC_HARDWARE_MODULE_ID, &module) != 0) {
-        ALOGE("%s module not found", HWC_HARDWARE_MODULE_ID);
         return;
     }
 
@@ -349,8 +348,6 @@ void HWComposer::loadHwcModule()
         (!hwcHasApiVersion(mHwc, HWC_DEVICE_API_VERSION_1_0) ||
             hwcHeaderVersion(mHwc) < MIN_HWC_HEADER_VERSION ||
             hwcHeaderVersion(mHwc) > HWC_HEADER_VERSION)) {
-        ALOGE("%s device version %#x unsupported, will not be used",
-              HWC_HARDWARE_COMPOSER, mHwc->common.version);
         hwc_close_1(mHwc);
         mHwc = NULL;
         return;
@@ -364,7 +361,6 @@ int HWComposer::loadFbHalModule()
 
     int err = hw_get_module(GRALLOC_HARDWARE_MODULE_ID, &module);
     if (err != 0) {
-        ALOGE("%s module not found", GRALLOC_HARDWARE_MODULE_ID);
         return err;
     }
 
@@ -409,8 +405,6 @@ void HWComposer::vsync(int disp, int64_t timestamp) {
             // is a bug in the HWC implementation, but filter the extra events
             // out here so they don't cause havoc downstream.
             if (timestamp == mLastHwVSync[disp]) {
-                ALOGW("Ignoring duplicate VSYNC event from HWC (t=%lld)",
-                        timestamp);
                 return;
             }
 
@@ -419,7 +413,6 @@ void HWComposer::vsync(int disp, int64_t timestamp) {
 
         char tag[16];
         snprintf(tag, sizeof(tag), "HW_VSYNC_%1u", disp);
-        ATRACE_INT(tag, ++mVSyncCounts[disp] & 1);
 
         mEventHandler.onVSyncReceived(disp, timestamp);
     }
@@ -427,8 +420,6 @@ void HWComposer::vsync(int disp, int64_t timestamp) {
 
 void HWComposer::hotplug(int disp, int connected) {
     if (disp == HWC_DISPLAY_PRIMARY || disp >= VIRTUAL_DISPLAY_ID_BASE) {
-        ALOGE("hotplug event received for invalid display: disp=%d connected=%d",
-                disp, connected);
         return;
     }
     queryDisplayProperties(disp);
@@ -589,8 +580,6 @@ bool HWComposer::isConnected(int disp) const {
 
 void HWComposer::eventControl(int disp, int event, int enabled) {
     if (uint32_t(disp)>31 || !mAllocatedDisplayIDs.hasBit(disp)) {
-        ALOGD("eventControl ignoring event %d on unallocated disp %d (en=%d)",
-              event, disp, enabled);
         return;
     }
     status_t err = NO_ERROR;
@@ -607,7 +596,6 @@ void HWComposer::eventControl(int disp, int event, int enabled) {
                     const int32_t newValue = enabled ? eventBit : 0;
                     const int32_t oldValue = mDisplayData[disp].events & eventBit;
                     if (newValue != oldValue) {
-                        ATRACE_CALL();
                         err = mHwc->eventControl(mHwc, disp, event, enabled);
                         if (!err) {
                             int32_t& events(mDisplayData[disp].events);
@@ -633,8 +621,6 @@ void HWComposer::eventControl(int disp, int event, int enabled) {
                 err = hwcEventControl(mHwc, disp, event, enabled);
             break;
         default:
-            ALOGW("eventControl got unexpected event %d (disp=%d en=%d)",
-                    event, disp, enabled);
             break;
     }
     return;

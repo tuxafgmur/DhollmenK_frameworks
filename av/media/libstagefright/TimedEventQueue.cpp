@@ -311,8 +311,6 @@ sp<TimedEventQueue::Event> TimedEventQueue::removeEventFromQueue_l(
         }
     }
 
-    ALOGW("Event %d was not found in the queue, already cancelled?", id);
-
     return NULL;
 }
 
@@ -325,7 +323,6 @@ void TimedEventQueue::acquireWakeLock_l()
             sp<IBinder> binder =
                 defaultServiceManager()->checkService(String16("power"));
             if (binder == 0) {
-                ALOGW("cannot connect to the power manager service");
             } else {
                 mPowerManager = interface_cast<IPowerManager>(binder);
                 binder->linkToDeath(mDeathRecipient);

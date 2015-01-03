@@ -556,7 +556,6 @@ void AudioFlinger::ThreadBase::getPowerManager_l() {
         sp<IBinder> binder =
             defaultServiceManager()->checkService(String16("power"));
         if (binder == 0) {
-            ALOGW("Thread %s cannot connect to the power manager service", mName);
         } else {
             mPowerManager = interface_cast<IPowerManager>(binder);
             binder->linkToDeath(mDeathRecipient);
@@ -5336,9 +5335,6 @@ status_t AudioFlinger::RecordThread::addEffectChain_l(const sp<EffectChain>& cha
 
 size_t AudioFlinger::RecordThread::removeEffectChain_l(const sp<EffectChain>& chain)
 {
-    ALOGW_IF(mEffectChains.size() != 1,
-            "removeEffectChain_l() %p invalid chain size %d on thread %p",
-            chain.get(), mEffectChains.size(), this);
     if (mEffectChains.size() == 1) {
         mEffectChains.removeAt(0);
     }
@@ -5571,7 +5567,6 @@ void AudioFlinger::DirectAudioTrack::acquireWakeLock()
         sp<IBinder> binder =
             defaultServiceManager()->checkService(String16("power"));
         if (binder == 0) {
-            ALOGW("Thread %s cannot connect to the power manager service", lockName);
         } else {
             mPowerManager = interface_cast<IPowerManager>(binder);
             binder->linkToDeath(mDeathRecipient);

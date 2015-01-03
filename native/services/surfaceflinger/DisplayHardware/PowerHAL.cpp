@@ -28,7 +28,6 @@ namespace android {
 PowerHAL::PowerHAL() : mPowerModule(0), mVSyncHintEnabled(false) {
     int err = hw_get_module(POWER_HARDWARE_MODULE_ID,
             (const hw_module_t **)&mPowerModule);
-    ALOGW_IF(err, "%s module not found", POWER_HARDWARE_MODULE_ID);
 }
 
 PowerHAL::~PowerHAL() {
