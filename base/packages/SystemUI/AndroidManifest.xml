@@ -259,8 +259,8 @@
         <activity
             android:name="com.android.systemui.CreateShortcut"
             android:label="@string/shortcut_picker"
-            android:icon="@drawable/ic_qs_reboot_recovery"
-            android:configChanges="orientation|keyboardHidden|screenSize" >
+            android:icon="@drawable/ic_qs_shortcut"
+	    android:theme="@android:style/Theme.Holo.Light.Dialog.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.CREATE_SHORTCUT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -271,7 +271,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.Immersive"
             android:label="@string/shortcut_immersive"
-            android:icon="@drawable/ic_qs_expanded_desktop_on"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -284,7 +284,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.LastApp"
             android:label="@string/shortcut_last_app"
-            android:icon="@drawable/ic_sysbar_lastapp"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -297,7 +297,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.QuietHours"
             android:label="@string/shortcut_quiethours"
-            android:icon="@drawable/ic_qs_quiet_hours_on"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -310,7 +310,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.Reboot"
             android:label="@string/shortcut_reboot"
-            android:icon="@drawable/ic_qs_reboot"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -323,7 +323,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.ShakeEvents"
             android:label="@string/shortcut_shakeevent"
-            android:icon="@drawable/ic_qs_shake_events"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -336,7 +336,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.Recovery"
             android:label="@string/shortcut_recovery"
-            android:icon="@drawable/ic_qs_reboot_recovery"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -349,7 +349,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.Rotation"
             android:label="@string/shortcut_rotation"
-            android:icon="@drawable/ic_qs_auto_rotate"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -362,7 +362,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.Screenshot"
             android:label="@string/shortcut_screenshot"
-            android:icon="@drawable/ic_sysbar_screenshot"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -375,7 +375,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.Screenrecord"
             android:label="@string/shortcut_screenrecord"
-            android:icon="@drawable/ic_sysbar_screenrecord"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -388,7 +388,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.Torch"
             android:label="@string/shortcut_torch"
-            android:icon="@drawable/ic_qs_torch_on"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -401,7 +401,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.VolumePanel"
             android:label="@string/shortcut_volume"
-            android:icon="@drawable/ic_qs_volume"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >
@@ -416,7 +416,7 @@
         <activity
             android:name="com.android.systemui.shortcuts.ChamberOfSecrets"
             android:label="@string/shortcut_chamber"
-            android:icon="@drawable/ic_qs_reboot_recovery"
+            android:icon="@android:color/transparent"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance" >

@@ -121,13 +121,14 @@
     </style>
 
     <style name="TextAppearance.QuickSettings.TileView.User" parent="@style/TextAppearance.QuickSettings.TileView">
-        <item name="android:background">#CC000000</item>
+        <item name="android:background">#cc000000</item>
         <item name="android:padding">4dp</item>
         <item name="android:singleLine">true</item>
         <item name="android:fadingEdge">horizontal</item>
     </style>
 
     <style name="BaseBrightnessDialogContainer">
+	<item name="android:background">#ff000000</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:paddingTop">16dp</item>
