@@ -262,7 +262,7 @@ void SurfaceFlinger::destroyDisplay(const sp<IBinder>& display) {
 
     ssize_t idx = mCurrentState.displays.indexOfKey(display);
     if (idx < 0) {
-        ALOGW("destroyDisplay: invalid display token");
+        //ALOGW("destroyDisplay: invalid display token");
         return;
     }
 
@@ -277,8 +277,8 @@ void SurfaceFlinger::destroyDisplay(const sp<IBinder>& display) {
 }
 
 void SurfaceFlinger::createBuiltinDisplayLocked(DisplayDevice::DisplayType type) {
-    ALOGW_IF(mBuiltinDisplays[type],
-            "Overwriting display token for display type %d", type);
+    //ALOGW_IF(mBuiltinDisplays[type],
+    //        "Overwriting display token for display type %d", type);
     mBuiltinDisplays[type] = new BBinder();
     DisplayDeviceState info(type);
     // All non-virtual displays are currently considered secure.
@@ -610,7 +610,7 @@ void SurfaceFlinger::init() {
                 // FIXME: currently we don't get blank/unblank requests
                 // for displays other than the main display, so we always
                 // assume a connected display is unblanked.
-                ALOGD("marking display %d as acquired/unblanked", i);
+                //ALOGD("marking display %d as acquired/unblanked", i);
                 hw->acquireScreen();
             }
             mDisplays.add(token, hw);
@@ -873,7 +873,7 @@ void SurfaceFlinger::onHotplugReceived(int type, bool connected) {
         // This is a temporary workaround for b/7145521.  A non-null pointer
         // does not mean EventThread has finished initializing, so this
         // is not a correct fix.
-        ALOGW("WARNING: EventThread not started, ignoring hotplug");
+        //ALOGW("WARNING: EventThread not started, ignoring hotplug");
         return;
     }
 
@@ -1354,8 +1354,8 @@ void SurfaceFlinger::handleTransactionLocked(uint32_t transactionFlags)
                         if (draw[i].type < DisplayDevice::NUM_BUILTIN_DISPLAY_TYPES)
                             mEventThread->onHotplugReceived(draw[i].type, false);
                         mDisplays.removeItem(draw.keyAt(i));
-                    } else {
-                        ALOGW("trying to remove the main display");
+                    //} else {
+                    //    ALOGW("trying to remove the main display");
                     }
                 } else {
                     // this display is in both lists. see if something changed.
@@ -1860,8 +1860,8 @@ void SurfaceFlinger::doComposeSurfaces(const sp<const DisplayDevice>& hw, const 
     bool hasGlesComposition = hwc.hasGlesComposition(id);
     if (hasGlesComposition) {
         if (!hw->makeCurrent(mEGLDisplay, mEGLContext)) {
-            ALOGW("DisplayDevice::makeCurrent failed. Aborting surface composition for display %s",
-                  hw->getDisplayName().string());
+            //ALOGW("DisplayDevice::makeCurrent failed. Aborting surface composition for display %s",
+            //      hw->getDisplayName().string());
             return;
         }
 
@@ -1952,7 +1952,7 @@ void SurfaceFlinger::doComposeSurfaces(const sp<const DisplayDevice>& hw, const 
                     case HWC_FRAMEBUFFER_TARGET: {
                         // this should not happen as the iterator shouldn't
                         // let us get there.
-                        ALOGW("HWC_FRAMEBUFFER_TARGET found in hwc list (index=%d)", i);
+                        //ALOGW("HWC_FRAMEBUFFER_TARGET found in hwc list (index=%d)", i);
                         break;
                     }
                 }
@@ -2040,8 +2040,8 @@ void SurfaceFlinger::setTransactionState(
             if (CC_UNLIKELY(err != NO_ERROR)) {
                 // just in case something goes wrong in SF, return to the
                 // caller after a few seconds.
-                ALOGW_IF(err == TIMED_OUT, "setTransactionState timed out "
-                        "waiting for previous animation frame");
+                //ALOGW_IF(err == TIMED_OUT, "setTransactionState timed out "
+                //        "waiting for previous animation frame");
                 mAnimTransactionPending = false;
                 break;
             }
@@ -2093,7 +2093,7 @@ void SurfaceFlinger::setTransactionState(
             if (CC_UNLIKELY(err != NO_ERROR)) {
                 // just in case something goes wrong in SF, return to the
                 // called after a few seconds.
-                ALOGW_IF(err == TIMED_OUT, "setTransactionState timed out!");
+                //ALOGW_IF(err == TIMED_OUT, "setTransactionState timed out!");
                 mTransactionPending = false;
                 break;
             }
@@ -2355,10 +2355,10 @@ void SurfaceFlinger::initializeDisplays() {
 
 
 void SurfaceFlinger::onScreenAcquired(const sp<const DisplayDevice>& hw) {
-    ALOGD("Screen acquired, type=%d flinger=%p", hw->getDisplayType(), this);
+    //ALOGD("Screen acquired, type=%d flinger=%p", hw->getDisplayType(), this);
     if (hw->isScreenAcquired()) {
         // this is expected, e.g. when power manager wakes up during boot
-        ALOGD(" screen was previously acquired");
+        //ALOGD(" screen was previously acquired");
         return;
     }
 
@@ -2380,9 +2380,9 @@ void SurfaceFlinger::onScreenAcquired(const sp<const DisplayDevice>& hw) {
 }
 
 void SurfaceFlinger::onScreenReleased(const sp<const DisplayDevice>& hw) {
-    ALOGD("Screen released, type=%d flinger=%p", hw->getDisplayType(), this);
+    //ALOGD("Screen released, type=%d flinger=%p", hw->getDisplayType(), this);
     if (!hw->isScreenAcquired()) {
-        ALOGD(" screen was previously released");
+        //ALOGD(" screen was previously released");
         return;
     }
 
@@ -2413,9 +2413,9 @@ void SurfaceFlinger::unblank(const sp<IBinder>& display) {
         virtual bool handler() {
             const sp<DisplayDevice> hw(mFlinger.getDisplayDevice(mDisplay));
             if (hw == NULL) {
-                ALOGE("Attempt to unblank null display %p", mDisplay.get());
+                //ALOGE("Attempt to unblank null display %p", mDisplay.get());
             } else if (hw->getDisplayType() >= DisplayDevice::DISPLAY_VIRTUAL) {
-                ALOGW("Attempt to unblank virtual display");
+                //ALOGW("Attempt to unblank virtual display");
             } else {
                 mFlinger.onScreenAcquired(hw);
             }
@@ -2436,9 +2436,9 @@ void SurfaceFlinger::blank(const sp<IBinder>& display) {
         virtual bool handler() {
             const sp<DisplayDevice> hw(mFlinger.getDisplayDevice(mDisplay));
             if (hw == NULL) {
-                ALOGE("Attempt to blank null display %p", mDisplay.get());
+                //ALOGE("Attempt to blank null display %p", mDisplay.get());
             } else if (hw->getDisplayType() >= DisplayDevice::DISPLAY_VIRTUAL) {
-                ALOGW("Attempt to blank virtual display");
+                //ALOGW("Attempt to blank virtual display");
             } else {
                 mFlinger.onScreenReleased(hw);
             }

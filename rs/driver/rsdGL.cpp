@@ -240,7 +240,7 @@ bool rsdGLInit(const Context *rsc) {
     EGLint configAttribs[128];
     EGLint context_attribs2[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
 
-    ALOGV("%p initEGL start", rsc);
+    //ALOGV("%p initEGL start", rsc);
     rsc->setWatchdogGL("eglGetDisplay", __LINE__, __FILE__);
     dc->gl.egl.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     checkEglError("eglGetDisplay");
@@ -411,7 +411,7 @@ bool rsdGLInit(const Context *rsc) {
     dc->gl.currentFrameBuffer = NULL;
     dc->mHasGraphics = true;
 
-    ALOGV("%p initGLThread end", rsc);
+    //ALOGV("%p initGLThread end", rsc);
     rsc->setWatchdogGL(NULL, 0, NULL);
     return true;
 }
@@ -484,12 +484,14 @@ void rsdGLSwap(const android::renderscript::Context *rsc) {
 }
 
 void rsdGLSetPriority(const Context *rsc, int32_t priority) {
+#if 0    
     if (priority > 0) {
         // Mark context as low priority.
         ALOGV("low pri");
     } else {
         ALOGV("normal pri");
     }
+#endif
 }
 
 void rsdGLCheckError(const android::renderscript::Context *rsc,

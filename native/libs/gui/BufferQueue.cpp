@@ -85,20 +85,20 @@ BufferQueue::BufferQueue(const sp<IGraphicBufferAlloc>& allocator) :
     // Choose a name using the PID and a process-unique ID.
     mConsumerName = String8::format("unnamed-%d-%d", getpid(), createProcessUniqueId());
 
-    ST_LOGV("BufferQueue");
+    //ST_LOGV("BufferQueue");
     if (allocator == NULL) {
         sp<ISurfaceComposer> composer(ComposerService::getComposerService());
         mGraphicBufferAlloc = composer->createGraphicBufferAlloc();
-        if (mGraphicBufferAlloc == 0) {
-            ST_LOGE("createGraphicBufferAlloc() failed in BufferQueue()");
-        }
+        //if (mGraphicBufferAlloc == 0) {
+        //    ST_LOGE("createGraphicBufferAlloc() failed in BufferQueue()");
+        //}
     } else {
         mGraphicBufferAlloc = allocator;
     }
 }
 
 BufferQueue::~BufferQueue() {
-    ST_LOGV("~BufferQueue");
+    //ST_LOGV("~BufferQueue");
 }
 
 status_t BufferQueue::setDefaultMaxBufferCountLocked(int count) {
@@ -130,21 +130,21 @@ status_t BufferQueue::setConsumerUsageBits(uint32_t usage) {
 }
 
 status_t BufferQueue::setTransformHint(uint32_t hint) {
-    ST_LOGV("setTransformHint: %02x", hint);
+    //ST_LOGV("setTransformHint: %02x", hint);
     Mutex::Autolock lock(mMutex);
     mTransformHint = hint;
     return NO_ERROR;
 }
 
 status_t BufferQueue::setBufferCount(int bufferCount) {
-    ST_LOGV("setBufferCount: count=%d", bufferCount);
+    //ST_LOGV("setBufferCount: count=%d", bufferCount);
 
     sp<IConsumerListener> listener;
     {
         Mutex::Autolock lock(mMutex);
 
         if (mAbandoned) {
-            ST_LOGE("setBufferCount: BufferQueue has been abandoned!");
+            //ST_LOGE("setBufferCount: BufferQueue has been abandoned!");
             return NO_INIT;
         }
         if (bufferCount > NUM_BUFFER_SLOTS) {
@@ -192,7 +192,7 @@ status_t BufferQueue::setBufferCount(int bufferCount) {
 }
 
 status_t BufferQueue::setBuffersSize(int size) {
-    ST_LOGV("setBuffersSize: size=%d", size);
+    //ST_LOGV("setBuffersSize: size=%d", size);
     Mutex::Autolock lock(mMutex);
     mGraphicBufferAlloc->setGraphicBufferSize(size);
     return NO_ERROR;
@@ -200,11 +200,11 @@ status_t BufferQueue::setBuffersSize(int size) {
 
 int BufferQueue::query(int what, int* outValue)
 {
-    ATRACE_CALL();
+    //ATRACE_CALL();
     Mutex::Autolock lock(mMutex);
 
     if (mAbandoned) {
-        ST_LOGE("query: BufferQueue has been abandoned!");
+        //ST_LOGE("query: BufferQueue has been abandoned!");
         return NO_INIT;
     }
 
@@ -236,11 +236,11 @@ int BufferQueue::query(int what, int* outValue)
 }
 
 status_t BufferQueue::requestBuffer(int slot, sp<GraphicBuffer>* buf) {
-    ATRACE_CALL();
-    ST_LOGV("requestBuffer: slot=%d", slot);
+    //ATRACE_CALL();
+    //ST_LOGV("requestBuffer: slot=%d", slot);
     Mutex::Autolock lock(mMutex);
     if (mAbandoned) {
-        ST_LOGE("requestBuffer: BufferQueue has been abandoned!");
+        //ST_LOGE("requestBuffer: BufferQueue has been abandoned!");
         return NO_INIT;
     }
     if (slot < 0 || slot >= NUM_BUFFER_SLOTS) {
@@ -259,8 +259,8 @@ status_t BufferQueue::requestBuffer(int slot, sp<GraphicBuffer>* buf) {
 
 status_t BufferQueue::dequeueBuffer(int *outBuf, sp<Fence>* outFence, bool async,
         uint32_t w, uint32_t h, uint32_t format, uint32_t usage) {
-    ATRACE_CALL();
-    ST_LOGV("dequeueBuffer: w=%d h=%d fmt=%#x usage=%#x", w, h, format, usage);
+    //ATRACE_CALL();
+    //ST_LOGV("dequeueBuffer: w=%d h=%d fmt=%#x usage=%#x", w, h, format, usage);
 
     if ((w && !h) || (!w && h)) {
         ST_LOGE("dequeueBuffer: invalid size: w=%u, h=%u", w, h);
@@ -284,7 +284,7 @@ status_t BufferQueue::dequeueBuffer(int *outBuf, sp<Fence>* outFence, bool async
         bool tryAgain = true;
         while (tryAgain) {
             if (mAbandoned) {
-                ST_LOGE("dequeueBuffer: BufferQueue has been abandoned!");
+                //ST_LOGE("dequeueBuffer: BufferQueue has been abandoned!");
                 return NO_INIT;
             }
 
@@ -389,7 +389,7 @@ status_t BufferQueue::dequeueBuffer(int *outBuf, sp<Fence>* outFence, bool async
         const int buf = found;
         *outBuf = found;
 
-        ATRACE_BUFFER_INDEX(buf);
+        //ATRACE_BUFFER_INDEX(buf);
 
         const bool useDefaultSize = !w && !h;
         if (useDefaultSize) {
@@ -444,7 +444,7 @@ status_t BufferQueue::dequeueBuffer(int *outBuf, sp<Fence>* outFence, bool async
             Mutex::Autolock lock(mMutex);
 
             if (mAbandoned) {
-                ST_LOGE("dequeueBuffer: BufferQueue has been abandoned!");
+                //ST_LOGE("dequeueBuffer: BufferQueue has been abandoned!");
                 return NO_INIT;
             }
 
@@ -466,17 +466,17 @@ status_t BufferQueue::dequeueBuffer(int *outBuf, sp<Fence>* outFence, bool async
         eglDestroySyncKHR(dpy, eglFence);
     }
 
-    ST_LOGV("dequeueBuffer: returning slot=%d/%llu buf=%p flags=%#x", *outBuf,
-            mSlots[*outBuf].mFrameNumber,
-            mSlots[*outBuf].mGraphicBuffer->handle, returnFlags);
+    //ST_LOGV("dequeueBuffer: returning slot=%d/%llu buf=%p flags=%#x", *outBuf,
+    //        mSlots[*outBuf].mFrameNumber,
+    //        mSlots[*outBuf].mGraphicBuffer->handle, returnFlags);
 
     return returnFlags;
 }
 
 status_t BufferQueue::queueBuffer(int buf,
         const QueueBufferInput& input, QueueBufferOutput* output) {
-    ATRACE_CALL();
-    ATRACE_BUFFER_INDEX(buf);
+    //ATRACE_CALL();
+    //ATRACE_BUFFER_INDEX(buf);
 
     Rect crop;
     uint32_t transform;
@@ -490,7 +490,7 @@ status_t BufferQueue::queueBuffer(int buf,
             &async, &fence);
 
     if (fence == NULL) {
-        ST_LOGE("queueBuffer: fence is NULL");
+        //ST_LOGE("queueBuffer: fence is NULL");
         return BAD_VALUE;
     }
 
@@ -511,7 +511,7 @@ status_t BufferQueue::queueBuffer(int buf,
         Mutex::Autolock lock(mMutex);
 
         if (mAbandoned) {
-            ST_LOGE("queueBuffer: BufferQueue has been abandoned!");
+            //ST_LOGE("queueBuffer: BufferQueue has been abandoned!");
             return NO_INIT;
         }
 
@@ -539,11 +539,11 @@ status_t BufferQueue::queueBuffer(int buf,
             return -EINVAL;
         }
 
-        ST_LOGV("queueBuffer: slot=%d/%llu time=%#llx crop=[%d,%d,%d,%d] "
-                "tr=%#x scale=%s",
-                buf, mFrameCounter + 1, timestamp,
-                crop.left, crop.top, crop.right, crop.bottom,
-                transform, scalingModeName(scalingMode));
+        //ST_LOGV("queueBuffer: slot=%d/%llu time=%#llx crop=[%d,%d,%d,%d] "
+        //        "tr=%#x scale=%s",
+        //        buf, mFrameCounter + 1, timestamp,
+        //        crop.left, crop.top, crop.right, crop.bottom,
+        //        transform, scalingModeName(scalingMode));
 
         const sp<GraphicBuffer>& graphicBuffer(mSlots[buf].mGraphicBuffer);
         Rect bufferRect(graphicBuffer->getWidth(), graphicBuffer->getHeight());
@@ -605,7 +605,7 @@ status_t BufferQueue::queueBuffer(int buf,
         output->inflate(mDefaultWidth, mDefaultHeight, mTransformHint,
                 mQueue.size());
 
-        ATRACE_INT(mConsumerName.string(), mQueue.size());
+        //ATRACE_INT(mConsumerName.string(), mQueue.size());
     } // scope for the lock
 
     // call back without lock held
@@ -616,12 +616,12 @@ status_t BufferQueue::queueBuffer(int buf,
 }
 
 void BufferQueue::cancelBuffer(int buf, const sp<Fence>& fence) {
-    ATRACE_CALL();
-    ST_LOGV("cancelBuffer: slot=%d", buf);
+    //ATRACE_CALL();
+    // ST_LOGV("cancelBuffer: slot=%d", buf);
     Mutex::Autolock lock(mMutex);
 
     if (mAbandoned) {
-        ST_LOGW("cancelBuffer: BufferQueue has been abandoned!");
+        //ST_LOGW("cancelBuffer: BufferQueue has been abandoned!");
         return;
     }
 
@@ -634,7 +634,7 @@ void BufferQueue::cancelBuffer(int buf, const sp<Fence>& fence) {
                 buf, mSlots[buf].mBufferState);
         return;
     } else if (fence == NULL) {
-        ST_LOGE("cancelBuffer: fence is NULL");
+        //ST_LOGE("cancelBuffer: fence is NULL");
         return;
     }
     mSlots[buf].mBufferState = BufferSlot::FREE;
@@ -646,25 +646,25 @@ void BufferQueue::cancelBuffer(int buf, const sp<Fence>& fence) {
 
 status_t BufferQueue::connect(const sp<IBinder>& token,
         int api, bool producerControlledByApp, QueueBufferOutput* output) {
-    ATRACE_CALL();
-    ST_LOGV("connect: api=%d producerControlledByApp=%s", api,
-            producerControlledByApp ? "true" : "false");
+    //ATRACE_CALL();
+    //ST_LOGV("connect: api=%d producerControlledByApp=%s", api,
+    //        producerControlledByApp ? "true" : "false");
     Mutex::Autolock lock(mMutex);
 
 retry:
     if (mAbandoned) {
-        ST_LOGE("connect: BufferQueue has been abandoned!");
+        //ST_LOGE("connect: BufferQueue has been abandoned!");
         return NO_INIT;
     }
 
     if (mConsumerListener == NULL) {
-        ST_LOGE("connect: BufferQueue has no consumer!");
+        //ST_LOGE("connect: BufferQueue has no consumer!");
         return NO_INIT;
     }
 
     if (mConnectedApi != NO_CONNECTED_API) {
-        ST_LOGE("connect: already connected (cur=%d, req=%d)",
-                mConnectedApi, api);
+        //ST_LOGE("connect: already connected (cur=%d, req=%d)",
+        //        mConnectedApi, api);
         return -EINVAL;
     }
 
@@ -675,7 +675,7 @@ retry:
     int maxBufferCount = getMaxBufferCountLocked(false);    // worst-case, i.e. largest value
     if (mQueue.size() > (size_t) maxBufferCount) {
         // TODO: make this bound tighter?
-        ST_LOGV("queue size is %d, waiting", mQueue.size());
+        //ST_LOGV("queue size is %d, waiting", mQueue.size());
         mDequeueCondition.wait(mMutex);
         goto retry;
     }
@@ -722,8 +722,8 @@ void BufferQueue::binderDied(const wp<IBinder>& who) {
 }
 
 status_t BufferQueue::disconnect(int api) {
-    ATRACE_CALL();
-    ST_LOGV("disconnect: api=%d", api);
+    //ATRACE_CALL();
+    //ST_LOGV("disconnect: api=%d", api);
 
     int err = NO_ERROR;
     sp<IConsumerListener> listener;
@@ -843,7 +843,7 @@ void BufferQueue::dump(String8& result, const char* prefix) const {
 }
 
 void BufferQueue::freeBufferLocked(int slot) {
-    ST_LOGV("freeBufferLocked: slot=%d", slot);
+    //ST_LOGV("freeBufferLocked: slot=%d", slot);
     mSlots[slot].mGraphicBuffer = 0;
     if (mSlots[slot].mBufferState == BufferSlot::ACQUIRED) {
         mSlots[slot].mNeedsCleanupOnRelease = true;
@@ -868,7 +868,7 @@ void BufferQueue::freeAllBuffersLocked() {
 }
 
 status_t BufferQueue::acquireBuffer(BufferItem *buffer, nsecs_t expectedPresent) {
-    ATRACE_CALL();
+    //ATRACE_CALL();
     Mutex::Autolock _l(mMutex);
 
     // Check that the consumer doesn't currently have the maximum number of
@@ -940,13 +940,13 @@ status_t BufferQueue::acquireBuffer(BufferItem *buffer, nsecs_t expectedPresent)
                 // This buffer is set to display in the near future, or
                 // desiredPresent is garbage.  Either way we don't want to
                 // drop the previous buffer just to get this on screen sooner.
-                ST_LOGV("pts nodrop: des=%lld expect=%lld (%lld) now=%lld",
-                        desiredPresent, expectedPresent, desiredPresent - expectedPresent,
-                        systemTime(CLOCK_MONOTONIC));
+                //ST_LOGV("pts nodrop: des=%lld expect=%lld (%lld) now=%lld",
+                //        desiredPresent, expectedPresent, desiredPresent - expectedPresent,
+                //        systemTime(CLOCK_MONOTONIC));
                 break;
             }
-            ST_LOGV("pts drop: queue1des=%lld expect=%lld size=%d",
-                    desiredPresent, expectedPresent, mQueue.size());
+            //ST_LOGV("pts drop: queue1des=%lld expect=%lld size=%d",
+            //        desiredPresent, expectedPresent, mQueue.size());
             if (stillTracking(front)) {
                 // front buffer is still in mSlots, so mark the slot as free
                 mSlots[front->mBuf].mBufferState = BufferSlot::FREE;
@@ -959,24 +959,24 @@ status_t BufferQueue::acquireBuffer(BufferItem *buffer, nsecs_t expectedPresent)
         nsecs_t desiredPresent = front->mTimestamp;
         if (desiredPresent > expectedPresent &&
                 desiredPresent < expectedPresent + MAX_REASONABLE_NSEC) {
-            ST_LOGV("pts defer: des=%lld expect=%lld (%lld) now=%lld",
-                    desiredPresent, expectedPresent, desiredPresent - expectedPresent,
-                    systemTime(CLOCK_MONOTONIC));
+            //ST_LOGV("pts defer: des=%lld expect=%lld (%lld) now=%lld",
+            //        desiredPresent, expectedPresent, desiredPresent - expectedPresent,
+            //        systemTime(CLOCK_MONOTONIC));
             return PRESENT_LATER;
         }
 
-        ST_LOGV("pts accept: des=%lld expect=%lld (%lld) now=%lld",
-                desiredPresent, expectedPresent, desiredPresent - expectedPresent,
-                systemTime(CLOCK_MONOTONIC));
+        //ST_LOGV("pts accept: des=%lld expect=%lld (%lld) now=%lld",
+        //        desiredPresent, expectedPresent, desiredPresent - expectedPresent,
+        //        systemTime(CLOCK_MONOTONIC));
     }
 
     int buf = front->mBuf;
     *buffer = *front;
-    ATRACE_BUFFER_INDEX(buf);
+    //ATRACE_BUFFER_INDEX(buf);
 
-    ST_LOGV("acquireBuffer: acquiring { slot=%d/%llu, buffer=%p }",
-            front->mBuf, front->mFrameNumber,
-            front->mGraphicBuffer->handle);
+    //ST_LOGV("acquireBuffer: acquiring { slot=%d/%llu, buffer=%p }",
+    //        front->mBuf, front->mFrameNumber,
+    //        front->mGraphicBuffer->handle);
     // if front buffer still being tracked update slot state
     if (stillTracking(front)) {
         mSlots[buf].mAcquireCalled = true;
@@ -995,7 +995,7 @@ status_t BufferQueue::acquireBuffer(BufferItem *buffer, nsecs_t expectedPresent)
     mQueue.erase(front);
     mDequeueCondition.broadcast();
 
-    ATRACE_INT(mConsumerName.string(), mQueue.size());
+    //ATRACE_INT(mConsumerName.string(), mQueue.size());
 
     return NO_ERROR;
 }
@@ -1003,8 +1003,8 @@ status_t BufferQueue::acquireBuffer(BufferItem *buffer, nsecs_t expectedPresent)
 status_t BufferQueue::releaseBuffer(
         int buf, uint64_t frameNumber, EGLDisplay display,
         EGLSyncKHR eglFence, const sp<Fence>& fence) {
-    ATRACE_CALL();
-    ATRACE_BUFFER_INDEX(buf);
+    //ATRACE_CALL();
+    //ATRACE_BUFFER_INDEX(buf);
 
     if (buf == INVALID_BUFFER_SLOT || fence == NULL) {
         return BAD_VALUE;
@@ -1039,11 +1039,11 @@ status_t BufferQueue::releaseBuffer(
         mSlots[buf].mFence = fence;
         mSlots[buf].mBufferState = BufferSlot::FREE;
     } else if (mSlots[buf].mNeedsCleanupOnRelease) {
-        ST_LOGV("releasing a stale buf %d its state was %d", buf, mSlots[buf].mBufferState);
+        //ST_LOGV("releasing a stale buf %d its state was %d", buf, mSlots[buf].mBufferState);
         mSlots[buf].mNeedsCleanupOnRelease = false;
         return STALE_BUFFER_SLOT;
     } else {
-        ST_LOGE("attempted to release buf %d but its state was %d", buf, mSlots[buf].mBufferState);
+        //ST_LOGE("attempted to release buf %d but its state was %d", buf, mSlots[buf].mBufferState);
         return -EINVAL;
     }
 
@@ -1053,12 +1053,12 @@ status_t BufferQueue::releaseBuffer(
 
 status_t BufferQueue::consumerConnect(const sp<IConsumerListener>& consumerListener,
         bool controlledByApp) {
-    ST_LOGV("consumerConnect controlledByApp=%s",
-            controlledByApp ? "true" : "false");
+    //ST_LOGV("consumerConnect controlledByApp=%s",
+    //        controlledByApp ? "true" : "false");
     Mutex::Autolock lock(mMutex);
 
     if (mAbandoned) {
-        ST_LOGE("consumerConnect: BufferQueue has been abandoned!");
+        //ST_LOGE("consumerConnect: BufferQueue has been abandoned!");
         return NO_INIT;
     }
     if (consumerListener == NULL) {
@@ -1073,7 +1073,7 @@ status_t BufferQueue::consumerConnect(const sp<IConsumerListener>& consumerListe
 }
 
 status_t BufferQueue::consumerDisconnect() {
-    ST_LOGV("consumerDisconnect");
+    //ST_LOGV("consumerDisconnect");
     Mutex::Autolock lock(mMutex);
 
     if (mConsumerListener == NULL) {
@@ -1090,11 +1090,11 @@ status_t BufferQueue::consumerDisconnect() {
 }
 
 status_t BufferQueue::getReleasedBuffers(uint32_t* slotMask) {
-    ST_LOGV("getReleasedBuffers");
+    //ST_LOGV("getReleasedBuffers");
     Mutex::Autolock lock(mMutex);
 
     if (mAbandoned) {
-        ST_LOGE("getReleasedBuffers: BufferQueue has been abandoned!");
+        //ST_LOGE("getReleasedBuffers: BufferQueue has been abandoned!");
         return NO_INIT;
     }
 
@@ -1117,12 +1117,12 @@ status_t BufferQueue::getReleasedBuffers(uint32_t* slotMask) {
 
     *slotMask = mask;
 
-    ST_LOGV("getReleasedBuffers: returning mask %#x", mask);
+    //ST_LOGV("getReleasedBuffers: returning mask %#x", mask);
     return NO_ERROR;
 }
 
 status_t BufferQueue::setDefaultBufferSize(uint32_t w, uint32_t h) {
-    ST_LOGV("setDefaultBufferSize: w=%d, h=%d", w, h);
+    //ST_LOGV("setDefaultBufferSize: w=%d, h=%d", w, h);
     if (!w || !h) {
         ST_LOGE("setDefaultBufferSize: dimensions cannot be 0 (w=%d, h=%d)",
                 w, h);
@@ -1136,16 +1136,16 @@ status_t BufferQueue::setDefaultBufferSize(uint32_t w, uint32_t h) {
 }
 
 status_t BufferQueue::setDefaultMaxBufferCount(int bufferCount) {
-    ATRACE_CALL();
+    //ATRACE_CALL();
     Mutex::Autolock lock(mMutex);
     return setDefaultMaxBufferCountLocked(bufferCount);
 }
 
 status_t BufferQueue::disableAsyncBuffer() {
-    ATRACE_CALL();
+    //ATRACE_CALL();
     Mutex::Autolock lock(mMutex);
     if (mConsumerListener != NULL) {
-        ST_LOGE("disableAsyncBuffer: consumer already connected!");
+        //ST_LOGE("disableAsyncBuffer: consumer already connected!");
         return INVALID_OPERATION;
     }
     mUseAsyncBuffer = false;
@@ -1153,7 +1153,7 @@ status_t BufferQueue::disableAsyncBuffer() {
 }
 
 status_t BufferQueue::setMaxAcquiredBufferCount(int maxAcquiredBuffers) {
-    ATRACE_CALL();
+    //ATRACE_CALL();
     Mutex::Autolock lock(mMutex);
     if (maxAcquiredBuffers < 1 || maxAcquiredBuffers > MAX_MAX_ACQUIRED_BUFFERS) {
         ST_LOGE("setMaxAcquiredBufferCount: invalid count specified: %d",
@@ -1214,12 +1214,12 @@ int BufferQueue::getMaxBufferCountLocked(bool async) const {
 bool BufferQueue::stillTracking(const BufferItem *item) const {
     const BufferSlot &slot = mSlots[item->mBuf];
 
-    ST_LOGV("stillTracking?: item: { slot=%d/%llu, buffer=%p }, "
-            "slot: { slot=%d/%llu, buffer=%p }",
-            item->mBuf, item->mFrameNumber,
-            (item->mGraphicBuffer.get() ? item->mGraphicBuffer->handle : 0),
-            item->mBuf, slot.mFrameNumber,
-            (slot.mGraphicBuffer.get() ? slot.mGraphicBuffer->handle : 0));
+    //ST_LOGV("stillTracking?: item: { slot=%d/%llu, buffer=%p }, "
+    //        "slot: { slot=%d/%llu, buffer=%p }",
+    //        item->mBuf, item->mFrameNumber,
+    //        (item->mGraphicBuffer.get() ? item->mGraphicBuffer->handle : 0),
+    //        item->mBuf, slot.mFrameNumber,
+    //        (slot.mGraphicBuffer.get() ? slot.mGraphicBuffer->handle : 0));
 
     // Compare item with its original buffer slot.  We can check the slot
     // as the buffer would not be moved to a different slot by the producer.

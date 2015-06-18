@@ -254,7 +254,7 @@ public class AppOpsService extends IAppOpsService.Stub {
     }
 
     public void shutdown() {
-        Slog.w(TAG, "Writing app ops before shutdown...");
+        //Slog.w(TAG, "Writing app ops before shutdown...");
         boolean doWrite = false;
         synchronized (this) {
             if (mWriteScheduled) {
@@ -576,10 +576,10 @@ public class AppOpsService extends IAppOpsService.Stub {
                 return AppOpsManager.MODE_ERRORED;
             }
             Op op = getOpLocked(ops, code, true);
-            if (op.duration == -1) {
-                Slog.w(TAG, "Noting op not finished: uid " + uid + " pkg " + packageName
-                        + " code " + code + " time=" + op.time + " duration=" + op.duration);
-            }
+//             if (op.duration == -1) {
+//                 Slog.w(TAG, "Noting op not finished: uid " + uid + " pkg " + packageName
+//                         + " code " + code + " time=" + op.time + " duration=" + op.duration);
+//             }
             op.duration = 0;
             final int switchCode = AppOpsManager.opToSwitch(code);
             final Op switchOp = switchCode != code ? getOpLocked(ops, switchCode, true) : op;
@@ -655,14 +655,6 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     void finishOperationLocked(Op op) {
         if (op.nesting <= 1) {
-            if (op.nesting == 1) {
-                op.duration = (int)(System.currentTimeMillis() - op.time);
-                op.time += op.duration;
-            } else {
-                Slog.w(TAG, "Finishing op nesting under-run: uid " + op.uid + " pkg "
-                        + op.packageName + " code " + op.op + " time=" + op.time
-                        + " duration=" + op.duration + " nesting=" + op.nesting);
-            }
             op.nesting = 0;
         } else {
             op.nesting--;
@@ -782,7 +774,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                 try {
                     stream = mFile.openRead();
                 } catch (FileNotFoundException e) {
-                    Slog.i(TAG, "No existing app ops " + mFile.getBaseFile() + "; starting empty");
+                    //Slog.i(TAG, "No existing app ops " + mFile.getBaseFile() + "; starting empty");
                     return;
                 }
                 boolean success = false;
